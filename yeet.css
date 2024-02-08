@@ -1,0 +1,26 @@
+body
+{
+  background-color: #bbf;
+  font: 14pt monospace;
+}
+
+td, th
+{
+  padding: 1ex 1em;
+}
+
+th
+{
+  text-align: right;
+}
+
+.important
+{
+  background-color: #ddd;
+}
+
+input[type=text]
+{
+  min-width: 50em;
+  font: inherit;
+}

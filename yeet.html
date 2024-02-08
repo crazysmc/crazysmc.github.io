@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<meta charset=utf8>
+<title>crazysmc – Yeet</title>
+<link rel=stylesheet href=yeet.css>
+
+<h1>Yeet calculator</h1>
+<p>Ported to JavaScript from
+<a href=https://replit.com/@The64thRealm/Yeet-calculator
+   >The64thRealm's Ruby script</a>.
+
+<form name=yeet>
+
+<fieldset>
+<legend>Input</legend>
+<p>Enter X and Z coordinates or paste the whole F3+C clipboard.
+<table>
+<tr><th scope=row><label for=boat>Boat coordinates</label>
+  <td><input id=boat name=boat type=text>
+  <td><output for=boat name=boatxz></output>
+<tr><th scope=row><label for=target>Target coordinates</label>
+  <td><input id=target name=target type=text>
+  <td><output for=target name=targetxz></output>
+</table>
+</fieldset>
+
+<fieldset>
+<legend>Output</legend>
+<table>
+<tr class=important><th scope=row>Angle
+  <td><output for="boat target" name=angle></output>
+<tr class=important><th scope=row>Normal friction
+  <td><output for="boat target" name=normal></output>
+<tr><th scope=row>Slime block
+  <td><output for="boat target" name=slime></output>
+<tr><th scope=row>Water/air/boat
+  <td><output for="boat target" name=water></output>
+<tr><th scope=row>Ice/packed ice
+  <td><output for="boat target" name=ice></output>
+<tr><th scope=row>Blue ice
+  <td><output for="boat target" name=blue></output>
+</table>
+</fieldset>
+
+</form>
+
+<script src=yeet.js></script>
