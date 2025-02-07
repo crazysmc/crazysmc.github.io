@@ -16,6 +16,12 @@
 </label>
 
 <p>
+<input id=time name=time type=number min=0 step=60 />
+<label for=time>
+  Time in seconds until each message disappears again
+</label>
+
+<p>
 <input id=bans name=bans type=checkbox />
 <label for=bans>
   Show a notice when someone was banned/timed out (messages are still deleted
@@ -42,6 +48,8 @@ function input() {
   let p = '';
   for (const j of joins.split(/\s+/))
     p += '&join=' + j;
+    if (form.elements.time.value > 0)
+    p += '&time=' + form.elements.time.value;
   if (form.elements.bans.checked)
     p += '&bans';
   const url = 'tchat/?' + p.slice(1);
