@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<meta charset=utf8>
+<title>crazysmc – tChat</title>
+<link rel=stylesheet href=yeet.css>
+
+<h1>tChat – Twitch chat overlay for OBS or browser</h1>
+
+<p>plain IRC text testing phase – no badges or emotes yet!
+
+<form name=tchat>
+
+<p>
+<input id=join name=join size=40 />
+<label for=join>
+  Channel(s) to join (if multiple, separate with white-space)
+</label>
+
+<p>
+<input id=bans name=bans type=checkbox />
+<label for=bans>
+  Show a notice when someone was banned/timed out (messages are still deleted
+  from the chat)
+</label>
+
+<p>
+<output name=url></output>
+
+</form>
+
+<script>
+'use strict';
+
+const form = document.forms.tchat;
+form.addEventListener('input', input);
+form.addEventListener('submit', (event) => { event.preventDefault(); });
+input();
+
+function input() {
+  const joins = form.elements.join.value.trim();
+  if (!joins)
+    return;
+  let p = '';
+  for (const j of joins.split(/\s+/))
+    p += '&join=' + j;
+  if (form.elements.bans.checked)
+    p += '&bans';
+  const url = 'tchat/?' + p.slice(1);
+  const a = document.createElement('a');
+  a.href = url;
+  a.textContent = url;
+  form.elements.url.replaceChildren(a);
+}
+</script>

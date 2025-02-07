@@ -1,0 +1,72 @@
+@import url("https://lalten.github.io/lmweb/style/latinmodern-mono.css");
+
+body {
+  background-color: #18181b; /* OBS will remove the background */
+  color: white;
+  font-family: "Latin Modern Mono", monospace;
+  margin: 0px;
+}
+
+#chat-container {
+  display: flex;
+  flex-direction: column-reverse;
+  height: 100vh;
+}
+
+p,
+.reply i {
+  align-items: baseline;
+  display: flex;
+  gap: 0px 1ex;
+  justify-content: start;
+  margin: 2px 0px;
+}
+
+#chat-container[data-join="1"] .channel {
+  display: none;
+}
+
+.badges {
+  text-wrap: nowrap;
+}
+
+.nick {
+  font-weight: bold;
+}
+
+.USERNOTICE {
+  background-color: #c466ff64;
+}
+
+.NOTICE {
+  color: #fff8;
+}
+
+.system-msg,
+.action .message {
+  font-style: italic;
+}
+
+.chat-line[data-first-msg="1"] {
+  background-color: #487f3f3c;
+}
+
+/*.chat-line[data-returning-chatter="1"] {
+  background-color: #3296e666;
+}*/
+
+.message:has(.reply) {
+  display: flex;
+  flex-direction: column;
+}
+
+.reply {
+  display: inline-block;
+}
+
+.reply i {
+  font-size: 0.8em;
+  clear: left;
+  float: left;
+  width: 100%;
+}

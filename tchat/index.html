@@ -1,0 +1,23 @@
+<!doctype html>
+<meta charset=utf-8>
+<link rel=stylesheet href=style.css>
+<script src=../lib/reconnecting-websocket/reconnecting-websocket.min.js
+        ></script>
+<script src=twitch.js></script>
+<title>tChat – chat overlay client for twitch</title>
+<main id=chat-container></main>
+<template id=chat-template>
+  <p class=chat-line>
+    <span class=channel></span
+    ><span class=badges></span
+    ><span class=nick></span
+    ><span class=message></span>
+  </p>
+  <span class=reply>
+    <i>
+      <span class=nick></span
+      ><span class=message></span>
+    </i>
+    <span class=reply-message></span>
+  </span>
+</template>
