@@ -22,6 +22,10 @@ p,
   margin: 2px 0px;
 }
 
+img {
+  vertical-align: bottom;
+}
+
 #chat-container[data-join="1"] .channel {
   display: none;
 }

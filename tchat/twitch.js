@@ -1,13 +1,17 @@
 'use strict';
 
 const opt = new URLSearchParams (location.search);
+const conf = {
+  timeout: parseInt (opt.get ('time'), 10) * 1000,
+  emoteStyle: opt.has ('static') ? 'static' : 'default',
+  emoteScale: ({ 2: '2.0', 3: '3.0' })[opt.get ('scale')] ?? '1.0',
+};
 const ws = new ReconnectingWebSocket ('wss://irc-ws.chat.twitch.tv:443', null,
                                       { automaticOpen: false });
 const template = {};
 let chat;
 
 addEventListener ('load', init);
-addEventListener ('beforeunload', () => { ws.close (); });
 
 function init ()
 {
@@ -18,6 +22,8 @@ function init ()
   ws.addEventListener ('open', login);
   ws.addEventListener ('message', receive);
   ws.open ();
+  addEventListener ('beforeunload', () => { ws.close (); });
+  setInterval (reduceChat, 200);
 }
 
 function login ()
@@ -58,7 +64,7 @@ function receive (event)
         const uid = msg.tags['target-user-id'];
         if (uid) /* user timeout or ban */
         {
-          for (const del of document.querySelectorAll
+          for (const del of chat.querySelectorAll
                (`.chat-line[data-room-id="${rid}"][data-user-id="${uid}"]`))
             del.remove ();
           const duration = msg.tags['ban-duration'];
@@ -70,9 +76,10 @@ function receive (event)
         }
         else /* channel /clear */
         {
-          for (const del of document.querySelectorAll
+          for (const del of chat.querySelectorAll
                (`.chat-line[data-room-id="${rid}"]`))
             del.remove ();
+          msg.source = '';
           msg.params[1] = 'The chat has been cleared.';
         }
         if (opt.has ('bans'))
@@ -84,8 +91,16 @@ function receive (event)
           del.remove ();
         break;
     }
-    console.log (msg);
   }
+}
+
+function reduceChat ()
+{
+  const oldest = Date.now () - conf.timeout;
+  for (const line of chat.childNodes)
+    if (line.offsetTop + line.offsetHeight < 0 ||
+        oldest && parseInt (line.dataset.tmiSentTs, 10) < oldest)
+      line.remove ();
 }
 
 function displayChat (msg)
@@ -95,21 +110,27 @@ function displayChat (msg)
     p.setAttribute ('data-' + key, msg.tags[key]);
   p.id = msg.tags.id;
   p.classList.add (msg.command);
-  p.querySelector ('.channel').textContent = msg.params[0];
+
+  const channel = p.querySelector ('.channel');
+  channel.textContent = msg.params[0];
+
   const badges = p.querySelector ('.badges');
   if (msg.tags.badges)
   {
     badges.textContent = msg.tags.badges; // TODO
     for (const badge of msg.tags.badges.split (','))
     {
+      // https://static-cdn.jtvnw.net/badges/v1/${id}/1
     }
   }
   else
     badges.remove ();
+
   const nick = p.querySelector ('.nick');
   nick.style.color = msg.tags.color;
   nick.textContent = msg.tags['display-name'] ||
     msg.source.replace (/!.*/, '');
+
   const message = p.querySelector ('.message');
   let text = msg.params[1];
   if (text && text[0] == '\x01')
@@ -117,7 +138,39 @@ function displayChat (msg)
     text = text.replace (/^\x01ACTION (.*)\x01/, '$1');
     message.classList.add ('action');
   }
-  message.textContent = text; // TODO emotes
+
+  if (msg.tags.emotes)
+  {
+    const list = text.split(/(?:)/u);
+    for (const emote of msg.tags.emotes.split ('/'))
+    {
+      const [id, ranges] = emote.split (':');
+      for (const range of ranges.split (','))
+      {
+        const [start, end] = range.split ('-').map (x => parseInt (x, 10));
+        const img = document.createElement ('img');
+        img.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' +
+          `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}`;
+        const name = list.splice (start, 1 + end - start, img,
+                                  ...new Array (end - start));
+        img.alt = name.join ('');
+        console.log (`emote from ${start} to ${end}: ${img.alt}`);
+      }
+    }
+
+    for (const c of list)
+    {
+      if (c == undefined)
+        continue;
+      if (c.nodeType || message.lastChild?.nodeType != Node.TEXT_NODE)
+        message.append (c);
+      else
+        message.lastChild.textContent += c;
+    }
+  }
+  else
+    message.textContent = text;
+
   const systemMsg = msg.tags['system-msg'];
   if (systemMsg)
   {
@@ -127,27 +180,25 @@ function displayChat (msg)
     const br = document.createElement ('br');
     message.prepend (span, br);
   }
+
   const replyTo = msg.tags['reply-parent-display-name'] ||
                   msg.tags['reply-parent-user-login'];
   if (replyTo)
   {
     const reply = template.reply.cloneNode (true);
     const nick = reply.querySelector ('.nick');
-    const id = msg.tags['reply-parent-msg-id'];
     const uid = msg.tags['reply-parent-user-id'];
-    const parentMsg = document.getElementById (id);
-    let parentNick = parentMsg && parentMsg.querySelector ('.nick');
-    parentNick ||= chat.querySelector (`.chat-line[data-user-id="${uid}"]`);
-    if (parentNick)
-      nick.style.color = parentNick.style.color;
+    const pn = chat.querySelector (`.chat-line[data-user-id="${uid}"] .nick`);
+    nick.style.color = pn?.style.color;
     nick.textContent = replyTo;
-    reply.querySelector ('.message').textContent =
-      msg.tags['reply-parent-msg-body'];
-    reply.querySelector ('.reply-message').textContent = text; // TODO emotes
+    const pm = reply.querySelector ('.message');
+    pm.textContent = msg.tags['reply-parent-msg-body'];
+    const replyMsg = reply.querySelector ('.reply-message');
+    replyMsg.replaceChildren (...message.childNodes);
     message.replaceChildren (reply);
   }
+
   chat.prepend (p);
-  setTimeout (() => { p.remove (); }, (opt.get ('time') || 60) * 1000);
 }
 
 function parse (msg)

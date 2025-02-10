@@ -5,7 +5,7 @@
 
 <h1>tChat – Twitch chat overlay for OBS or browser</h1>
 
-<p>plain IRC text testing phase – no badges or emotes yet!
+<p>plain IRC text testing phase – no badges yet!
 
 <form name=tchat>
 
@@ -16,9 +16,10 @@
 </label>
 
 <p>
-<input id=time name=time type=number min=0 step=60 />
+<input id=time name=time type=number min=0 step=60 size=4 />
 <label for=time>
-  Time in seconds until each message disappears again
+  Time in seconds until each message disappears again (if unset, only messages
+  scrolling out the top will be removed)
 </label>
 
 <p>
@@ -26,6 +27,22 @@
 <label for=bans>
   Show a notice when someone was banned/timed out (messages are still deleted
   from the chat)
+</label>
+
+<p>
+<select id=scale name=scale>
+  <option value=1>1.0</option>
+  <option value=2>2.0</option>
+  <option value=3>3.0</option>
+</select>
+<label for=scale>
+  Size of the emotes to load
+</label>
+
+<p>
+<input id=static name=static type=checkbox />
+<label for=static>
+  Replace animated emotes with static ones
 </label>
 
 <p>
@@ -48,10 +65,14 @@ function input() {
   let p = '';
   for (const j of joins.split(/\s+/))
     p += '&join=' + j;
-    if (form.elements.time.value > 0)
+  if (form.elements.time.value > 0)
     p += '&time=' + form.elements.time.value;
   if (form.elements.bans.checked)
     p += '&bans';
+  if (form.elements.scale.value > 1)
+    p += '&scale=' + form.elements.scale.value;
+  if (form.elements.static.checked)
+    p += '&static';
   const url = 'tchat/?' + p.slice(1);
   const a = document.createElement('a');
   a.href = url;
