@@ -5,10 +5,13 @@ const conf = {
   timeout: parseInt (opt.get ('time'), 10) * 1000,
   emoteStyle: opt.has ('static') ? 'static' : 'default',
   emoteScale: ({ 2: '2.0', 3: '3.0' })[opt.get ('scale')] ?? '1.0',
+  badgeScale: ({ 2: 'image_url_2x',
+                 3: 'image_url_4x' })[opt.get ('scale')] ?? 'image_url_1x',
 };
 const ws = new ReconnectingWebSocket ('wss://irc-ws.chat.twitch.tv:443', null,
                                       { automaticOpen: false });
 const template = {};
+const badgeSrc = { global: {} };
 let chat;
 
 addEventListener ('load', init);
@@ -19,6 +22,17 @@ function init ()
   const t = document.getElementById ('chat-template');
   template.chatLine = t.content.querySelector ('.chat-line');
   template.reply = t.content.querySelector ('.reply');
+
+  fetch ('https://smc.2ix.at/global.php')
+    .then (response => response.json())
+    .then (json => {
+      for (const set of json.data)
+        for (const version of set.versions)
+          badgeSrc.global[`${set.set_id}/${version.id}`] =
+            version[conf.badgeScale];
+    })
+    .catch (console.error);
+
   ws.addEventListener ('open', login);
   ws.addEventListener ('message', receive);
   ws.open ();
@@ -45,6 +59,7 @@ function receive (event)
     if (!line)
       continue;
     const msg = parse (line);
+    const rid = msg.tags['room-id'];
     switch (msg.command)
     {
       case 'PING':
@@ -54,13 +69,27 @@ function receive (event)
         ws.refresh ();
         login ();
         break;
+      case 'ROOMSTATE':
+        if (!badgeSrc[rid])
+        {
+          badgeSrc[rid] = {};
+          fetch (`https://smc.2ix.at/user.php?id=${rid}`)
+            .then (response => response.json())
+            .then (json => {
+              for (const set of json.data)
+                for (const version of set.versions)
+                  badgeSrc[rid][`${set.set_id}/${version.id}`] =
+                    version[conf.badgeScale];
+            })
+            .catch (console.error);
+        }
+        break;
       case 'PRIVMSG':
       case 'USERNOTICE':
       case 'NOTICE':
         displayChat (msg);
         break;
       case 'CLEARCHAT':
-        const rid = msg.tags['room-id'];
         const uid = msg.tags['target-user-id'];
         if (uid) /* user timeout or ban */
         {
@@ -115,14 +144,15 @@ function displayChat (msg)
   channel.textContent = msg.params[0];
 
   const badges = p.querySelector ('.badges');
+  const rid = msg.tags['room-id'];
   if (msg.tags.badges)
-  {
-    badges.textContent = msg.tags.badges; // TODO
     for (const badge of msg.tags.badges.split (','))
     {
-      // https://static-cdn.jtvnw.net/badges/v1/${id}/1
+      const img = document.createElement ('img');
+      img.src = badgeSrc[rid]?.[badge] ?? badgeSrc.global[badge];
+      img.alt = `[${badge}]`;
+      badges.append (img);
     }
-  }
   else
     badges.remove ();
 
@@ -154,7 +184,6 @@ function displayChat (msg)
         const name = list.splice (start, 1 + end - start, img,
                                   ...new Array (end - start));
         img.alt = name.join ('');
-        console.log (`emote from ${start} to ${end}: ${img.alt}`);
       }
     }
 

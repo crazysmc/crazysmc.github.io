@@ -4,6 +4,7 @@ body {
   background-color: #18181b; /* OBS will remove the background */
   color: white;
   font-family: "Latin Modern Mono", monospace;
+  font-size: 14pt;
   margin: 0px;
 }
 
@@ -32,6 +33,14 @@ img {
 
 .badges {
   text-wrap: nowrap;
+}
+
+.badges img {
+  vertical-align: middle;
+}
+
+.badges img + img {
+  margin-left: 4px;
 }
 
 .nick {
