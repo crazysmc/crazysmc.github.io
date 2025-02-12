@@ -22,12 +22,8 @@
   scrolling out the top will be removed)
 </label>
 
-<p>
-<input id=bans name=bans type=checkbox />
-<label for=bans>
-  Show a notice when someone was banned/timed out (messages are still deleted
-  from the chat)
-</label>
+<fieldset>
+<legend>Image Options</legend>
 
 <p>
 <select id=scale name=scale>
@@ -45,6 +41,27 @@
 <label for=static>
   Replace animated emotes with static ones
 </label>
+
+</fieldset>
+
+<fieldset>
+<legend>Natively Hidden Details</legend>
+
+<p>
+<input id=bans name=bans type=checkbox />
+<label for=bans>
+  Show a notice when someone was banned/timed out (messages are still deleted
+  from the chat)
+</label>
+
+<p>
+<input id=chatters name=chatters type=checkbox />
+<label for=chatters>
+  Show chatters joining and parting from chat (not received in chats with more
+  than 1,000 chatters)
+</label>
+
+</fieldset>
 
 <p>
 <output name=url></output>
@@ -68,12 +85,14 @@ function input() {
     p += '&join=' + j;
   if (form.elements.time.value > 0)
     p += '&time=' + form.elements.time.value;
-  if (form.elements.bans.checked)
-    p += '&bans';
   if (form.elements.scale.value > 1)
     p += '&scale=' + form.elements.scale.value;
   if (form.elements.static.checked)
     p += '&static';
+  if (form.elements.bans.checked)
+    p += '&bans';
+  if (form.elements.chatters.checked)
+    p += '&chatters';
   const url = 'tchat/?' + p.slice(1);
   const a = document.createElement('a');
   a.href = url;

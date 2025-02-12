@@ -2,6 +2,7 @@
 
 const opt = new URLSearchParams (location.search);
 const conf = {
+  nick: 'justinfan64537', // same as anonymous chatterino
   timeout: parseInt (opt.get ('time'), 10) * 1000,
   emoteStyle: opt.has ('static') ? 'static' : 'default',
   emoteScale: ({ 2: '2.0', 3: '3.0' })[opt.get ('scale')] ?? '1.0',
@@ -42,8 +43,9 @@ function init ()
 
 function login ()
 {
-  ws.send ('NICK justinfan64537\r\n'); // same as anonymous chatterino
-  ws.send ('CAP REQ :twitch.tv/tags twitch.tv/commands\r\n');
+  ws.send (`NICK ${conf.nick}\r\n`);
+  const mem = opt.has ('chatters') ? ' twitch.tv/membership' : '';
+  ws.send (`CAP REQ :twitch.tv/tags twitch.tv/commands${mem}\r\n`);
   const join = opt.getAll ('join');
   if (join.length)
   {
@@ -118,6 +120,14 @@ function receive (event)
         const del = document.getElementById (msg.tags['target-msg-id']);
         if (del)
           del.remove ();
+        break;
+      case 'JOIN':
+      case 'PART':
+        if (!msg.source.startsWith (`${conf.nick}!`))
+        {
+          msg.params[1] = msg.command == 'JOIN' ? ' joined' : ' parted';
+          displayChat (msg);
+        }
         break;
     }
   }

@@ -51,6 +51,11 @@ img {
   color: #fff8;
 }
 
+.JOIN,
+.PART {
+  color: #fff5;
+}
+
 .system-msg,
 .action .message {
   font-style: italic;
