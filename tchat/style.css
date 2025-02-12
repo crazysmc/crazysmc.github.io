@@ -24,7 +24,7 @@ p,
 }
 
 img {
-  vertical-align: bottom;
+  vertical-align: middle;
 }
 
 #chat-container[data-join="1"] .channel {
@@ -33,10 +33,6 @@ img {
 
 .badges {
   text-wrap: nowrap;
-}
-
-.badges img {
-  vertical-align: middle;
 }
 
 .badges img + img {
