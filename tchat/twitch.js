@@ -5,7 +5,7 @@ const conf = {
   nick: 'justinfan64537', // same as anonymous chatterino
   timeout: parseInt (opt.get ('time'), 10) * 1000,
   emoteStyle: opt.has ('static') ? 'static' : 'default',
-  emoteScale: ({ 2: '2.0', 3: '3.0' })[opt.get ('scale')] ?? '1.0',
+  emoteScale: ({ 2: '2', 3: '3' })[opt.get ('scale')] ?? '1',
   badgeScale: ({ 2: 'image_url_2x',
                  3: 'image_url_4x' })[opt.get ('scale')] ?? 'image_url_1x',
   noPronouns: opt.has ('noPronouns'),
@@ -51,8 +51,9 @@ function login ()
   if (join.length)
   {
     ws.send (`JOIN #${join.join (',#')}\r\n`);
-    chat.dataset.join = join.length;
+    document.body.dataset.join = join.length;
   }
+  document.body.dataset.scale = conf.emoteScale;
 }
 
 function receive (event)
@@ -226,7 +227,7 @@ function displayChat (msg)
         const [start, end] = range.split ('-').map (x => parseInt (x, 10));
         const img = document.createElement ('img');
         img.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' +
-          `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}`;
+          `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}.0`;
         const name = list.splice (start, 1 + end - start, img,
                                   ...new Array (end - start));
         img.alt = name.join ('');
