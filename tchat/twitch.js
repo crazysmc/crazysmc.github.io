@@ -67,30 +67,22 @@ function receive (event)
       case 'PING':
         ws.send (`PONG :${msg.params[0]}\r\n`);
         break;
+
       case 'RECONNECT':
         ws.refresh ();
         login ();
         break;
+
       case 'ROOMSTATE':
-        if (!badgeSrc[rid])
-        {
-          badgeSrc[rid] = {};
-          fetch (`https://smc.2ix.at/user.php?id=${rid}`)
-            .then (response => response.json())
-            .then (json => {
-              for (const set of json.data)
-                for (const version of set.versions)
-                  badgeSrc[rid][`${set.set_id}/${version.id}`] =
-                    version[conf.badgeScale];
-            })
-            .catch (console.error);
-        }
+        loadBadges (rid);
         break;
+
       case 'PRIVMSG':
       case 'USERNOTICE':
       case 'NOTICE':
         displayChat (msg);
         break;
+
       case 'CLEARCHAT':
         const uid = msg.tags['target-user-id'];
         if (uid) /* user timeout or ban */
@@ -116,16 +108,27 @@ function receive (event)
         if (opt.has ('bans'))
           displayChat (msg);
         break;
+
       case 'CLEARMSG':
-        const del = document.getElementById (msg.tags['target-msg-id']);
-        if (del)
-          del.remove ();
+        document.getElementById (msg.tags['target-msg-id'])
+          ?.remove ();
         break;
+
       case 'JOIN':
       case 'PART':
         if (!msg.source.startsWith (`${conf.nick}!`))
         {
           msg.params[1] = msg.command == 'JOIN' ? ' joined' : ' parted';
+          if (chat.firstChild?.classList.contains (msg.command))
+          {
+            const channel = chat.firstChild?.querySelector ('.channel');
+            const nick = chat.firstChild?.querySelector ('.nick');
+            if (channel.textContent == msg.params[0])
+            {
+              msg.source = `${nick.textContent}, ${msg.source}`;
+              chat.firstChild.remove ();
+            }
+          }
           displayChat (msg);
         }
         break;
@@ -142,12 +145,30 @@ function reduceChat ()
       line.remove ();
 }
 
+function loadBadges (rid)
+{
+  if (!badgeSrc[rid])
+  {
+    badgeSrc[rid] = {};
+    fetch (`https://smc.2ix.at/user.php?id=${rid}`)
+      .then (response => response.json())
+      .then (json => {
+        for (const set of json.data)
+          for (const version of set.versions)
+            badgeSrc[rid][`${set.set_id}/${version.id}`] =
+              version[conf.badgeScale];
+      })
+      .catch (console.error);
+  }
+}
+
 function displayChat (msg)
 {
   const p = template.chatLine.cloneNode (true);
   for (const key in msg.tags)
     p.setAttribute ('data-' + key, msg.tags[key]);
-  p.id = msg.tags.id;
+  if (msg.tags.id)
+    p.id = msg.tags.id;
   p.classList.add (msg.command);
 
   const channel = p.querySelector ('.channel');

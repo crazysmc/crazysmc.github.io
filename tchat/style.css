@@ -47,6 +47,7 @@ img {
   background-color: #c466ff64;
 }
 
+.CLEARCHAT,
 .NOTICE {
   color: #fff8;
 }
@@ -54,6 +55,11 @@ img {
 .JOIN,
 .PART {
   color: #fff5;
+}
+
+.JOIN .message,
+.PART .message {
+  align-self: end;
 }
 
 .system-msg,
