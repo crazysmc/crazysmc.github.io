@@ -35,8 +35,16 @@ img {
   text-wrap: nowrap;
 }
 
+.badges img + .pronouns,
 .badges img + img {
   margin-left: 4px;
+}
+
+.pronouns {
+  border: 1px solid;
+  border-radius: 4px;
+  font-size: 0.8em;
+  padding: 0px 2px;
 }
 
 .nick {

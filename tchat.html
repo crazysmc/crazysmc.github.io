@@ -63,6 +63,35 @@
 
 </fieldset>
 
+<fieldset>
+<legend>Disable Cool Features?</legend>
+
+<p>
+<input id=noPronouns name=noPronouns type=checkbox />
+<label for=noPronouns>
+  Disable Pronouns.Alejo.io
+</label>
+
+<p>
+<input id=noBttv name=noBttv type=checkbox disabled />
+<label for=noBttv>
+  Disable BetterTTV
+</label>
+
+<p>
+<input id=noFfz name=noFfz type=checkbox disabled />
+<label for=noFfz>
+  Disable FrankerFaceZ
+</label>
+
+<p>
+<input id=no7tv name=no7tv type=checkbox disabled />
+<label for=no7tv>
+  Disable SevenTV
+</label>
+
+</fieldset>
+
 <p>
 <output name=url></output>
 
@@ -93,6 +122,8 @@ function input() {
     p += '&bans';
   if (form.elements.chatters.checked)
     p += '&chatters';
+  if (form.elements.noPronouns.checked)
+    p += '&noPronouns';
   const url = 'tchat/?' + p.slice(1);
   const a = document.createElement('a');
   a.href = url;

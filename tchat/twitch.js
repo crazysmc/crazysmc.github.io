@@ -8,6 +8,7 @@ const conf = {
   emoteScale: ({ 2: '2.0', 3: '3.0' })[opt.get ('scale')] ?? '1.0',
   badgeScale: ({ 2: 'image_url_2x',
                  3: 'image_url_4x' })[opt.get ('scale')] ?? 'image_url_1x',
+  noPronouns: opt.has ('noPronouns'),
 };
 const ws = new ReconnectingWebSocket ('wss://irc-ws.chat.twitch.tv:443', null,
                                       { automaticOpen: false });
@@ -25,7 +26,7 @@ function init ()
   template.reply = t.content.querySelector ('.reply');
 
   fetch ('https://smc.2ix.at/global.php')
-    .then (response => response.json())
+    .then (response => response.json ())
     .then (json => {
       for (const set of json.data)
         for (const version of set.versions)
@@ -151,7 +152,7 @@ function loadBadges (rid)
   {
     badgeSrc[rid] = {};
     fetch (`https://smc.2ix.at/user.php?id=${rid}`)
-      .then (response => response.json())
+      .then (response => response.json ())
       .then (json => {
         for (const set of json.data)
           for (const version of set.versions)
@@ -170,6 +171,7 @@ function displayChat (msg)
   if (msg.tags.id)
     p.id = msg.tags.id;
   p.classList.add (msg.command);
+  const sourceNick = msg.source.replace (/!.*/, '');
 
   const channel = p.querySelector ('.channel');
   channel.textContent = msg.params[0];
@@ -184,13 +186,26 @@ function displayChat (msg)
       img.alt = `[${badge}]`;
       badges.append (img);
     }
-  else
+  if (!conf.noPronouns && msg.tags.id)
+  {
+    const pro = document.createElement ('span');
+    pro.classList.add ('pronouns');
+    pro.textContent = '…';
+    getPronouns (msg.tags.login ?? sourceNick)
+      .then (text => { pro.textContent = text; })
+      .catch (() => {
+        pro.remove ();
+        if (!badges.childNodes.length)
+          badges.remove ();
+      });
+    badges.append (pro);
+  }
+  if (!badges.childNodes.length)
     badges.remove ();
 
   const nick = p.querySelector ('.nick');
   nick.style.color = msg.tags.color;
-  nick.textContent = msg.tags['display-name'] ||
-    msg.source.replace (/!.*/, '');
+  nick.textContent = msg.tags['display-name'] || sourceNick;
 
   const message = p.querySelector ('.message');
   let text = msg.params[1];
