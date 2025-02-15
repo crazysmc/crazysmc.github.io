@@ -77,7 +77,7 @@ function receive (event)
         break;
 
       case 'ROOMSTATE':
-        loadBadges (rid);
+        joinedRoom (rid);
         break;
 
       case 'PRIVMSG':
@@ -148,7 +148,7 @@ function reduceChat ()
       line.remove ();
 }
 
-function loadBadges (rid)
+function joinedRoom (rid)
 {
   if (badgeSrc[rid])
     return;
@@ -162,6 +162,7 @@ function loadBadges (rid)
             version[conf.badgeScale];
     })
     .catch (console.error);
+  getUser (rid);
 }
 
 function displayChat (msg)
@@ -207,7 +208,7 @@ function formatChat (msg, p)
       for (const range of ranges.split (','))
       {
         const [start, end] = range.split ('-').map (x => parseInt (x, 10));
-        const img = document.createElement ('img');
+        const img = emoteImage ();
         img.classList.add ('native');
         img.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' +
           `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}.0`;
@@ -299,16 +300,73 @@ function extEmotes (rid, uid, message)
                        emoteSrc.global[word[0]]);
         if (!emote)
           continue;
-        const img = document.createElement ('img');
+        const img = emoteImage ();
         img.classList.add (...emote.source);
         img.src = emote.url;
         img.alt = word[0];
-        const next = node.splitText (word.index - i);
+        const next = node.splitText (word.index);
         next.nodeValue = next.nodeValue.slice (word[0].length);
         node.after (img);
+        if (emote.style)
+          img.classList.add (...emote.style);
         break;
       }
   message.normalize ();
+
+  for (const prefix of message.querySelectorAll ('.prefix'))
+  {
+    if (prefix.nextSibling?.nodeType == Node.TEXT_NODE &&
+        !prefix.nextSibling.nodeValue.trim ())
+      prefix.nextSibling.remove ();
+    if (prefix.nextSibling instanceof HTMLImageElement)
+    {
+      if (prefix.classList.contains ('no-space'))
+      {
+        if (prefix.previousSibling?.nodeType == Node.TEXT_NODE &&
+            !prefix.previousSibling.nodeValue.trim ())
+          prefix.previousSibling.remove ();
+      }
+      else
+      {
+        prefix.classList.remove ('prefix');
+        prefix.nextSibling.classList.add (...prefix.classList);
+      }
+      prefix.remove ();
+    }
+  }
+
+  for (const overlay of message.querySelectorAll ('.overlay'))
+  {
+    if (overlay.previousSibling?.nodeType == Node.TEXT_NODE &&
+        !overlay.previousSibling.nodeValue.trim ())
+      overlay.previousSibling.remove ();
+    let stack = overlay.previousSibling;
+    if (stack instanceof HTMLImageElement)
+    {
+      const img = stack;
+      stack = document.createElement ('span');
+      stack.classList.add ('emote-stack');
+      img.replaceWith (stack);
+      stack.append (img);
+    }
+    if (stack instanceof HTMLSpanElement)
+    {
+      overlay.remove ();
+      stack.append (overlay);
+    }
+  }
+}
+
+function emoteImage ()
+{
+  const img = document.createElement ('img');
+  img.onload = () => {
+    if (!img.classList.contains ('grow-x'))
+      return;
+    img.style.height = `${img.naturalHeight}px`;
+    img.style.width  = `${2 * img.naturalWidth}px`;
+  };
+  return img;
 }
 
 function parse (msg)
