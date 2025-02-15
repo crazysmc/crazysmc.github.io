@@ -36,12 +36,15 @@ p,
 }
 
 img {
-  font-size: 0.5em;
   vertical-align: middle;
 }
 
 .badges {
   flex-shrink: 0;
+}
+
+.badges img {
+  font-size: 0.5em;
 }
 
 .badges img + .pronouns,
@@ -54,6 +57,11 @@ img {
   border-radius: 0.4em;
   font-size: 0.8em;
   padding: 0px 0.1em;
+}
+
+.badges:not(:has(img, .pronouns:not(:empty))),
+.pronouns:empty {
+  display: none;
 }
 
 .nick {

@@ -8,12 +8,13 @@ const conf = {
   emoteScale: ({ 2: '2', 3: '3' })[opt.get ('scale')] ?? '1',
   badgeScale: ({ 2: 'image_url_2x',
                  3: 'image_url_4x' })[opt.get ('scale')] ?? 'image_url_1x',
-  noPronouns: opt.has ('noPronouns'),
+  no: new Proxy (opt.getAll ('no'), { get: (arr, x) => arr.includes (x) }),
 };
 const ws = new ReconnectingWebSocket ('wss://irc-ws.chat.twitch.tv:443', null,
                                       { automaticOpen: false });
 const template = {};
 const badgeSrc = { global: {} };
+const emoteSrc = { global: {}, room: {}, user: {} };
 let chat;
 
 addEventListener ('load', init);
@@ -149,19 +150,18 @@ function reduceChat ()
 
 function loadBadges (rid)
 {
-  if (!badgeSrc[rid])
-  {
-    badgeSrc[rid] = {};
-    fetch (`https://smc.2ix.at/user.php?id=${rid}`)
-      .then (response => response.json ())
-      .then (json => {
-        for (const set of json.data)
-          for (const version of set.versions)
-            badgeSrc[rid][`${set.set_id}/${version.id}`] =
-              version[conf.badgeScale];
-      })
-      .catch (console.error);
-  }
+  if (badgeSrc[rid])
+    return;
+  badgeSrc[rid] = {};
+  fetch (`https://smc.2ix.at/user.php?id=${rid}`)
+    .then (response => response.json ())
+    .then (json => {
+      for (const set of json.data)
+        for (const version of set.versions)
+          badgeSrc[rid][`${set.set_id}/${version.id}`] =
+            version[conf.badgeScale];
+    })
+    .catch (console.error);
 }
 
 function displayChat (msg)
@@ -172,40 +172,22 @@ function displayChat (msg)
   if (msg.tags.id)
     p.id = msg.tags.id;
   p.classList.add (msg.command);
+
+  formatChat (msg, p);
+  chat.prepend (p);
+}
+
+function formatChat (msg, p)
+{
   const sourceNick = msg.source.replace (/!.*/, '');
+  const rid = msg.tags['room-id'];
+  const uid = msg.tags['user-id'];
 
   const channel = p.querySelector ('.channel');
   channel.textContent = msg.params[0];
 
-  const badges = p.querySelector ('.badges');
-  const rid = msg.tags['room-id'];
-  if (msg.tags.badges)
-    for (const badge of msg.tags.badges.split (','))
-    {
-      const img = document.createElement ('img');
-      img.src = badgeSrc[rid]?.[badge] ?? badgeSrc.global[badge];
-      img.alt = `[${badge}]`;
-      badges.append (img);
-    }
-  if (!conf.noPronouns && msg.tags.id)
-  {
-    const pro = document.createElement ('span');
-    pro.classList.add ('pronouns');
-    pro.textContent = '…';
-    getPronouns (msg.tags.login ?? sourceNick)
-      .then (text => { pro.textContent = text; })
-      .catch (() => {
-        pro.remove ();
-        if (!badges.childNodes.length)
-          badges.remove ();
-      });
-    badges.append (pro);
-  }
-  if (!badges.childNodes.length)
-    badges.remove ();
-
   const nick = p.querySelector ('.nick');
-  nick.style.color = msg.tags.color;
+  nick.style.color = msg.tags.color ?? '';
   nick.textContent = msg.tags['display-name'] || sourceNick;
 
   const message = p.querySelector ('.message');
@@ -226,6 +208,7 @@ function displayChat (msg)
       {
         const [start, end] = range.split ('-').map (x => parseInt (x, 10));
         const img = document.createElement ('img');
+        img.classList.add ('native');
         img.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' +
           `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}.0`;
         const name = list.splice (start, 1 + end - start, img,
@@ -233,7 +216,6 @@ function displayChat (msg)
         img.alt = name.join ('');
       }
     }
-
     for (const c of list)
     {
       if (c == undefined)
@@ -246,6 +228,33 @@ function displayChat (msg)
   }
   else
     message.textContent = text;
+
+  if (!msg.tags.id)
+    return;
+
+  const badges = p.querySelector ('.badges');
+  if (msg.tags.badges)
+    for (const badge of msg.tags.badges.split (','))
+    {
+      const img = document.createElement ('img');
+      img.src = badgeSrc[rid]?.[badge] ?? badgeSrc.global[badge] ?? '';
+      img.alt = `[${badge}]`;
+      badges.append (img);
+    }
+
+  extBadges (rid, uid, badges);
+
+  if (!conf.no.pronouns)
+  {
+    const pro = document.createElement ('span');
+    pro.classList.add ('pronouns');
+    getPronouns (msg.tags.login ?? sourceNick)
+      .then (text => { pro.textContent = text; })
+      .catch (() => { });
+    badges.append (pro);
+  }
+
+  extEmotes (rid, uid, message);
 
   const systemMsg = msg.tags['system-msg'];
   if (systemMsg)
@@ -273,8 +282,33 @@ function displayChat (msg)
     replyMsg.replaceChildren (...message.childNodes);
     message.replaceChildren (reply);
   }
+}
 
-  chat.prepend (p);
+function extBadges (rid, uid, badges)
+{
+}
+
+function extEmotes (rid, uid, message)
+{
+  for (const node of message.childNodes)
+    if (node.nodeType == Node.TEXT_NODE)
+      for (const word of node.nodeValue.matchAll (/\S+/g))
+      {
+        const emote = (emoteSrc.user[uid]?.[word[0]] ??
+                       emoteSrc.room[rid]?.[word[0]] ??
+                       emoteSrc.global[word[0]]);
+        if (!emote)
+          continue;
+        const img = document.createElement ('img');
+        img.classList.add (...emote.source);
+        img.src = emote.url;
+        img.alt = word[0];
+        const next = node.splitText (word.index - i);
+        next.nodeValue = next.nodeValue.slice (word[0].length);
+        node.after (img);
+        break;
+      }
+  message.normalize ();
 }
 
 function parse (msg)

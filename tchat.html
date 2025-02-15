@@ -73,7 +73,7 @@
 </label>
 
 <p>
-<input id=noBttv name=noBttv type=checkbox disabled />
+<input id=noBttv name=noBttv type=checkbox />
 <label for=noBttv>
   Disable BetterTTV
 </label>
@@ -123,7 +123,9 @@ function input() {
   if (form.elements.chatters.checked)
     p += '&chatters';
   if (form.elements.noPronouns.checked)
-    p += '&noPronouns';
+    p += '&no=pronouns';
+  if (form.elements.noBttv.checked)
+    p += '&no=bttv';
   const url = 'tchat/?' + p.slice(1);
   const a = document.createElement('a');
   a.href = url;

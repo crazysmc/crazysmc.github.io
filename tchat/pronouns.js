@@ -6,7 +6,7 @@ addEventListener ('load', initPronouns);
 
 function initPronouns ()
 {
-  if (conf.noPronouns)
+  if (conf.no.pronouns)
     return;
   fetch ('https://api.pronouns.alejo.io/v1/pronouns')
     .then (response => response.json ())
@@ -27,14 +27,12 @@ async function getPronouns (name)
 {
   const cached = pronouns.user[name];
   if (cached)
-  {
-    if (cached.text)
-      return cached.text;
-    throw new Error ();
-  }
+    return cached.text ?? '';
   pronouns.user[name] = { since: Date.now () };
   const response = await
     fetch (`https://api.pronouns.alejo.io/v1/users/${name}`);
+  if (!response.ok)
+    return '';
   const json = await response.json ();
   const main = pronouns.def[json.pronoun_id];
   const alt = pronouns.def[json.alt_pronoun_id];
