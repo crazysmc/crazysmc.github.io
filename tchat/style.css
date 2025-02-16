@@ -126,6 +126,10 @@ img {
   grid-row-start: 1;
 }
 
+/*
+ * BetterTTV effects and styles
+ */
+
 /* c! */ img.cursed   { filter: grayscale(1) brightness(0.7) contrast(2.5); }
 /* h! */ img.flip-x   { transform: scaleX(-1); }
 /* l! */ img.rotate-l { transform: rotate(-90deg); }
@@ -155,4 +159,8 @@ img.party.shake {
   80%  { translate:  2px  1px; }
   90%  { translate: -1px -2px; }
   100% { translate:  1px  0px; }
+}
+
+.nick.glow {
+  text-shadow: 0px 0px 1em color-mix(in srgb, currentcolor 80%, transparent);
 }

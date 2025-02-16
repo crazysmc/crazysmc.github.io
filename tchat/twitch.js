@@ -9,12 +9,18 @@ const conf = {
   badgeScale: ({ 2: 'image_url_2x',
                  3: 'image_url_4x' })[opt.get ('scale')] ?? 'image_url_1x',
   no: new Proxy (opt.getAll ('no'), { get: (arr, x) => arr.includes (x) }),
+  joinedRooms: [],
+  duration: (Intl.DurationFormat
+             ? new Intl.DurationFormat ('en', { style: 'narrow' })
+             : { format: (x) => `${x.seconds}s` }),
 };
 const ws = new ReconnectingWebSocket ('wss://irc-ws.chat.twitch.tv:443', null,
                                       { automaticOpen: false });
 const template = {};
-const badgeSrc = { global: {} };
+const twitchId = {};
+const badgeSrc = { global: {}, room: {}, user: {} };
 const emoteSrc = { global: {}, room: {}, user: {} };
+const userCosmetics = {};
 let chat;
 
 addEventListener ('load', init);
@@ -77,7 +83,7 @@ function receive (event)
         break;
 
       case 'ROOMSTATE':
-        joinedRoom (rid);
+        joinedRoom (rid, msg.params[0]);
         break;
 
       case 'PRIVMSG':
@@ -93,12 +99,12 @@ function receive (event)
           for (const del of chat.querySelectorAll
                (`.chat-line[data-room-id="${rid}"][data-user-id="${uid}"]`))
             del.remove ();
-          const duration = msg.tags['ban-duration'];
-          const action = duration
-            ? `timed out for ${duration}s`
+          const seconds = msg.tags['ban-duration'];
+          const action = seconds
+            ? 'timed out for ' + conf.duration.format ({ seconds })
             : 'permanently banned';
           msg.source = msg.params[1];
-          msg.params[1] = `has been ${action}`;
+          msg.params[1] = `has been ${action}.`;
         }
         else /* channel /clear */
         {
@@ -148,21 +154,23 @@ function reduceChat ()
       line.remove ();
 }
 
-function joinedRoom (rid)
+function joinedRoom (rid, channel)
 {
-  if (badgeSrc[rid])
+  if (twitchId[rid]?.channel)
     return;
-  badgeSrc[rid] = {};
+  (twitchId[rid] ??= {}).channel = channel;
+  badgeSrc.room[rid] = {};
   fetch (`https://smc.2ix.at/user.php?id=${rid}`)
     .then (response => response.json ())
     .then (json => {
       for (const set of json.data)
         for (const version of set.versions)
-          badgeSrc[rid][`${set.set_id}/${version.id}`] =
+          badgeSrc.room[rid][`${set.set_id}/${version.id}`] =
             version[conf.badgeScale];
     })
     .catch (console.error);
-  getUser (rid);
+  conf.joinedRooms.push (rid);
+  joinBttvRoom (rid);
 }
 
 function displayChat (msg)
@@ -190,6 +198,8 @@ function formatChat (msg, p)
   const nick = p.querySelector ('.nick');
   nick.style.color = msg.tags.color ?? '';
   nick.textContent = msg.tags['display-name'] || sourceNick;
+  if (uid)
+    extCosmetics (uid, nick);
 
   const message = p.querySelector ('.message');
   let text = msg.params[1];
@@ -238,7 +248,7 @@ function formatChat (msg, p)
     for (const badge of msg.tags.badges.split (','))
     {
       const img = document.createElement ('img');
-      img.src = badgeSrc[rid]?.[badge] ?? badgeSrc.global[badge] ?? '';
+      img.src = badgeSrc.room[rid]?.[badge] ?? badgeSrc.global[badge] ?? '';
       img.alt = `[${badge}]`;
       badges.append (img);
     }
@@ -285,8 +295,21 @@ function formatChat (msg, p)
   }
 }
 
+function extCosmetics (uid, nick)
+{
+  if (userCosmetics[uid])
+    nick.classList.add (...userCosmetics[uid]);
+}
+
 function extBadges (rid, uid, badges)
 {
+  for (const badge in badgeSrc.user[uid])
+  {
+    const img = document.createElement ('img');
+    img.src = badgeSrc.user[uid][badge];
+    img.alt = `[${badge}]`;
+    badges.append (img);
+  }
 }
 
 function extEmotes (rid, uid, message)
