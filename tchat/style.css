@@ -1,9 +1,10 @@
-@import url("https://lalten.github.io/lmweb/style/latinmodern-mono.css");
+@import url('https://fonts.googleapis.com/css2\
+?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 body {
   background-color: #18181b; /* OBS will remove the background */
   color: white;
-  font-family: "Latin Modern Mono", monospace;
+  font-family: 'Roboto', sans-serif;
   font-size: 18px;
   margin: 0px;
 }
@@ -59,8 +60,8 @@ img {
   padding: 0px 0.1em;
 }
 
-.badges:not(:has(img, .pronouns:not(:empty))),
-.pronouns:empty {
+.badges:not(:has(img, .pronouns.set)),
+.pronouns:not(.set) {
   display: none;
 }
 

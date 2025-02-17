@@ -260,7 +260,12 @@ function formatChat (msg, p)
     const pro = document.createElement ('span');
     pro.classList.add ('pronouns');
     getPronouns (msg.tags.login ?? sourceNick)
-      .then (text => { pro.textContent = text; })
+      .then (text => {
+        if (!text)
+          return;
+        pro.textContent = text;
+        pro.classList.add ('set');
+      })
       .catch (() => { });
     badges.append (pro);
   }
