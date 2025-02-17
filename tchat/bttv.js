@@ -60,7 +60,7 @@ function initBttv ()
 
 function rejoinBttvRooms ()
 {
-  for (const rid in conf.joinedRooms)
+  for (const rid of conf.joinedRooms)
     if (!sendBttvJoin (rid))
       break;
 }
