@@ -156,6 +156,8 @@ async function joinBttvRoom (rid)
   sendBttvJoin (rid);
   const response = await
     fetch (`https://api.betterttv.net/3/cached/users/twitch/${rid}`);
+  if (!response.ok)
+    return;
   const json = await response.json ();
   // TODO give json.bots the https://cdn.betterttv.net/tags/bot.png badge
   // problem: usernames instead of ids, no scaled badges

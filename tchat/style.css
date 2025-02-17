@@ -60,8 +60,7 @@ img {
   padding: 0px 0.1em;
 }
 
-.badges:not(:has(img, .pronouns.set)),
-.pronouns:not(.set) {
+.hidden {
   display: none;
 }
 

@@ -254,17 +254,20 @@ function formatChat (msg, p)
     }
 
   extBadges (rid, uid, badges);
+  if (badges.childNodes.length)
+    badges.classList.remove ('hidden');
 
   if (!conf.no.pronouns)
   {
     const pro = document.createElement ('span');
-    pro.classList.add ('pronouns');
+    pro.classList.add ('pronouns', 'hidden');
     getPronouns (msg.tags.login ?? sourceNick)
       .then (text => {
         if (!text)
           return;
         pro.textContent = text;
-        pro.classList.add ('set');
+        pro.classList.remove ('hidden');
+        badges.classList.remove ('hidden');
       })
       .catch (() => { });
     badges.append (pro);
