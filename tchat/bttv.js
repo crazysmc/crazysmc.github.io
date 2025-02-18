@@ -6,23 +6,24 @@ const bttv = {
                                  { automaticOpen: false }),
   emoteCode: {},
   special: {
-    'c!': ['prefix', 'cursed'],
-    'h!': ['prefix', 'flip-x'],
-    'l!': ['prefix', 'rotate-l'],
-    'p!': ['prefix', 'party'],
-    'r!': ['prefix', 'rotate-r'],
-    's!': ['prefix', 'shake'],
-    'v!': ['prefix', 'flip-y'],
-    'w!': ['prefix', 'grow-x'],
-    'z!': ['prefix', 'no-space'],
-    CandyCane: ['overlay'],
-    IceCold: ['overlay'],
-    ReinDeer: ['overlay'],
-    SantaHat: ['overlay'],
-    SoSnowy: ['overlay'],
-    TopHat: ['overlay'],
-    cvHazmat: ['overlay'],
-    cvMask: ['overlay'],
+    __proto__: null,
+    'c!': [ 'prefix', 'cursed' ],
+    'h!': [ 'prefix', 'flip-x' ],
+    'l!': [ 'prefix', 'rotate-l' ],
+    'p!': [ 'prefix', 'party' ],
+    'r!': [ 'prefix', 'rotate-r' ],
+    's!': [ 'prefix', 'shake' ],
+    'v!': [ 'prefix', 'flip-y' ],
+    'w!': [ 'prefix', 'grow-x' ],
+    'z!': [ 'prefix', 'no-space' ],
+    CandyCane: [ 'overlay' ],
+    IceCold:   [ 'overlay' ],
+    ReinDeer:  [ 'overlay' ],
+    SantaHat:  [ 'overlay' ],
+    SoSnowy:   [ 'overlay' ],
+    TopHat:    [ 'overlay' ],
+    cvHazmat:  [ 'overlay' ],
+    cvMask:    [ 'overlay' ],
   },
 };
 
@@ -41,19 +42,14 @@ function initBttv ()
     .then (response => response.json ())
     .then (json => {
       for (const emote of json)
-      {
-        if (bttv.special[emote.code])
-          emote.style = bttv.special[emote.code];
-        addBttvEmote (emote, emoteSrc.global, 'global');
-      }
+        addBttvEmote (emote, conf.emotes.global, 'global');
     })
     .catch (console.error);
   fetch ('https://api.betterttv.net/3/cached/badges/twitch')
     .then (response => response.json ())
     .then (json => {
-      for (const user of json)
-        (badgeSrc.user[user.providerId] ??= {})[`bttv/${user.badge.type}`] =
-          user.badge.svg;
+      for (const { providerId: uid, badge: { type, svg } } of json)
+        (conf.badges.user[uid] ??= {})[`bttv/${type}`] = svg;
     })
     .catch (console.error);
 }
@@ -88,28 +84,28 @@ function receiveBttv (event)
   switch (json.name)
   {
     case 'emote_create':
-      emoteSrc.room[rid] ??= {};
-      addBttvEmote (emote, emoteSrc.room[rid], 'room');
+      conf.emotes.room[rid] ??= { __proto__: null };
+      addBttvEmote (emote, conf.emotes.room[rid], 'room');
       displayBttvAction (rid, json.name, `added emote ${emote.code}.`);
       break;
 
     case 'emote_update':
       bttv.emoteCode[emote.id] = emote.code;
-      if (emoteSrc.room[rid]?.[old]?.source[0] == 'bttv')
+      if (conf.emotes.room[rid]?.[old]?.source[0] == 'bttv')
       {
-        emoteSrc.room[rid][emote.code] = emoteSrc.room[rid][old];
-        delete emoteSrc.room[rid][old];
+        conf.emotes.room[rid][emote.code] = conf.emotes.room[rid][old];
+        delete conf.emotes.room[rid][old];
       }
       else
-        addBttvEmote (emote, emoteSrc.room[rid], 'room');
+        addBttvEmote (emote, conf.emotes.room[rid], 'room');
       displayBttvAction (rid, json.name,
                          `renamed emote ${old} -> ${emote.code}.`);
       break;
 
     case 'emote_delete':
       delete bttv.emoteCode[json.data.emoteId];
-      if (emoteSrc.room[rid]?.[old]?.source[0] == 'bttv')
-        delete emoteSrc.room[rid][old];
+      if (conf.emotes.room[rid]?.[old]?.source[0] == 'bttv')
+        delete conf.emotes.room[rid][old];
       displayBttvAction (rid, json.name, `removed emote ${old}.`);
       break;
 
@@ -124,55 +120,61 @@ function displayBttvAction (rid, command, action)
   displayChat ({ tags: {},
                  source: 'betterttv.com',
                  command,
-                 params: [ twitchId[rid].channel, action ] });
+                 params: [ conf.badges.room[rid].channel, action ] });
 }
 
 function updateBttvUser (data)
 {
-  console.debug (data);
   const uid = data.providerId;
+  console.debug (conf.chat.querySelector (`.chat-line[data-user-id="${uid}"]`));
+  console.debug (data);
   if (data.badge)
-    (badgeSrc.user[uid] ??= {})['bttv/pro'] = data.badge.url;
+    (conf.badges.user[uid] ??= {})['bttv/pro'] = data.badge.url;
   else
-    delete badgeSrc.user[uid]?.['bttv/pro'];
+    delete conf.badges.user[uid]?.['bttv/pro'];
   if (data.pro)
   {
-    emoteSrc.user[uid] ??= {};
+    conf.emotes.user[uid] ??= { __proto__: null };
     for (const emote of data.emotes)
-      addBttvEmote (emote, emoteSrc.user[uid], 'personal');
+      addBttvEmote (emote, conf.emotes.user[uid], 'personal');
   }
-  else if (emoteSrc.user[uid])
-    for (const emote of emoteSrc.user[uid])
+  else if (conf.emotes.user[uid])
+    for (const emote of conf.emotes.user[uid])
       if (emote.source[0] == 'bttv')
-        delete emoteSrc.user[uid][emote];
+        delete conf.emotes.user[uid][emote];
   if (data.glow)
-    (userCosmetics[uid] ??= []).push ('glow');
+    (conf.cosmetics[uid] ??= []).push ('glow');
 }
+
+if (!conf.no.bttv)
+  conf.onJoinRoom.push (joinBttvRoom);
 
 async function joinBttvRoom (rid)
 {
-  if (conf.no.bttv)
-    return;
   sendBttvJoin (rid);
   const response = await
     fetch (`https://api.betterttv.net/3/cached/users/twitch/${rid}`);
-  if (!response.ok)
-    return;
   const json = await response.json ();
   // TODO give json.bots the https://cdn.betterttv.net/tags/bot.png badge
   // problem: usernames instead of ids, no scaled badges
-  emoteSrc.room[rid] ??= {};
+  conf.emotes.room[rid] ??= { __proto__: null };
   for (const emote of json.channelEmotes)
-    addBttvEmote (emote, emoteSrc.room[rid], 'room');
+    addBttvEmote (emote, conf.emotes.room[rid], 'room');
   for (const emote of json.sharedEmotes)
-    addBttvEmote (emote, emoteSrc.room[rid], 'room');
+    addBttvEmote (emote, conf.emotes.room[rid], 'room');
 }
 
-function addBttvEmote (emote, dest, scope)
+function addBttvEmote ({ id, code }, dest, scope)
 {
-  emote.source = ['bttv', scope];
+  const emote = {
+    id,
+    code,
+    source: [ 'bttv', scope ]
+  };
+  if (bttv.special[code])
+    emote.style = bttv.special[emote.code];
   emote.url = 'https://cdn.betterttv.net/emote/' +
-    `${emote.id}/${bttv.emoteStyle}${conf.emoteScale}x.webp`;
-  dest[emote.code] = emote
-  bttv.emoteCode[emote.id] = emote.code;
+    `${id}/${bttv.emoteStyle}${conf.emoteScale}x.webp`;
+  dest[code] = emote;
+  bttv.emoteCode[id] = code;
 }

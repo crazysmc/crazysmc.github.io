@@ -2,6 +2,8 @@
 
 const opt = new URLSearchParams (location.search);
 const conf = {
+  ws: new ReconnectingWebSocket ('wss://irc-ws.chat.twitch.tv:443', null,
+                                 { automaticOpen: false }),
   nick: 'justinfan64537', // same as anonymous chatterino
   timeout: parseInt (opt.get ('time'), 10) * 1000,
   emoteStyle: opt.has ('static') ? 'static' : 'default',
@@ -9,58 +11,56 @@ const conf = {
   badgeScale: ({ 2: 'image_url_2x',
                  3: 'image_url_4x' })[opt.get ('scale')] ?? 'image_url_1x',
   no: new Proxy (opt.getAll ('no'), { get: (arr, x) => arr.includes (x) }),
-  joinedRooms: [],
   duration: (Intl.DurationFormat
              ? new Intl.DurationFormat ('en', { style: 'narrow' })
              : { format: (x) => `${x.seconds}s` }),
+
+  template: {},
+  joinedRooms: [],
+  onJoinRoom: [],
+  badges: { global: {}, room: {}, user: {} },
+  emotes: { global: { __proto__: null }, room: {}, user: {} },
+  cosmetics: {},
 };
-const ws = new ReconnectingWebSocket ('wss://irc-ws.chat.twitch.tv:443', null,
-                                      { automaticOpen: false });
-const template = {};
-const twitchId = {};
-const badgeSrc = { global: {}, room: {}, user: {} };
-const emoteSrc = { global: {}, room: {}, user: {} };
-const userCosmetics = {};
-let chat;
 
 addEventListener ('load', init);
 
 function init ()
 {
-  chat = document.getElementById ('chat-container');
-  const t = document.getElementById ('chat-template');
-  template.chatLine = t.content.querySelector ('.chat-line');
-  template.reply = t.content.querySelector ('.reply');
+  conf.chat = document.getElementById ('chat-container');
+  const template = document.getElementById ('chat-template');
+  conf.template.chatLine = template.content.querySelector ('.chat-line');
+  conf.template.reply = template.content.querySelector ('.reply');
 
   fetch ('https://smc.2ix.at/global.php')
     .then (response => response.json ())
     .then (json => {
       for (const set of json.data)
         for (const version of set.versions)
-          badgeSrc.global[`${set.set_id}/${version.id}`] =
+          conf.badges.global[`${set.set_id}/${version.id}`] =
             version[conf.badgeScale];
     })
     .catch (console.error);
 
-  ws.addEventListener ('open', login);
-  ws.addEventListener ('message', receive);
-  ws.open ();
-  addEventListener ('beforeunload', () => { ws.close (); });
+  conf.ws.addEventListener ('open', login);
+  conf.ws.addEventListener ('message', receive);
+  conf.ws.open ();
+  addEventListener ('beforeunload', () => { conf.ws.close (); });
   setInterval (reduceChat, 200);
 }
 
 function login ()
 {
-  ws.send (`NICK ${conf.nick}\r\n`);
+  conf.ws.send (`NICK ${conf.nick}\r\n`);
   const mem = opt.has ('chatters') ? ' twitch.tv/membership' : '';
-  ws.send (`CAP REQ :twitch.tv/tags twitch.tv/commands${mem}\r\n`);
+  conf.ws.send (`CAP REQ :twitch.tv/tags twitch.tv/commands${mem}\r\n`);
   const join = opt.getAll ('join');
   if (join.length)
   {
-    ws.send (`JOIN #${join.join (',#')}\r\n`);
-    document.body.dataset.join = join.length;
+    conf.ws.send (`JOIN #${join.join (',#')}\r\n`);
+    document.documentElement.dataset.join = join.length;
   }
-  document.body.dataset.scale = conf.emoteScale;
+  document.documentElement.dataset.scale = conf.emoteScale;
 }
 
 function receive (event)
@@ -74,11 +74,11 @@ function receive (event)
     switch (msg.command)
     {
       case 'PING':
-        ws.send (`PONG :${msg.params[0]}\r\n`);
+        conf.ws.send (`PONG :${msg.params[0]}\r\n`);
         break;
 
       case 'RECONNECT':
-        ws.refresh ();
+        conf.ws.refresh ();
         login ();
         break;
 
@@ -96,7 +96,7 @@ function receive (event)
         const uid = msg.tags['target-user-id'];
         if (uid) /* user timeout or ban */
         {
-          for (const del of chat.querySelectorAll
+          for (const del of conf.chat.querySelectorAll
                (`.chat-line[data-room-id="${rid}"][data-user-id="${uid}"]`))
             del.remove ();
           const seconds = msg.tags['ban-duration'];
@@ -108,7 +108,7 @@ function receive (event)
         }
         else /* channel /clear */
         {
-          for (const del of chat.querySelectorAll
+          for (const del of conf.chat.querySelectorAll
                (`.chat-line[data-room-id="${rid}"]`))
             del.remove ();
           msg.source = '';
@@ -128,14 +128,14 @@ function receive (event)
         if (!msg.source.startsWith (`${conf.nick}!`))
         {
           msg.params[1] = msg.command == 'JOIN' ? ' joined' : ' parted';
-          if (chat.firstChild?.classList.contains (msg.command))
+          if (conf.chat.firstChild?.classList.contains (msg.command))
           {
-            const channel = chat.firstChild?.querySelector ('.channel');
-            const nick = chat.firstChild?.querySelector ('.nick');
+            const channel = conf.chat.firstChild?.querySelector ('.channel');
+            const nick = conf.chat.firstChild?.querySelector ('.nick');
             if (channel.textContent == msg.params[0])
             {
               msg.source = `${nick.textContent}, ${msg.source}`;
-              chat.firstChild.remove ();
+              conf.chat.firstChild.remove ();
             }
           }
           displayChat (msg);
@@ -148,7 +148,7 @@ function receive (event)
 function reduceChat ()
 {
   const oldest = Date.now () - conf.timeout;
-  for (const line of chat.childNodes)
+  for (const line of conf.chat.childNodes)
     if (line.offsetTop + line.offsetHeight < 0 ||
         oldest && parseInt (line.dataset.tmiSentTs, 10) < oldest)
       line.remove ();
@@ -156,34 +156,40 @@ function reduceChat ()
 
 function joinedRoom (rid, channel)
 {
-  if (twitchId[rid]?.channel)
+  if (conf.badges.room[rid])
     return;
-  (twitchId[rid] ??= {}).channel = channel;
-  badgeSrc.room[rid] = {};
+  conf.badges.room[rid] = { channel };
   fetch (`https://smc.2ix.at/user.php?id=${rid}`)
     .then (response => response.json ())
     .then (json => {
       for (const set of json.data)
         for (const version of set.versions)
-          badgeSrc.room[rid][`${set.set_id}/${version.id}`] =
+          conf.badges.room[rid][`${set.set_id}/${version.id}`] =
             version[conf.badgeScale];
     })
     .catch (console.error);
   conf.joinedRooms.push (rid);
-  joinBttvRoom (rid);
+  for (const callback of conf.onJoinRoom)
+    callback (rid)
+      .catch (console.error);
 }
 
 function displayChat (msg)
 {
-  const p = template.chatLine.cloneNode (true);
+  const p = conf.template.chatLine.cloneNode (true);
   for (const key in msg.tags)
     p.setAttribute ('data-' + key, msg.tags[key]);
   if (msg.tags.id)
     p.id = msg.tags.id;
   p.classList.add (msg.command);
-
-  formatChat (msg, p);
-  chat.prepend (p);
+  try
+  {
+    formatChat (msg, p);
+  }
+  finally
+  {
+    conf.chat.prepend (p);
+  }
 }
 
 function formatChat (msg, p)
@@ -218,7 +224,7 @@ function formatChat (msg, p)
       for (const range of ranges.split (','))
       {
         const [start, end] = range.split ('-').map (x => parseInt (x, 10));
-        const img = emoteImage ();
+        const img = newEmote ();
         img.classList.add ('native');
         img.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' +
           `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}.0`;
@@ -248,7 +254,8 @@ function formatChat (msg, p)
     for (const badge of msg.tags.badges.split (','))
     {
       const img = document.createElement ('img');
-      img.src = badgeSrc.room[rid]?.[badge] ?? badgeSrc.global[badge] ?? '';
+      img.src = (conf.badges.room[rid]?.[badge] ??
+                 conf.badges.global[badge] ?? '');
       img.alt = `[${badge}]`;
       badges.append (img);
     }
@@ -289,10 +296,11 @@ function formatChat (msg, p)
                   msg.tags['reply-parent-user-login'];
   if (replyTo)
   {
-    const reply = template.reply.cloneNode (true);
+    const reply = conf.template.reply.cloneNode (true);
     const nick = reply.querySelector ('.nick');
     const uid = msg.tags['reply-parent-user-id'];
-    const pn = chat.querySelector (`.chat-line[data-user-id="${uid}"] .nick`);
+    const pn = (conf.chat.querySelector
+                (`.chat-line[data-user-id="${uid}"] .nick`));
     nick.style.color = pn?.style.color;
     nick.textContent = replyTo;
     const pm = reply.querySelector ('.message');
@@ -305,16 +313,16 @@ function formatChat (msg, p)
 
 function extCosmetics (uid, nick)
 {
-  if (userCosmetics[uid])
-    nick.classList.add (...userCosmetics[uid]);
+  if (conf.cosmetics[uid])
+    nick.classList.add (...conf.cosmetics[uid]);
 }
 
 function extBadges (rid, uid, badges)
 {
-  for (const badge in badgeSrc.user[uid])
+  for (const badge in conf.badges.user[uid])
   {
     const img = document.createElement ('img');
-    img.src = badgeSrc.user[uid][badge];
+    img.src = conf.badges.user[uid][badge];
     img.alt = `[${badge}]`;
     badges.append (img);
   }
@@ -326,12 +334,12 @@ function extEmotes (rid, uid, message)
     if (node.nodeType == Node.TEXT_NODE)
       for (const word of node.nodeValue.matchAll (/\S+/g))
       {
-        const emote = (emoteSrc.user[uid]?.[word[0]] ??
-                       emoteSrc.room[rid]?.[word[0]] ??
-                       emoteSrc.global[word[0]]);
+        const emote = (conf.emotes.user[uid]?.[word[0]] ??
+                       conf.emotes.room[rid]?.[word[0]] ??
+                       conf.emotes.global[word[0]]);
         if (!emote)
           continue;
-        const img = emoteImage ();
+        const img = newEmote ();
         img.classList.add (...emote.source);
         img.src = emote.url;
         img.alt = word[0];
@@ -388,10 +396,11 @@ function extEmotes (rid, uid, message)
   }
 }
 
-function emoteImage ()
+function newEmote ()
 {
   const img = document.createElement ('img');
   img.onload = () => {
+    // TODO fix rotate-* of wide emotes
     if (!img.classList.contains ('grow-x'))
       return;
     img.style.height = `${img.naturalHeight}px`;

@@ -1,23 +1,26 @@
 @import url('https://fonts.googleapis.com/css2\
 ?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
+html {
+  font-size: 18px;
+}
+
+html[data-scale="2"] {
+  font-size: 36px;
+}
+
+html[data-scale="3"] {
+  font-size: 72px;
+}
+
 body {
   background-color: #18181b; /* OBS will remove the background */
   color: white;
   font-family: 'Roboto', sans-serif;
-  font-size: 18px;
-  margin: 0px;
+  margin: 0;
 }
 
-body[data-scale="2"] {
-  font-size: 36px;
-}
-
-body[data-scale="3"] {
-  font-size: 72px;
-}
-
-body[data-join="1"] .channel {
+html[data-join="1"] .channel {
   display: none;
 }
 
@@ -31,9 +34,9 @@ p,
 .reply i {
   align-items: baseline;
   display: flex;
-  gap: 0px 0.4em;
+  gap: 0 0.4em;
   justify-content: start;
-  margin: 0.1em 0px;
+  margin: 0.1em 0;
 }
 
 img {
@@ -46,6 +49,7 @@ img {
 
 .badges img {
   font-size: 0.5em;
+  max-height: 1rem;
 }
 
 .badges img + .pronouns,
@@ -54,10 +58,10 @@ img {
 }
 
 .pronouns {
-  border: 1px solid;
+  border: 0.06em solid;
   border-radius: 0.4em;
   font-size: 0.8em;
-  padding: 0px 0.1em;
+  padding: 0 0.1em;
 }
 
 .hidden {
@@ -130,37 +134,100 @@ img {
  * BetterTTV effects and styles
  */
 
-/* c! */ img.cursed   { filter: grayscale(1) brightness(0.7) contrast(2.5); }
-/* h! */ img.flip-x   { transform: scaleX(-1); }
-/* l! */ img.rotate-l { transform: rotate(-90deg); }
-/* p! */ img.party    { animation: party 1.5s linear infinite; }
-/* r! */ img.rotate-r { transform: rotate(90deg); }
-/* s! */ img.shake    { animation: shake 500ms step-start infinite; }
-/* v! */ img.flip-y   { transform: scaleY(-1); }
+img.cursed   { filter: grayscale(1) brightness(0.7) contrast(2.5); }
+img.flip-x   { transform: scaleX(-1); }
+img.flip-y   { transform: scaleY(-1); }
+img.rotate-l { transform: rotate(-90deg); }
+img.rotate-r { transform: rotate( 90deg); }
+img.party    { animation: party 1.5s linear     infinite; }
+img.shake    { animation: shake 0.5s step-start infinite; }
 
 img.party.shake {
   animation: party 1.5s linear infinite, shake 500ms step-start infinite;
 }
 
 @keyframes party {
-  0%   { filter: sepia(0.5) hue-rotate(0deg)   saturate(2.5); }
+  0%   { filter: sepia(0.5) hue-rotate(  0deg) saturate(2.5); }
   100% { filter: sepia(0.5) hue-rotate(360deg) saturate(2.5); }
 }
 
 @keyframes shake {
-  0%   { translate:  0px  1px; }
-  10%  { translate:  2px  0px; }
-  20%  { translate:  1px -2px; }
-  30%  { translate: -2px  1px; }
-  40%  { translate:  0px -1px; }
-  50%  { translate:  2px  2px; }
-  60%  { translate: -1px -1px; }
-  70%  { translate: -2px  2px; }
-  80%  { translate:  2px  1px; }
-  90%  { translate: -1px -2px; }
-  100% { translate:  1px  0px; }
+  0%   { transform: translate( 0     ,  0.06em); }
+  10%  { transform: translate( 0.12em,  0     ); }
+  20%  { transform: translate( 0.06em, -0.12em); }
+  30%  { transform: translate(-0.12em,  0.06em); }
+  40%  { transform: translate( 0     , -0.06em); }
+  50%  { transform: translate( 0.12em,  0.12em); }
+  60%  { transform: translate(-0.06em, -0.06em); }
+  70%  { transform: translate(-0.12em,  0.12em); }
+  80%  { transform: translate( 0.12em,  0.06em); }
+  90%  { transform: translate(-0.06em, -0.12em); }
+  100% { transform: translate( 0.06em,  0     ); }
 }
 
 .nick.glow {
-  text-shadow: 0px 0px 1em color-mix(in srgb, currentcolor 80%, transparent);
+  text-shadow: 0 0 1em color-mix(in srgb, currentcolor 80%, transparent);
+}
+
+/*
+ * FrankerFaceZ effects and styles
+ */
+
+img.rainbow     { animation: rainbow     2s   linear infinite; }
+img.hyper-shake { animation: hyper-shake 0.1s linear infinite; }
+img.jam         { animation: jam         0.6s linear infinite; }
+img.bounce      { animation: bounce      0.5s linear infinite; }
+img.hyper-red   {
+  filter: brightness(0.2) sepia(1) brightness(2.2) contrast(3) saturate(8);
+}
+
+@keyframes rainbow {
+  0%   { filter: hue-rotate(  0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes hyper-shake {
+  0%   { transform: translate( 0.06em,  0.06em); }
+  10%  { transform: translate(-0.06em, -0.12em); }
+  20%  { transform: translate(-0.18em,  0     ); }
+  30%  { transform: translate( 0.18em,  0.12em); }
+  40%  { transform: translate( 0.06em, -0.06em); }
+  50%  { transform: translate(-0.06em,  0.12em); }
+  60%  { transform: translate(-0.18em,  0.06em); }
+  70%  { transform: translate( 0.18em,  0.06em); }
+  80%  { transform: translate(-0.06em, -0.06em); }
+  90%  { transform: translate( 0.06em,  0.12em); }
+  100% { transform: translate( 0.06em, -0.12em); }
+}
+
+@keyframes jam {
+  0%   { transform: translate( -0.12em, -0.12em) rotate(-6deg); }
+  10%  { transform: translate( -0.09em, -0.12em) rotate(-8deg); }
+  20%  { transform: translate(  0.06em, -0.09em) rotate(-8deg); }
+  30%  { transform: translate(  0.18em,  0.15em) rotate(-6deg); }
+  40%  { transform: translate(  0.18em,  0.24em) rotate(-2deg); }
+  50%  { transform: translate(  0.12em,  0.24em) rotate( 3deg); }
+  60%  { transform: translate(  0.06em,  0.24em) rotate( 3deg); }
+  70%  { transform: translate( -0.03em,  0.18em) rotate( 2deg); }
+  80%  { transform: translate(-0.075em,  0.06em) rotate( 0deg); }
+  90%  { transform: translate(-0.105em, -0.03em) rotate(-2deg); }
+  100% { transform: translate( -0.12em, -0.12em) rotate(-5deg); }
+}
+
+@keyframes bounce {
+  0%      { transform: scale( 0.8, 1  ); }
+  10%     { transform: scale( 0.9, 0.8); }
+  20%     { transform: scale( 1  , 0.4); }
+  25%     { transform: scale( 1.2, 0.3); }
+  25.001% { transform: scale(-1.2, 0.3); }
+  30%     { transform: scale(-1  , 0.4); }
+  40%     { transform: scale(-0.9, 0.8); }
+  50%     { transform: scale(-0.8, 1  ); }
+  60%     { transform: scale(-0.9, 0.8); }
+  70%     { transform: scale(-1  , 0.4); }
+  75%     { transform: scale(-1.2, 0.3); }
+  75.001% { transform: scale( 1.2, 0.3); }
+  80%     { transform: scale( 1  , 0.4); }
+  90%     { transform: scale( 0.9, 0.8); }
+  100%    { transform: scale( 0.8, 1  ); }
 }
