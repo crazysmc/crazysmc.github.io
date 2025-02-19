@@ -212,12 +212,9 @@ function formatChat (msg, p)
   channel.textContent = msg.params[0];
 
   const nick = p.querySelector ('.nick');
-  const color = msg.tags.color ?? '';
-  const dark = darkColor (color);
-  conf.colors[uid] = { color, dark, since: Date.now () };
+  const color = readableColor (msg.tags.color) ?? '';
+  conf.colors[uid] = { color, since: Date.now () };
   nick.style.color = color;
-  if (dark)
-    nick.classList.add ('dark');
   nick.textContent = msg.tags['display-name'] || sourceNick;
   if (uid)
     extCosmetics (uid, nick);
@@ -315,8 +312,6 @@ function formatChat (msg, p)
     const nick = reply.querySelector ('.nick');
     const uid = msg.tags['reply-parent-user-id'];
     nick.style.color = conf.colors[uid]?.color;
-    if (conf.colors[uid]?.dark)
-      nick.classList.add ('dark');
     nick.textContent = replyTo;
     const pm = reply.querySelector ('.message');
     pm.textContent = msg.tags['reply-parent-msg-body'];
@@ -326,13 +321,15 @@ function formatChat (msg, p)
   }
 }
 
-function darkColor (color)
+function readableColor (color)
 {
-  const match = color.match (/^#(..)(..)(..)$/);
+  const match = color?.match (/^#(..)(..)(..)$/);
   if (!match)
-    return false;
+    return color;
   const [ r, g, b ] = [ 1, 2, 3 ].map (i => parseInt (match[i], 16));
-  return r * 299 + g * 587 + b * 114 <= 50000;
+  return r * 299 + g * 587 + b * 114 <= 50000
+    ? `hsl(from ${color} h s calc(l + 30))`
+    : color;
 }
 
 function extCosmetics (uid, nick)
