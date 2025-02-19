@@ -59,6 +59,8 @@ async function joinFfzRoom (rid)
 {
   const response = await
     fetch (`https://api.frankerfacez.com/v1/room/id/${rid}`);
+  if (response.status == 404)
+    return;
   const json = await response.json ();
   conf.emotes.room[rid] ??= { __proto__: null };
   for (const emote of json.sets[json.room.set].emoticons)

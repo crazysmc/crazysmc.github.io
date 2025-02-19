@@ -18,6 +18,7 @@ const conf = {
   template: {},
   joinedRooms: [],
   onJoinRoom: [],
+  colors: {},
   badges: { global: {}, room: {}, user: {} },
   emotes: { global: { __proto__: null }, room: {}, user: {} },
   cosmetics: {},
@@ -47,6 +48,7 @@ function init ()
   conf.ws.open ();
   addEventListener ('beforeunload', () => { conf.ws.close (); });
   setInterval (reduceChat, 200);
+  setInterval (reduceColors, 300000);
 }
 
 function login ()
@@ -154,6 +156,14 @@ function reduceChat ()
       line.remove ();
 }
 
+function reduceColors ()
+{
+  const oldest = Date.now () - 900000;
+  for (const uid in conf.colors)
+    if (conf.colors[uid].since < oldest)
+      delete conf.colors[uid];
+}
+
 function joinedRoom (rid, channel)
 {
   if (conf.badges.room[rid])
@@ -202,7 +212,12 @@ function formatChat (msg, p)
   channel.textContent = msg.params[0];
 
   const nick = p.querySelector ('.nick');
-  nick.style.color = msg.tags.color ?? '';
+  const color = msg.tags.color ?? '';
+  const dark = darkColor (color);
+  conf.colors[uid] = { color, dark, since: Date.now () };
+  nick.style.color = color;
+  if (dark)
+    nick.classList.add ('dark');
   nick.textContent = msg.tags['display-name'] || sourceNick;
   if (uid)
     extCosmetics (uid, nick);
@@ -299,9 +314,9 @@ function formatChat (msg, p)
     const reply = conf.template.reply.cloneNode (true);
     const nick = reply.querySelector ('.nick');
     const uid = msg.tags['reply-parent-user-id'];
-    const pn = (conf.chat.querySelector
-                (`.chat-line[data-user-id="${uid}"] .nick`));
-    nick.style.color = pn?.style.color;
+    nick.style.color = conf.colors[uid]?.color;
+    if (conf.colors[uid]?.dark)
+      nick.classList.add ('dark');
     nick.textContent = replyTo;
     const pm = reply.querySelector ('.message');
     pm.textContent = msg.tags['reply-parent-msg-body'];
@@ -309,6 +324,15 @@ function formatChat (msg, p)
     replyMsg.replaceChildren (...message.childNodes);
     message.replaceChildren (reply);
   }
+}
+
+function darkColor (color)
+{
+  const match = color.match (/^#(..)(..)(..)$/);
+  if (!match)
+    return false;
+  const [ r, g, b ] = [ 1, 2, 3 ].map (i => parseInt (match[i], 16));
+  return r * 299 + g * 587 + b * 114 <= 50000;
 }
 
 function extCosmetics (uid, nick)

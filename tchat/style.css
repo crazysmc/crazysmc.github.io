@@ -72,6 +72,10 @@ img {
   font-weight: bold;
 }
 
+.nick.dark {
+  filter: brightness(1.3);
+}
+
 .USERNOTICE {
   background-color: #c466ff64;
 }

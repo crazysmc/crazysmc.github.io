@@ -1,6 +1,6 @@
 'use strict';
 
-const pronouns = { def: {}, user: {} };
+const pronouns = { def: {}, user: { __proto__: null } };
 
 addEventListener ('load', initPronouns);
 
@@ -18,7 +18,7 @@ function initPronouns ()
 function reducePronouns ()
 {
   const oldest = Date.now () - 900000;
-  for (const name of Object.keys (pronouns.user))
+  for (const name in pronouns.user)
     if (pronouns.user[name].since < oldest)
       delete pronouns.user[name];
 }
