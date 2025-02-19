@@ -319,8 +319,16 @@ function extCosmetics (uid, nick)
 
 function extBadges (rid, uid, badges)
 {
-  for (const badge in conf.badges.user[uid])
+  for (const badge in { ...conf.badges.user[uid],
+                        ...conf.badges.room[rid].user?.[uid] })
   {
+    let mod;
+    if (badge == 'ffz/2' &&
+        (mod = badges.querySelector ('img[alt="[moderator/1]"]')))
+    {
+      mod.classList.add ('ffz-bot');
+      continue;
+    }
     const img = document.createElement ('img');
     img.src = conf.badges.user[uid][badge];
     img.alt = `[${badge}]`;

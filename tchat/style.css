@@ -231,3 +231,17 @@ img.hyper-red   {
   90%     { transform: scale( 0.9, 0.8); }
   100%    { transform: scale( 0.8, 1  ); }
 }
+
+.badges img.ffz-bot {
+  background-color: #00ad03;
+  border-radius: 0.2em;
+  content: url(https://cdn.frankerfacez.com/badge/2/1);
+}
+
+html[data-scale="2"] .badges img.ffz-bot {
+  content: url(https://cdn.frankerfacez.com/badge/2/2);
+}
+
+html[data-scale="3"] .badges img.ffz-bot {
+  content: url(https://cdn.frankerfacez.com/badge/2/4);
+}

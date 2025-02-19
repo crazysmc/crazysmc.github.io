@@ -22,6 +22,10 @@ function initFfz ()
 {
   if (conf.no.ffz)
     return;
+  const style = document.createElement ('style');
+  document.head.append (style);
+  ffz.css = style.sheet;
+
   fetch ('https://api.frankerfacez.com/v1/set/global/ids')
     .then (response => response.json ())
     .then (json => {
@@ -56,10 +60,30 @@ async function joinFfzRoom (rid)
   const response = await
     fetch (`https://api.frankerfacez.com/v1/room/id/${rid}`);
   const json = await response.json ();
-  // TODO user_badge_ids, vip_badge, mod_urls
   conf.emotes.room[rid] ??= { __proto__: null };
   for (const emote of json.sets[json.room.set].emoticons)
     addFfzEmote (emote, conf.emotes.room[rid], 'room');
+  const roomUrl = 'https://cdn.frankerfacez.com/room-badge/';
+  if (json.room.vip_badge)
+  {
+    const rule =
+      `.chat-line[data-room-id="${rid}"] .badges img[alt="[vip/1]"]
+      { content: url(${roomUrl}vip/id/${rid}/${ffz.scale}); }`;
+    ffz.css.insertRule (rule, ffz.css.cssRules.length);
+  }
+  if (json.room.mod_urls)
+  {
+    const rule =
+      `.chat-line[data-room-id="${rid}"] .badges
+          img[alt="[moderator/1]"]:not(.ffz-bot)
+      { content: url(${roomUrl}mod/id/${rid}/${ffz.scale}/rounded); }`;
+    ffz.css.insertRule (rule, ffz.css.cssRules.length);
+  }
+  conf.badges.room[rid].user ??= {};
+  for (const id in json.room.user_badge_ids)
+    for (const uid of json.room.user_badge_ids[id])
+      (conf.badges.room[rid].user[uid] ??= {})[`ffz/${id}`] =
+        `https://cdn.frankerfacez.com/badge/${id}/${ffz.scale}/rounded`;
 }
 
 function addFfzEmote (ffzEmote, dest, scope)

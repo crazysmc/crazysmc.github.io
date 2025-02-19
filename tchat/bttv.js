@@ -126,10 +126,24 @@ function displayBttvAction (rid, command, action)
 function updateBttvUser (data)
 {
   const uid = data.providerId;
-  console.debug (conf.chat.querySelector (`.chat-line[data-user-id="${uid}"]`));
-  console.debug (data);
   if (data.badge)
+  {
     (conf.badges.user[uid] ??= {})['bttv/pro'] = data.badge.url;
+    const badges = (conf.chat.querySelector
+                    (`.chat-line[data-user-id="${uid}"] .badges`));
+    if (badges && !badges.querySelector ('img[alt="[bttv/pro]"]'))
+    {
+      const img = document.createElement ('img');
+      img.src = data.badge.url;
+      img.alt = '[bttv/pro]';
+      const pronouns = badges.querySelector ('.pronouns');
+      if (pronouns)
+        pronouns.before (img);
+      else
+        badges.append (img);
+      badges.classList.remove ('hidden');
+    }
+  }
   else
     delete conf.badges.user[uid]?.['bttv/pro'];
   if (data.pro)
@@ -143,7 +157,11 @@ function updateBttvUser (data)
       if (emote.source[0] == 'bttv')
         delete conf.emotes.user[uid][emote];
   if (data.glow)
+  {
     (conf.cosmetics[uid] ??= []).push ('glow');
+    conf.chat.querySelector (`.chat-line[data-user-id="${uid}"] .nick`)
+      ?.classList.add ('glow');
+  }
 }
 
 if (!conf.no.bttv)
