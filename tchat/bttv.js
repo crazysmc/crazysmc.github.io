@@ -187,7 +187,6 @@ async function joinBttvRoom (rid)
 function addBttvEmote ({ id, code }, dest, scope)
 {
   const emote = {
-    id,
     code,
     source: [ 'bttv', scope ]
   };

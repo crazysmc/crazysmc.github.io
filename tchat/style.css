@@ -39,6 +39,7 @@ p,
   margin: 0.1em 0;
 }
 
+.emote-stack,
 img {
   vertical-align: middle;
 }

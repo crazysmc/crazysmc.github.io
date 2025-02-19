@@ -91,7 +91,6 @@ async function joinFfzRoom (rid)
 function addFfzEmote (ffzEmote, dest, scope)
 {
   const emote = {
-    id: ffzEmote.id,
     code: ffzEmote.name,
     source: [ 'ffz', scope ]
   };

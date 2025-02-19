@@ -213,7 +213,8 @@ function formatChat (msg, p)
 
   const nick = p.querySelector ('.nick');
   const color = readableColor (msg.tags.color) ?? '';
-  conf.colors[uid] = { color, since: Date.now () };
+  if (color)
+    conf.colors[uid] = { color, since: Date.now () };
   nick.style.color = color;
   nick.textContent = msg.tags['display-name'] || sourceNick;
   if (uid)
@@ -442,11 +443,14 @@ function newEmote ()
 {
   const img = document.createElement ('img');
   img.onload = () => {
-    // TODO fix rotate-* of wide emotes
-    if (!img.classList.contains ('grow-x'))
-      return;
-    img.style.height = `${img.naturalHeight}px`;
-    img.style.width  = `${2 * img.naturalWidth}px`;
+    if (img.classList.contains ('rotate-l') ||
+        img.classList.contains ('rotate-r'))
+      img.style.width = `${img.naturalHeight}px`;
+    else if (img.classList.contains ('grow-x'))
+    {
+      img.style.height = `${img.naturalHeight}px`;
+      img.style.width  = `${2 * img.naturalWidth}px`;
+    }
   };
   return img;
 }
