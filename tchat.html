@@ -79,13 +79,13 @@
 </label>
 
 <p>
-<input id=noFfz name=noFfz type=checkbox disabled />
+<input id=noFfz name=noFfz type=checkbox />
 <label for=noFfz>
   Disable FrankerFaceZ
 </label>
 
 <p>
-<input id=no7tv name=no7tv type=checkbox disabled />
+<input id=no7tv name=no7tv type=checkbox />
 <label for=no7tv>
   Disable SevenTV
 </label>
@@ -166,6 +166,10 @@ function input() {
     p += '&no=pronouns';
   if (form.elements.noBttv.checked)
     p += '&no=bttv';
+  if (form.elements.noFfz.checked)
+    p += '&no=ffz';
+  if (form.elements.no7tv.checked)
+    p += '&no=7tv';
   const url = new URL('tchat/?' + p.slice(1), location);
   const a = document.createElement('a');
   a.href = url;
