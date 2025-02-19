@@ -403,6 +403,19 @@ function extEmotes (rid, uid, message)
     }
   }
 
+  for (const suffix of message.querySelectorAll ('.suffix'))
+  {
+    if (suffix.previousSibling?.nodeType == Node.TEXT_NODE &&
+        !suffix.previousSibling.nodeValue.trim ())
+      suffix.previousSibling.remove ();
+    if (suffix.previousSibling instanceof HTMLImageElement)
+    {
+      suffix.classList.remove ('suffix');
+      suffix.previousSibling.classList.add (...suffix.classList);
+      suffix.remove ();
+    }
+  }
+
   for (const overlay of message.querySelectorAll ('.overlay'))
   {
     if (overlay.previousSibling?.nodeType == Node.TEXT_NODE &&
