@@ -198,18 +198,34 @@ function displayChat (msg)
   }
   finally
   {
-    conf.chat.prepend (p);
+    if (!p.dataset.duplicate)
+      conf.chat.prepend (p);
   }
 }
 
 function formatChat (msg, p)
 {
   const sourceNick = msg.source.replace (/!.*/, '');
-  const rid = msg.tags['room-id'];
   const uid = msg.tags['user-id'];
+  let   rid = msg.tags['room-id'];
 
   const channel = p.querySelector ('.channel');
   channel.textContent = msg.params[0];
+  const srid = msg.tags['source-room-id'];
+  if (srid && srid != rid)
+  {
+    const sid = msg.tags['source-id'];
+    if (document.getElementById (sid))
+    {
+      p.dataset.duplicate = true;
+      return;
+    }
+    p.id = sid;
+    joinedRoom (srid, null);
+    channel.textContent = conf.badges.room[srid].channel ?? `#[${srid}]`;
+    msg.tags.badges = msg.tags['source-badges'];
+    rid = srid;
+  }
 
   const nick = p.querySelector ('.nick');
   const color = readableColor (msg.tags.color) ?? '';

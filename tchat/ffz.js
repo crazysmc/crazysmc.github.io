@@ -2,7 +2,6 @@
 
 const ffz = {
   scale: ({ 2: '2', 3: '4' })[opt.get ('scale')] ?? '1',
-  badges: [],
   flags: {
     2: 'flip-x',
     4: 'flip-y',
@@ -62,6 +61,8 @@ async function joinFfzRoom (rid)
   if (response.status == 404)
     return;
   const json = await response.json ();
+  if (!conf.badges.room[rid].channel)
+    conf.badges.room[rid].channel = `#${json.room.id}`;
   conf.emotes.room[rid] ??= { __proto__: null };
   for (const emote of json.sets[json.room.set].emoticons)
     addFfzEmote (emote, conf.emotes.room[rid], 'room');
@@ -88,27 +89,27 @@ async function joinFfzRoom (rid)
         `https://cdn.frankerfacez.com/badge/${id}/${ffz.scale}/rounded`;
 }
 
-function addFfzEmote (ffzEmote, dest, scope)
+function addFfzEmote ({ id, name, modifier, modifier_flags, animated },
+                      dest, scope)
 {
   const emote = {
-    code: ffzEmote.name,
+    code: name,
     source: [ 'ffz', scope ]
   };
-  if (ffzEmote.modifier)
+  if (modifier)
   {
-    if (ffzEmote.modifier_flags)
+    if (modifier_flags)
     {
       emote.style = [ 'suffix' ];
       for (const bit in ffz.flags)
-        if (ffzEmote.modifier_flags & bit)
+        if (modifier_flags & bit)
           emote.style.push (ffz.flags[bit]);
     }
     else
       emote.style = [ 'overlay' ];
   }
-  const animated = ffzEmote.animated && !opt.has ('static')
-    ? 'animated/' : '';
+  const anim = animated && !opt.has ('static') ? 'animated/' : '';
   emote.url = 'https://cdn.frankerfacez.com/emote/' +
-    `${emote.id}/${animated}${ffz.scale}`;
+    `${id}/${anim}${ffz.scale}`;
   dest[emote.code] = emote;
 }

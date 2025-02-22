@@ -86,7 +86,7 @@ function receiveBttv (event)
     case 'emote_create':
       conf.emotes.room[rid] ??= { __proto__: null };
       addBttvEmote (emote, conf.emotes.room[rid], 'room');
-      displayBttvAction (rid, json.name, `added emote ${emote.code}.`);
+      displayBttvAction (rid, 'emote-add', `added emote ${emote.code}.`);
       break;
 
     case 'emote_update':
@@ -98,7 +98,7 @@ function receiveBttv (event)
       }
       else
         addBttvEmote (emote, conf.emotes.room[rid], 'room');
-      displayBttvAction (rid, json.name,
+      displayBttvAction (rid, 'emote-rename',
                          `renamed emote ${old} -> ${emote.code}.`);
       break;
 
@@ -106,7 +106,7 @@ function receiveBttv (event)
       delete bttv.emoteCode[json.data.emoteId];
       if (conf.emotes.room[rid]?.[old]?.source[0] == 'bttv')
         delete conf.emotes.room[rid][old];
-      displayBttvAction (rid, json.name, `removed emote ${old}.`);
+      displayBttvAction (rid, 'emote-delete', `removed emote ${old}.`);
       break;
 
     case 'lookup_user':
