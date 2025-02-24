@@ -77,6 +77,7 @@ img {
   background-color: #c466ff64;
 }
 
+.emote-notice,
 .CLEARCHAT,
 .NOTICE {
   color: #fff8;
@@ -245,4 +246,15 @@ html[data-scale="2"] .badges img.ffz-bot {
 
 html[data-scale="3"] .badges img.ffz-bot {
   content: url(https://cdn.frankerfacez.com/badge/2/4);
+}
+
+/*
+ * 7TV name paints
+ */
+
+.nick.paint {
+  background-clip: text;
+  background-color: currentcolor;
+  background-size: 100% 100%;
+  -webkit-text-fill-color: transparent;
 }

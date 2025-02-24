@@ -5,7 +5,19 @@
 
 <h1>tChat – Twitch chat overlay for OBS or browser</h1>
 
-<p>plain IRC text testing phase
+<p>Highly customisable chat reader with support for Pronouns.Alejo.io;
+BetterTTV emotes, badges, glow and live updates;
+FrankerFaceZ emotes and badges; as well as
+7TV emotes, badges, name paints and live updates.
+This also includes emote effects like <em>w!</em> or <em>ffzX</em>.
+
+<p>Mod actions like deleting a message or clearing the chat are actioned as
+soon as possible.
+Announcements and sub messages are highlighted by default.
+
+<hr>
+
+<h2>Options</h2>
 
 <form name=tchat>
 
@@ -39,7 +51,7 @@
 <p>
 <input id=static name=static type=checkbox />
 <label for=static>
-  Replace animated emotes with static ones
+  Replace animated emotes, badges and paints with static ones
 </label>
 
 </fieldset>
@@ -87,7 +99,7 @@
 <p>
 <input id=no7tv name=no7tv type=checkbox />
 <label for=no7tv>
-  Disable SevenTV
+  Disable 7TV
 </label>
 
 </fieldset>
@@ -120,7 +132,7 @@ like this:
 
 <ul>
 
-<li>Changing the font of the page, for example to a monospace one
+<li>Change the font of the page, for example to a monospace one
   <blockquote>
     @import
     url('https://fonts.googleapis.com/css2?<!--
@@ -130,9 +142,23 @@ like this:
     body { font-family: 'Roboto Mono', monospace; }
   </blockquote>
 
-<li>Hiding first time chats by overwriting the default highlight rule
+<li>Do not highlight first time chats by overwriting the default rule
   <blockquote>
     .chat-line[data-first-msg="1"] { background-color: inherit; }
+  </blockquote>
+
+<li>Ensure that lines without 7TV emotes still have the same height
+  <blockquote>
+    .chat-line { line-height: 1.777778; }
+  </blockquote>
+
+<li>Hide certain bots or users by Twitch ID, name or badge
+  <blockquote>
+    .chat-line[data-user-id="237719657"],<br>
+    .chat-line[data-display-name="nightbot" i],<br>
+    .chat-line:has(.badges img.ffz-bot) {<br>
+    &nbsp; display: none;<br>
+    }
   </blockquote>
 
 </ul>

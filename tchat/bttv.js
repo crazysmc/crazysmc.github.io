@@ -86,7 +86,7 @@ function receiveBttv (event)
     case 'emote_create':
       conf.emotes.room[rid] ??= { __proto__: null };
       addBttvEmote (emote, conf.emotes.room[rid], 'room');
-      displayBttvAction (rid, 'emote-add', `added emote ${emote.code}.`);
+      displayBttvAction (rid, 'add', `added emote ${emote.code}.`);
       break;
 
     case 'emote_update':
@@ -98,7 +98,7 @@ function receiveBttv (event)
       }
       else
         addBttvEmote (emote, conf.emotes.room[rid], 'room');
-      displayBttvAction (rid, 'emote-rename',
+      displayBttvAction (rid, 'rename',
                          `renamed emote ${old} -> ${emote.code}.`);
       break;
 
@@ -106,7 +106,7 @@ function receiveBttv (event)
       delete bttv.emoteCode[json.data.emoteId];
       if (conf.emotes.room[rid]?.[old]?.source[0] == 'bttv')
         delete conf.emotes.room[rid][old];
-      displayBttvAction (rid, 'emote-delete', `removed emote ${old}.`);
+      displayBttvAction (rid, 'delete', `removed emote ${old}.`);
       break;
 
     case 'lookup_user':
@@ -115,11 +115,11 @@ function receiveBttv (event)
   }
 }
 
-function displayBttvAction (rid, command, action)
+function displayBttvAction (rid, code, action)
 {
-  displayChat ({ tags: {},
+  displayChat ({ tags: { emote: code },
                  source: 'betterttv.com',
-                 command,
+                 command: 'emote-notice',
                  params: [ conf.badges.room[rid].channel, action ] });
 }
 
@@ -175,8 +175,6 @@ async function joinBttvRoom (rid)
   if (response.status == 404)
     return;
   const json = await response.json ();
-  // TODO give json.bots the https://cdn.betterttv.net/tags/bot.png badge
-  // problem: usernames instead of ids, no scaled badges
   conf.emotes.room[rid] ??= { __proto__: null };
   for (const emote of json.channelEmotes)
     addBttvEmote (emote, conf.emotes.room[rid], 'room');
