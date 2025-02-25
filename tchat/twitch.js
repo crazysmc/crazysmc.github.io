@@ -10,6 +10,9 @@ const conf = {
   emoteScale: ({ 2: '2', 3: '3' })[opt.get ('scale')] ?? '1',
   badgeScale: ({ 2: 'image_url_2x',
                  3: 'image_url_4x' })[opt.get ('scale')] ?? 'image_url_1x',
+  // available logo sizes 600x600, 300x300, 150x150, 70x70, 50x50, 28x28
+  // -- https://www.teamfortress.tv/post/51230
+  avatarSize: ({ 2: '50x50', 3: '70x70' })[opt.get ('scale')] ?? '28x28',
   no: new Proxy (opt.getAll ('no'), { get: (arr, x) => arr.includes (x) }),
   duration: (Intl.DurationFormat
              ? new Intl.DurationFormat ('en', { style: 'narrow' })
@@ -130,14 +133,14 @@ function receive (event)
         if (!msg.source.startsWith (`${conf.nick}!`))
         {
           msg.params[1] = msg.command == 'JOIN' ? ' joined' : ' parted';
-          if (conf.chat.firstChild?.classList.contains (msg.command))
+          const prev = conf.chat.firstChild;
+          if (prev?.classList.contains (msg.command))
           {
-            const channel = conf.chat.firstChild?.querySelector ('.channel');
-            const nick = conf.chat.firstChild?.querySelector ('.nick');
-            if (channel.textContent == msg.params[0])
+            const nick = prev.querySelector ('.nick');
+            if (prev.dataset.channel == msg.params[0])
             {
               msg.source = `${nick.textContent}, ${msg.source}`;
-              conf.chat.firstChild.remove ();
+              prev.remove ();
             }
           }
           displayChat (msg);
@@ -179,6 +182,7 @@ function joinedRoom (rid, channel)
     })
     .catch (console.error);
   conf.joinedRooms.push (rid);
+  document.documentElement.dataset.join = conf.joinedRooms.length;
   for (const callback of conf.onJoinRoom)
     callback (rid)
       .catch (console.error);
@@ -189,6 +193,7 @@ function displayChat (msg)
   const p = conf.template.chatLine.cloneNode (true);
   for (const key in msg.tags)
     p.setAttribute ('data-' + key, msg.tags[key]);
+  p.dataset.channel = msg.params[0];
   if (msg.tags.id)
     p.id = msg.tags.id;
   p.classList.add (msg.command);
@@ -210,7 +215,15 @@ function formatChat (msg, p)
   let   rid = msg.tags['room-id'];
 
   const channel = p.querySelector ('.channel');
-  channel.textContent = msg.params[0];
+  const img = document.createElement ('img');
+  if (rid)
+    img.src = conf.badges.room[rid]?.avatar ?? '';
+  else
+    img.src = Object.values (conf.badges.room)
+      .find (x => x.channel == msg.params[0])
+      ?.avatar ?? '';
+  img.alt = msg.params[0];
+  channel.replaceChildren (img);
   const srid = msg.tags['source-room-id'];
   if (srid && srid != rid)
   {
@@ -222,7 +235,8 @@ function formatChat (msg, p)
     }
     p.id = sid;
     joinedRoom (srid, null);
-    channel.textContent = conf.badges.room[srid].channel ?? `#[${srid}]`;
+    img.src = conf.badges.room[srid].avatar ?? '';
+    img.alt = conf.badges.room[srid].channel ?? `#[${srid}]`;
     msg.tags.badges = msg.tags['source-badges'];
     rid = srid;
   }
@@ -230,7 +244,7 @@ function formatChat (msg, p)
   const nick = p.querySelector ('.nick');
   const color = readableColor (msg.tags.color) ?? '';
   if (color)
-    conf.colors[uid] = { color, since: Date.now () };
+    conf.colors[uid] = { color, nick: sourceNick, since: Date.now () };
   nick.style.color = color;
   nick.textContent = msg.tags['display-name'] || sourceNick;
   if (uid)
@@ -310,6 +324,7 @@ function formatChat (msg, p)
   }
 
   extEmotes (rid, uid, message);
+  atMention (message);
 
   const systemMsg = msg.tags['system-msg'];
   if (systemMsg)
@@ -330,6 +345,7 @@ function formatChat (msg, p)
     const uid = msg.tags['reply-parent-user-id'];
     nick.style.color = conf.colors[uid]?.color;
     nick.textContent = replyTo;
+    extCosmetics (uid, nick);
     const pm = reply.querySelector ('.message');
     pm.textContent = msg.tags['reply-parent-msg-body'];
     const replyMsg = reply.querySelector ('.reply-message');
@@ -453,6 +469,30 @@ function extEmotes (rid, uid, message)
       stack.append (overlay);
     }
   }
+}
+
+function atMention (message)
+{
+  for (const node of message.childNodes)
+    if (node.nodeType == Node.TEXT_NODE)
+      for (const at of node.nodeValue.matchAll (/@\S+/g))
+      {
+        const login = at[0].slice (1)
+          .toLowerCase ();
+        const [uid, col] = Object.entries (conf.colors)
+          .find (([k, v]) => v.nick == login) ?? [];
+        if (!uid)
+          continue;
+        const nick = document.createElement ('span');
+        nick.classList.add ('nick', 'at');
+        nick.style.color = conf.colors[uid]?.color;
+        nick.textContent = at[0];
+        extCosmetics (uid, nick);
+        const next = node.splitText (at.index);
+        next.nodeValue = next.nodeValue.slice (at[0].length);
+        node.after (nick);
+        break;
+      }
 }
 
 function newEmote ()

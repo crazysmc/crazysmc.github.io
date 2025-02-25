@@ -36,12 +36,18 @@ p,
   display: flex;
   gap: 0 0.4em;
   justify-content: start;
-  margin: 0.1em 0;
+  line-height: 1.777778;
+  margin: 0;
 }
 
 .emote-stack,
 img {
   vertical-align: middle;
+}
+
+.channel img {
+  border-radius: 0.5em;
+  max-height: 1em;
 }
 
 .badges {
@@ -101,10 +107,6 @@ img {
 .chat-line[data-first-msg="1"] {
   background-color: #487f3f3c;
 }
-
-/*.chat-line[data-returning-chatter="1"] {
-  background-color: #3296e666;
-}*/
 
 .message:has(.reply) {
   display: flex;

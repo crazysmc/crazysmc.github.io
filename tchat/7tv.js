@@ -340,8 +340,6 @@ async function join7tvRoom (rid)
   if (response.status == 404)
     return;
   const json = await response.json ();
-  if (!conf.badges.room[rid].channel)
-    conf.badges.room[rid].channel = `#${json.username}`;
   const conn = json.user.connections.findIndex (x => x.platform == 'TWITCH');
   x7tv.user[rid] = {
     id: json.user.id,
@@ -350,6 +348,10 @@ async function join7tvRoom (rid)
   };
   x7tv.user[json.user.id] = { rid };
   send7tvJoin (rid);
+  if (!conf.badges.room[rid].channel)
+    conf.badges.room[rid].channel = `#${json.username}`;
+  conf.badges.room[rid].avatar = json.user.avatar_url
+    .replace (/300x300/, conf.avatarSize);
   conf.emotes.room[rid] ??= { __proto__: null };
   for (const emote of json.emote_set?.emotes ?? [])
     add7tvEmote (emote, conf.emotes.room[rid], 'room');

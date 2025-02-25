@@ -175,6 +175,8 @@ async function joinBttvRoom (rid)
   if (response.status == 404)
     return;
   const json = await response.json ();
+  conf.badges.room[rid].avatar = json.avatar
+    .replace (/300x300/, conf.avatarSize);
   conf.emotes.room[rid] ??= { __proto__: null };
   for (const emote of json.channelEmotes)
     addBttvEmote (emote, conf.emotes.room[rid], 'room');
