@@ -186,7 +186,8 @@ async function joinedRoom (rid, channel)
   {
     conf.joinedRooms.push (rid);
     document.documentElement.dataset.join = conf.joinedRooms.length;
-    return Promise.allSettled (conf.onJoinRoom.map (callback => callback (rid)));
+    return await Promise
+      .allSettled (conf.onJoinRoom.map (callback => callback (rid)));
   }
 }
 
