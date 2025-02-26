@@ -88,7 +88,8 @@ function receive (event)
         break;
 
       case 'ROOMSTATE':
-        joinedRoom (rid, msg.params[0]);
+        joinedRoom (rid, msg.params[0])
+          .catch (console.error);
         break;
 
       case 'PRIVMSG':
@@ -167,25 +168,26 @@ function reduceColors ()
       delete conf.colors[uid];
 }
 
-function joinedRoom (rid, channel)
+async function joinedRoom (rid, channel)
 {
   if (conf.badges.room[rid])
     return;
   conf.badges.room[rid] = { channel };
-  fetch (`https://smc.2ix.at/user.php?id=${rid}`)
-    .then (response => response.json ())
-    .then (json => {
-      for (const set of json.data)
-        for (const version of set.versions)
-          conf.badges.room[rid][`${set.set_id}/${version.id}`] =
-            version[conf.badgeScale];
-    })
-    .catch (console.error);
-  conf.joinedRooms.push (rid);
-  document.documentElement.dataset.join = conf.joinedRooms.length;
-  for (const callback of conf.onJoinRoom)
-    callback (rid)
-      .catch (console.error);
+  try
+  {
+    const response = await fetch (`https://smc.2ix.at/user.php?id=${rid}`);
+    const json = await response.json ();
+    for (const set of json.data)
+      for (const version of set.versions)
+        conf.badges.room[rid][`${set.set_id}/${version.id}`] =
+          version[conf.badgeScale];
+  }
+  finally
+  {
+    conf.joinedRooms.push (rid);
+    document.documentElement.dataset.join = conf.joinedRooms.length;
+    return Promise.allSettled (conf.onJoinRoom.map (callback => callback (rid)));
+  }
 }
 
 function displayChat (msg)
@@ -236,9 +238,12 @@ function formatChat (msg, p)
       return;
     }
     p.id = sid;
-    joinedRoom (srid, null);
-    img.src = conf.badges.room[srid].avatar ?? '';
-    img.alt = conf.badges.room[srid].channel ?? `#[${srid}]`;
+    joinedRoom (srid, null)
+      .then (() => {
+        img.src = conf.badges.room[srid].avatar ?? '';
+        img.alt = conf.badges.room[srid].channel ?? `#[${srid}]`;
+      })
+      .catch (console.error);
     msg.tags.badges = msg.tags['source-badges'];
     rid = srid;
   }
