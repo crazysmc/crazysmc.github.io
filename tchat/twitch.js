@@ -193,6 +193,8 @@ function displayChat (msg)
   const p = conf.template.chatLine.cloneNode (true);
   for (const key in msg.tags)
     p.setAttribute ('data-' + key, msg.tags[key]);
+  if (!p.dataset.tmiSentTs)
+    p.dataset.tmiSentTs = Date.now ();
   p.dataset.channel = msg.params[0];
   if (msg.tags.id)
     p.id = msg.tags.id;
@@ -332,6 +334,8 @@ function formatChat (msg, p)
     const span = document.createElement ('span');
     span.classList.add ('system-msg');
     span.textContent = systemMsg;
+    if (msg.tags['msg-param-category'] == 'watch-streak')
+      span.textContent = systemMsg.replace (/ this month/, '');
     const br = document.createElement ('br');
     message.prepend (span, br);
   }
