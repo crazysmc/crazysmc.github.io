@@ -30,7 +30,7 @@ html[data-join="1"] .channel {
   height: 100vh;
 }
 
-p,
+.chat-line,
 .reply i {
   align-items: baseline;
   display: flex;
@@ -61,7 +61,7 @@ img {
 
 .badges img + .pronouns,
 .badges img + img {
-  margin-left: 0.2em;
+  margin-left: 0.2rem;
 }
 
 .pronouns {

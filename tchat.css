@@ -1,0 +1,70 @@
+body
+{
+  margin: 1em 2em;
+}
+
+h1, h2
+{
+  background-color: #6d0080;
+}
+
+aside
+{
+  background-color: #18181b;
+  float: right;
+  margin-left: 1em;
+  max-width: 50vw;
+}
+
+hr
+{
+  border-style: none;
+  clear: both;
+}
+
+fieldset
+{
+  margin-bottom: 1em;
+}
+
+fieldset, legend
+{
+  border: 1px solid #eee;
+  border-radius: 0.5em;
+}
+
+legend
+{
+  padding: 0.2em 0.3em;
+}
+
+blockquote
+{
+  background-color: #444;
+  display: inline-block;
+  padding: 0.2em 0.3em;
+}
+
+input, select
+{
+  font: inherit;
+}
+
+output
+{
+  background-color: #dfd;
+  display: inline-block;
+  margin-left: 1em;
+  padding: 0.2em 0.3em;
+}
+
+.block
+{
+  max-width: 30vw;
+}
+
+.block .chat-line,
+.block .reply i
+{
+  display: block;
+}
