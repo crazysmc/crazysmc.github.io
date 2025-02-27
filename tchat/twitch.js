@@ -346,21 +346,14 @@ function formatChat (msg, p)
     message.prepend (span, br);
   }
 
-  const replyTo = msg.tags['reply-parent-display-name'] ||
-                  msg.tags['reply-parent-user-login'];
+  const replyTo = msg.tags['reply-parent-msg-body'];
   if (replyTo)
   {
     const reply = conf.template.reply.cloneNode (true);
-    const nick = reply.querySelector ('.nick');
-    const uid = msg.tags['reply-parent-user-id'];
-    nick.style.color = conf.colors[uid]?.color;
-    nick.textContent = replyTo;
-    extCosmetics (uid, nick);
-    const pm = reply.querySelector ('.message');
-    pm.textContent = msg.tags['reply-parent-msg-body'];
-    const replyMsg = reply.querySelector ('.reply-message');
+    reply.firstElementChild.textContent = replyTo;
+    const replyMsg = reply.querySelector ('.message');
     replyMsg.replaceChildren (...message.childNodes);
-    message.replaceChildren (reply);
+    message.replaceWith (reply);
   }
 }
 

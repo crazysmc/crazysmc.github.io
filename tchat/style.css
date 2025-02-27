@@ -30,8 +30,7 @@ html[data-join="1"] .channel {
   height: 100vh;
 }
 
-.chat-line,
-.reply i {
+.chat-line {
   align-items: baseline;
   display: flex;
   gap: 0 0.4em;
@@ -108,20 +107,14 @@ img {
   background-color: #487f3f3c;
 }
 
-.message:has(.reply) {
-  display: flex;
-  flex-direction: column;
-}
-
-.reply {
-  display: inline-block;
-}
-
 .reply i {
   font-size: 0.8em;
-  clear: left;
   float: left;
   width: 100%;
+}
+
+.reply i::before {
+  content: "↪ ";
 }
 
 .emote-stack {
@@ -255,8 +248,9 @@ html[data-scale="3"] .badges img.ffz-bot {
  */
 
 .nick.paint {
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   background-clip: text;
   background-color: currentcolor;
   background-size: 100% 100%;
-  -webkit-text-fill-color: transparent;
 }

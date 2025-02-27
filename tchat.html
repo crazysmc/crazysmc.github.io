@@ -119,19 +119,14 @@
  --><span class=pronouns>He/Him</span>
   </span>
   <span class=nick style=color:springgreen>crazysmc</span>
-  <span class=message>
-    <span class=reply>
-      <i>
-        <span class=nick style=color:springgreen>crazysmc</span>
-        <span class=message>
-          this is a longer message containing emotes like :3 and meow which
-          will make these bots answer as well
-        </span>
-      </i>
-      <span class=reply-message>
-        <span class="nick at" style=color:springgreen>@crazysmc</span>
-        this is a reply to myself
-      </span>
+  <span class=reply>
+    <i>
+      this is a longer message containing emotes like :3 and meow which will
+      make these bots answer as well
+    </i>
+    <span class=message>
+      <span class="nick at" style=color:springgreen>@crazysmc</span>
+      this is a reply to myself
     </span>
   </span>
 
@@ -300,19 +295,14 @@ like this:
    --><span class=pronouns>He/Him</span>
     </span>
     <span class=nick style=color:springgreen>crazysmc</span>
-    <span class=message>
-      <span class=reply>
-        <i>
-          <span class=nick style=color:springgreen>crazysmc</span>
-          <span class=message>
-            this is a longer message containing emotes like :3 and meow which
-            will make these bots answer as well
-          </span>
-        </i>
-        <span class=reply-message>
-          <span class="nick at" style=color:springgreen>@crazysmc</span>
-          this is a reply to myself
-        </span>
+    <span class=reply>
+      <i>
+        this is a longer message containing emotes like :3 and meow which
+        will make these bots answer as well
+      </i>
+      <span class=message>
+        <span class="nick at" style=color:springgreen>@crazysmc</span>
+        this is a reply to myself
       </span>
     </span>
   <p class=chat-line>
@@ -326,7 +316,8 @@ like this:
 <li>Remove the hanging indent from long messages, especially useful with long
   user names in narrow spaces
   <blockquote><code>
-    .chat-line, .reply i { display: block; }
+    .chat-line { display: block; }<br>
+    .reply i { float: none; }
   </code></blockquote>
 
 <li>Do not highlight first time chats by overwriting the default rule
