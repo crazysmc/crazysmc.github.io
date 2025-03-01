@@ -128,6 +128,11 @@ img {
   grid-row-start: 1;
 }
 
+@media (max-width: 35rem) {
+  .chat-line { display: block; }
+  .reply i   { float: none; }
+}
+
 /*
  * BetterTTV effects and styles
  */

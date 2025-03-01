@@ -314,7 +314,8 @@ like this:
     </span>
 </aside>
 <li>Remove the hanging indent from long messages, especially useful with long
-  user names in narrow spaces
+  user names in narrow spaces (this is applied by default when the available
+  width is less than 35 times the font size, depending on the scale option)
   <blockquote><code>
     .chat-line { display: block; }<br>
     .reply i { float: none; }
