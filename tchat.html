@@ -271,7 +271,7 @@ like this:
 
 <p>You can add more CSS rules to this; here are some examples:
 
-<ul>
+<ol>
 
 <li>Change the font of the page, for example to a monospace one
   <blockquote><code>
@@ -315,10 +315,15 @@ like this:
 </aside>
 <li>Remove the hanging indent from long messages, especially useful with long
   user names in narrow spaces (this is applied by default when the available
-  width is less than 35 times the font size, depending on the scale option)
+  width is less than 40 times the font size, depending on the scale option)
   <blockquote><code>
     .chat-line { display: block; }<br>
     .reply i { float: none; }
+  </code></blockquote>
+
+<li>Add a colon after regular chat messages that are not a /me action
+  <blockquote><code>
+    .PRIVMSG:not(.action) .nick::after { color: white; content: ":"; }
   </code></blockquote>
 
 <li>Do not highlight first time chats by overwriting the default rule
@@ -364,7 +369,7 @@ like this:
   </code></blockquote>
 <hr>
 
-</ul>
+</ol>
 
 <script>
 'use strict';

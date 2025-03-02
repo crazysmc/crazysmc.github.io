@@ -65,7 +65,7 @@ img {
 }
 
 .pronouns {
-  border: 0.06em solid;
+  border: 0.07em solid;
   border-radius: 0.4em;
   font-size: 0.8em;
   padding: 0 0.1em;
@@ -100,7 +100,7 @@ img {
 }
 
 .system-msg,
-.action {
+.action .message {
   font-style: italic;
 }
 
@@ -128,7 +128,7 @@ img {
   grid-row-start: 1;
 }
 
-@media (max-width: 35rem) {
+@media (max-width: 40rem) {
   .chat-line { display: block; }
   .reply i   { float: none; }
 }

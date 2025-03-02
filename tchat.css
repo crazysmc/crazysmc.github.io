@@ -57,6 +57,17 @@ output
   padding: 0.2em 0.3em;
 }
 
+ol li
+{
+  counter-increment: item;
+}
+
+ol li::marker
+{
+  content: "(" counter(item) ") ";
+  font-weight: bold;
+}
+
 .block
 {
   max-width: 30vw;
@@ -70,4 +81,10 @@ output
 .block .reply i
 {
   float: none;
+}
+
+.block .nick::after
+{
+  color: white;
+  content: ":";
 }
