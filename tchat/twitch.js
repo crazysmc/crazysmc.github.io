@@ -158,9 +158,12 @@ function reduceChat ()
 {
   const oldest = Date.now () - conf.timeout;
   for (const line of conf.chat.childNodes)
-    if (line.offsetTop + line.offsetHeight < 0 ||
-        oldest && parseInt (line.dataset.tmiSentTs, 10) < oldest)
+  {
+    if (line.offsetTop + line.offsetHeight < 0)
       line.remove ();
+    if (oldest && parseInt (line.dataset.tmiSentTs, 10) < oldest)
+      line.classList.add ('fade-out');
+  }
 }
 
 function reduceColors ()
@@ -427,17 +430,12 @@ function extEmotes (rid, uid, message)
       prefix.nextSibling.remove ();
     if (prefix.nextSibling instanceof HTMLImageElement)
     {
-      if (prefix.classList.contains ('no-space'))
-      {
-        if (prefix.previousSibling?.nodeType == Node.TEXT_NODE &&
-            !prefix.previousSibling.nodeValue.trim ())
-          prefix.previousSibling.remove ();
-      }
-      else
-      {
-        prefix.classList.remove ('prefix');
-        prefix.nextSibling.classList.add (...prefix.classList);
-      }
+      if (prefix.classList.contains ('no-space') &&
+          prefix.previousSibling?.nodeType == Node.TEXT_NODE &&
+          !prefix.previousSibling.nodeValue.trim ())
+        prefix.previousSibling.remove ();
+      prefix.classList.remove ('prefix');
+      prefix.nextSibling.classList.add (...prefix.classList);
       prefix.remove ();
     }
   }
