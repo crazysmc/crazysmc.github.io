@@ -1,6 +1,9 @@
 'use strict';
 
 const opt = new URLSearchParams (location.search);
+if (!opt.size)
+  location = '../tchat.html'; // include at least one search parameter
+
 const conf = {
   ws: new ReconnectingWebSocket ('wss://irc-ws.chat.twitch.tv:443', null,
                                  { automaticOpen: false }),
