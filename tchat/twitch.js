@@ -266,8 +266,9 @@ function formatChat (msg, p)
   if (text && text[0] == '\x01')
   {
     text = text.replace (/^\x01ACTION (.*)\x01/, '$1');
-    message.classList.add ('action');
+    p.classList.add ('action');
   }
+  p.dataset.text = text;
 
   if (msg.tags.emotes)
   {
