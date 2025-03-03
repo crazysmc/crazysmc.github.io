@@ -21,6 +21,7 @@ const conf = {
   template: {},
   joinedRooms: [],
   onJoinRoom: [],
+  preload: [],
   colors: {},
   badges: { global: {}, room: {}, user: {} },
   emotes: { global: { __proto__: null }, room: {}, user: {} },
@@ -160,6 +161,13 @@ function reduceChat ()
       line.remove ();
     if (oldest && parseInt (line.dataset.tmiSentTs, 10) < oldest)
       line.classList.add ('fade-out');
+  }
+  const url = conf.preload.shift ();
+  if (url)
+  {
+    const img = document.createElement ('img');
+    img.fetchPriority = 'low';
+    img.src = url;
   }
 }
 

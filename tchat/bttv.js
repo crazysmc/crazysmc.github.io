@@ -194,6 +194,7 @@ function addBttvEmote ({ id, code }, dest, scope)
     emote.style = bttv.special[emote.code];
   emote.url = 'https://cdn.betterttv.net/emote/' +
     `${id}/${bttv.emoteStyle}${conf.emoteScale}x.webp`;
+  conf.preload.push (emote.url);
   dest[code] = emote;
   bttv.emoteCode[id] = code;
 }

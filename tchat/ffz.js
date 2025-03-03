@@ -111,5 +111,6 @@ function addFfzEmote ({ id, name, modifier, modifier_flags, animated },
   const anim = animated && !opt.has ('static') ? 'animated/' : '';
   emote.url = 'https://cdn.frankerfacez.com/emote/' +
     `${id}/${anim}${ffz.scale}`;
+  conf.preload.push (emote.url);
   dest[emote.code] = emote;
 }

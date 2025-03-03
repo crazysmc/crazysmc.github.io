@@ -367,5 +367,6 @@ function add7tvEmote ({ id, name, flags, data }, dest, scope)
     emote.style = [ 'overlay' ];
   const s = data.animated ? x7tv.emoteStyle : '';
   emote.url = `https:${data.host.url}/${x7tv.scale}x${s}.${x7tv.format}`;
+  conf.preload.push (emote.url);
   dest[emote.code] = emote;
 }
