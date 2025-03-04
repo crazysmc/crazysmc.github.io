@@ -33,13 +33,20 @@ html[data-join="1"] .channel {
   padding: 0.4rem;
 }
 
+p {
+  line-height: 1.777778;
+  margin: 0;
+}
+
+.error {
+  background-color: #7f3f497f;
+}
+
 .chat-line {
   align-items: baseline;
   display: flex;
   gap: 0 0.4em;
   justify-content: start;
-  line-height: 1.777778;
-  margin: 0;
 }
 
 .emote-stack,

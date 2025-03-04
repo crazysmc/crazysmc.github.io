@@ -44,14 +44,14 @@ function initBttv ()
       for (const emote of json)
         addBttvEmote (emote, conf.emotes.global, 'global');
     })
-    .catch (console.error);
+    .catch (e => displayError ('Failed to load global BTTV emotes', e));
   fetch ('https://api.betterttv.net/3/cached/badges/twitch')
     .then (response => response.json ())
     .then (json => {
       for (const { providerId: uid, badge: { type, svg } } of json)
         (conf.badges.user[uid] ??= {})[`bttv/${type}`] = svg;
     })
-    .catch (console.error);
+    .catch (e => displayError ('Failed to load global BTTV badges', e));
 }
 
 function rejoinBttvRooms ()
@@ -169,17 +169,24 @@ if (!conf.no.bttv)
 
 async function joinBttvRoom (rid)
 {
-  sendBttvJoin (rid);
-  const response = await
-    fetch (`https://api.betterttv.net/3/cached/users/twitch/${rid}`);
-  if (response.status == 404)
-    return;
-  const json = await response.json ();
-  conf.emotes.room[rid] ??= { __proto__: null };
-  for (const emote of json.channelEmotes)
-    addBttvEmote (emote, conf.emotes.room[rid], 'room');
-  for (const emote of json.sharedEmotes)
-    addBttvEmote (emote, conf.emotes.room[rid], 'room');
+  try
+  {
+    sendBttvJoin (rid);
+    const response = await
+      fetch (`https://api.betterttv.net/3/cached/users/twitch/${rid}`);
+    if (response.status == 404)
+      return;
+    const json = await response.json ();
+    conf.emotes.room[rid] ??= { __proto__: null };
+    for (const emote of json.channelEmotes)
+      addBttvEmote (emote, conf.emotes.room[rid], 'room');
+    for (const emote of json.sharedEmotes)
+      addBttvEmote (emote, conf.emotes.room[rid], 'room');
+  }
+  catch (e)
+  {
+    displayError ('Failed to load channel BTTV emotes', e);
+  }
 }
 
 function addBttvEmote ({ id, code }, dest, scope)

@@ -39,7 +39,7 @@ function initFfz ()
             addFfzEmote (emote, conf.emotes.user[uid], 'personal');
         }
     })
-    .catch (console.error);
+    .catch (e => displayError ('Failed to load global FFZ emotes', e));
   fetch ('https://api.frankerfacez.com/v1/badges/ids')
     .then (response => response.json ())
     .then (json => {
@@ -48,7 +48,7 @@ function initFfz ()
           (conf.badges.user[uid] ??= {})[`ffz/${id}`] =
             `https://cdn.frankerfacez.com/badge/${id}/${ffz.scale}/rounded`;
     })
-    .catch (console.error);
+    .catch (e => displayError ('Failed to load global FFZ badges', e));
 }
 
 if (!conf.no.bttv)
@@ -56,37 +56,44 @@ if (!conf.no.bttv)
 
 async function joinFfzRoom (rid)
 {
-  const response = await
-    fetch (`https://api.frankerfacez.com/v1/room/id/${rid}`);
-  if (response.status == 404)
-    return;
-  const json = await response.json ();
-  if (!conf.badges.room[rid].channel)
-    conf.badges.room[rid].channel = `#${json.room.id}`;
-  conf.emotes.room[rid] ??= { __proto__: null };
-  for (const emote of json.sets[json.room.set].emoticons)
-    addFfzEmote (emote, conf.emotes.room[rid], 'room');
-  const roomUrl = 'https://cdn.frankerfacez.com/room-badge/';
-  if (json.room.vip_badge)
+  try
   {
-    const rule =
-      `.chat-line[data-room-id="${rid}"] .badges img[alt="[vip/1]"]
-      { content: url(${roomUrl}vip/id/${rid}/${ffz.scale}); }`;
-    ffz.css.insertRule (rule, ffz.css.cssRules.length);
+    const response = await
+      fetch (`https://api.frankerfacez.com/v1/room/id/${rid}`);
+    if (response.status == 404)
+      return;
+    const json = await response.json ();
+    if (!conf.badges.room[rid].channel)
+      conf.badges.room[rid].channel = `#${json.room.id}`;
+    conf.emotes.room[rid] ??= { __proto__: null };
+    for (const emote of json.sets[json.room.set].emoticons)
+      addFfzEmote (emote, conf.emotes.room[rid], 'room');
+    const roomUrl = 'https://cdn.frankerfacez.com/room-badge/';
+    if (json.room.vip_badge)
+    {
+      const rule =
+        `.chat-line[data-room-id="${rid}"] .badges img[alt="[vip/1]"]
+        { content: url(${roomUrl}vip/id/${rid}/${ffz.scale}); }`;
+      ffz.css.insertRule (rule, ffz.css.cssRules.length);
+    }
+    if (json.room.mod_urls)
+    {
+      const rule =
+        `.chat-line[data-room-id="${rid}"] .badges
+            img[alt="[moderator/1]"]:not(.ffz-bot)
+        { content: url(${roomUrl}mod/id/${rid}/${ffz.scale}/rounded); }`;
+      ffz.css.insertRule (rule, ffz.css.cssRules.length);
+    }
+    conf.badges.room[rid].user ??= {};
+    for (const id in json.room.user_badge_ids)
+      for (const uid of json.room.user_badge_ids[id])
+        (conf.badges.room[rid].user[uid] ??= {})[`ffz/${id}`] =
+          `https://cdn.frankerfacez.com/badge/${id}/${ffz.scale}/rounded`;
   }
-  if (json.room.mod_urls)
+  catch (e)
   {
-    const rule =
-      `.chat-line[data-room-id="${rid}"] .badges
-          img[alt="[moderator/1]"]:not(.ffz-bot)
-      { content: url(${roomUrl}mod/id/${rid}/${ffz.scale}/rounded); }`;
-    ffz.css.insertRule (rule, ffz.css.cssRules.length);
+    displayError ('Failed to load channel FFZ emotes', e);
   }
-  conf.badges.room[rid].user ??= {};
-  for (const id in json.room.user_badge_ids)
-    for (const uid of json.room.user_badge_ids[id])
-      (conf.badges.room[rid].user[uid] ??= {})[`ffz/${id}`] =
-        `https://cdn.frankerfacez.com/badge/${id}/${ffz.scale}/rounded`;
 }
 
 function addFfzEmote ({ id, name, modifier, modifier_flags, animated },

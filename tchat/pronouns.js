@@ -11,7 +11,7 @@ function initPronouns ()
   fetch ('https://api.pronouns.alejo.io/v1/pronouns')
     .then (response => response.json ())
     .then (json => { pronouns.def = json; })
-    .catch (console.error);
+    .catch (e => displayError ('Failed to load pronoun definitions', e));
   setInterval (reducePronouns, 300000);
 }
 
@@ -25,20 +25,27 @@ function reducePronouns ()
 
 async function getPronouns (name)
 {
-  const cached = pronouns.user[name];
-  if (cached)
-    return cached.text ?? '';
-  pronouns.user[name] = { since: Date.now () };
-  const response = await
-    fetch (`https://api.pronouns.alejo.io/v1/users/${name}`);
-  if (!response.ok)
-    return '';
-  const json = await response.json ();
-  const main = pronouns.def[json.pronoun_id];
-  const alt = pronouns.def[json.alt_pronoun_id];
-  const text = alt ? `${main.subject}/${alt.subject}`
-                   : main.singular ? main.subject
-                                   : `${main.subject}/${main.object}`;
-  pronouns.user[name].text = text;
-  return text;
+  try
+  {
+    const cached = pronouns.user[name];
+    if (cached)
+      return cached.text ?? '';
+    pronouns.user[name] = { since: Date.now () };
+    const response = await
+      fetch (`https://api.pronouns.alejo.io/v1/users/${name}`);
+    if (!response.ok)
+      return '';
+    const json = await response.json ();
+    const main = pronouns.def[json.pronoun_id];
+    const alt = pronouns.def[json.alt_pronoun_id];
+    const text = alt ? `${main.subject}/${alt.subject}`
+                     : main.singular ? main.subject
+                                     : `${main.subject}/${main.object}`;
+    pronouns.user[name].text = text;
+    return text;
+  }
+  catch (e)
+  {
+    displayError ('Failed to load chatter pronouns', e);
+  }
 }

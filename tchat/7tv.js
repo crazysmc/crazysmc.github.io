@@ -47,7 +47,7 @@ function init7tv ()
       for (const emote of json.emotes)
         add7tvEmote (emote, conf.emotes.global, 'global');
     })
-    .catch (console.error);
+    .catch (e => displayError ('Failed to load global 7TV emotes', e));
 }
 
 function rejoin7tvRooms ()
@@ -321,14 +321,21 @@ function num2hex (num)
 
 async function load7tvEmoteSet (rid, set)
 {
-  const response = await fetch (`https://7tv.io/v3/emote-sets/${set}`);
-  if (response.status == 404)
-    return;
-  const json = await response.json ();
-  x7tv.user[rid].set = set;
-  conf.emotes.room[rid] ??= { __proto__: null };
-  for (const emote of json.emotes)
-    add7tvEmote (emote, conf.emotes.room[rid], 'room');
+  try
+  {
+    const response = await fetch (`https://7tv.io/v3/emote-sets/${set}`);
+    if (response.status == 404)
+      return;
+    const json = await response.json ();
+    x7tv.user[rid].set = set;
+    conf.emotes.room[rid] ??= { __proto__: null };
+    for (const emote of json.emotes)
+      add7tvEmote (emote, conf.emotes.room[rid], 'room');
+  }
+  catch (e)
+  {
+    displayError ('Failed to load 7TV emote set', e);
+  }
 }
 
 if (!conf.no['7tv'])
@@ -336,28 +343,36 @@ if (!conf.no['7tv'])
 
 async function join7tvRoom (rid)
 {
-  const response = await fetch (`https://7tv.io/v3/users/twitch/${rid}`);
-  if (response.status == 404)
-    return;
-  const json = await response.json ();
-  const conn = json.user.connections.findIndex (x => x.platform == 'TWITCH');
-  x7tv.user[rid] = {
-    id: json.user.id,
-    conn,
-    set: json.emote_set_id,
-  };
-  x7tv.user[json.user.id] = { rid };
-  send7tvJoin (rid);
-  if (!conf.badges.room[rid].channel)
-    conf.badges.room[rid].channel = `#${json.username}`;
-  conf.badges.room[rid].avatar = json.user.avatar_url
-    .replace (/300x300/, conf.avatarSize)
-    .replace (/^\/\//, 'https://')
-    .replace (/\/3x\.(avif|webp)$/,
-              `/${x7tv.scale}x${x7tv.emoteStyle}.${x7tv.format}`);
-  conf.emotes.room[rid] ??= { __proto__: null };
-  for (const emote of json.emote_set?.emotes ?? [])
-    add7tvEmote (emote, conf.emotes.room[rid], 'room');
+  try
+  {
+    const response = await fetch (`https://7tv.io/v3/users/twitch/${rid}`);
+    if (response.status == 404)
+      return;
+    const json = await response.json ();
+    const conn = json.user.connections
+      .findIndex (x => x.platform == 'TWITCH');
+    x7tv.user[rid] = {
+      id: json.user.id,
+      conn,
+      set: json.emote_set_id,
+    };
+    x7tv.user[json.user.id] = { rid };
+    send7tvJoin (rid);
+    if (!conf.badges.room[rid].channel)
+      conf.badges.room[rid].channel = `#${json.username}`;
+    conf.badges.room[rid].avatar = json.user.avatar_url
+      .replace (/300x300/, conf.avatarSize)
+      .replace (/^\/\//, 'https://')
+      .replace (/\/3x\.(avif|webp)$/,
+                `/${x7tv.scale}x${x7tv.emoteStyle}.${x7tv.format}`);
+    conf.emotes.room[rid] ??= { __proto__: null };
+    for (const emote of json.emote_set?.emotes ?? [])
+      add7tvEmote (emote, conf.emotes.room[rid], 'room');
+  }
+  catch (e)
+  {
+    displayError ('Failed to load channel 7TV emotes', e);
+  }
 }
 
 function add7tvEmote ({ id, name, flags, data }, dest, scope)

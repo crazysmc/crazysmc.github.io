@@ -13,6 +13,7 @@ const conf = {
   // available logo sizes 600x600, 300x300, 150x150, 70x70, 50x50, 28x28
   // -- https://www.teamfortress.tv/post/51230
   avatarSize: ({ 2: '50x50', 3: '70x70' })[opt.get ('scale')] ?? '28x28',
+  fetchOpt: opt.has ('cache', 'reload') ? { cache: 'reload' } : undefined,
   no: new Proxy (opt.getAll ('no'), { get: (arr, x) => arr.includes (x) }),
   duration: (Intl.DurationFormat
              ? new Intl.DurationFormat ('en', { style: 'narrow' })
@@ -37,7 +38,7 @@ function init ()
   conf.template.chatLine = template.content.querySelector ('.chat-line');
   conf.template.reply = template.content.querySelector ('.reply');
 
-  fetch ('https://smc.2ix.at/global.php')
+  fetch ('https://smc.2ix.at/global.php', conf.fetchOpt)
     .then (response => response.json ())
     .then (json => {
       for (const set of json.data)
@@ -45,7 +46,7 @@ function init ()
           conf.badges.global[`${set.set_id}/${version.id}`] =
             version[conf.badgeScale];
     })
-    .catch (console.error);
+    .catch (e => displayError ('Failed to load global Twitch badges', e));
 
   conf.ws.addEventListener ('open', login);
   conf.ws.addEventListener ('message', receive);
@@ -89,8 +90,7 @@ function receive (event)
         break;
 
       case 'ROOMSTATE':
-        joinedRoom (rid, msg.params[0])
-          .catch (console.error);
+        joinedRoom (rid, msg.params[0]);
         break;
 
       case 'PRIVMSG':
@@ -186,21 +186,25 @@ async function joinedRoom (rid, channel)
   conf.badges.room[rid] = { channel };
   try
   {
-    const response = await fetch (`https://smc.2ix.at/user.php?id=${rid}`);
+    const response = await fetch (`https://smc.2ix.at/user.php?id=${rid}`,
+                                  conf.fetchOpt);
     const json = await response.json ();
     for (const set of json.data)
       for (const version of set.versions)
         conf.badges.room[rid][`${set.set_id}/${version.id}`] =
           version[conf.badgeScale];
   }
-  finally
+  catch (e)
   {
-    conf.joinedRooms.push (rid);
-    document.documentElement.dataset.join = conf.joinedRooms.length;
-    await Promise
-      .allSettled (conf.onJoinRoom.map (callback => callback (rid)));
-    if (!conf.badges.room[rid].avatar ||
-        conf.badges.room[rid].avatar.includes ('user-default-pictures'))
+    displayError ('Failed to load channel Twitch badges', e);
+  }
+  conf.joinedRooms.push (rid);
+  document.documentElement.dataset.join = conf.joinedRooms.length;
+  await Promise
+    .allSettled (conf.onJoinRoom.map (callback => callback (rid)));
+  if (!conf.badges.room[rid].avatar ||
+      conf.badges.room[rid].avatar.includes ('user-default-pictures'))
+    try
     {
       const response = await
         fetch (`https://cdn.frankerfacez.com/avatar/twitch/${rid}`,
@@ -208,7 +212,10 @@ async function joinedRoom (rid, channel)
       conf.badges.room[rid].avatar = response.url
         .replace (/300x300/, conf.avatarSize);
     }
-  }
+    catch (e)
+    {
+      displayError ('Failed to load channel avatar icon', e);
+    }
 }
 
 function displayChat (msg)
@@ -231,6 +238,16 @@ function displayChat (msg)
     if (!p.dataset.duplicate)
       conf.chat.prepend (p);
   }
+}
+
+function displayError (msg, err)
+{
+  console.error (msg, err);
+  const p = document.createElement ('p');
+  p.classList.add ('error');
+  p.dataset.tmiSentTs = Date.now ();
+  p.textContent = msg;
+  conf.chat.prepend (p);
 }
 
 function formatChat (msg, p)
@@ -263,8 +280,7 @@ function formatChat (msg, p)
       .then (() => {
         img.src = conf.badges.room[srid].avatar ?? '';
         img.alt = conf.badges.room[srid].channel ?? `#[${srid}]`;
-      })
-      .catch (console.error);
+      });
     msg.tags.badges = msg.tags['source-badges'];
     rid = srid;
   }
@@ -347,8 +363,7 @@ function formatChat (msg, p)
         pro.textContent = text;
         pro.classList.remove ('hidden');
         badges.classList.remove ('hidden');
-      })
-      .catch (() => { });
+      });
     badges.append (pro);
   }
 
