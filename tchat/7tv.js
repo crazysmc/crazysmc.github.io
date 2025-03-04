@@ -351,7 +351,10 @@ async function join7tvRoom (rid)
   if (!conf.badges.room[rid].channel)
     conf.badges.room[rid].channel = `#${json.username}`;
   conf.badges.room[rid].avatar = json.user.avatar_url
-    .replace (/300x300/, conf.avatarSize);
+    .replace (/300x300/, conf.avatarSize)
+    .replace (/^\/\//, 'https://')
+    .replace (/\/3x\.(avif|webp)$/,
+              `/${x7tv.scale}x${x7tv.emoteStyle}.${x7tv.format}`);
   conf.emotes.room[rid] ??= { __proto__: null };
   for (const emote of json.emote_set?.emotes ?? [])
     add7tvEmote (emote, conf.emotes.room[rid], 'room');

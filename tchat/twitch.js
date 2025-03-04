@@ -197,8 +197,17 @@ async function joinedRoom (rid, channel)
   {
     conf.joinedRooms.push (rid);
     document.documentElement.dataset.join = conf.joinedRooms.length;
-    return await Promise
+    await Promise
       .allSettled (conf.onJoinRoom.map (callback => callback (rid)));
+    if (!conf.badges.room[rid].avatar ||
+        conf.badges.room[rid].avatar.includes ('user-default-pictures'))
+    {
+      const response = await
+        fetch (`https://cdn.frankerfacez.com/avatar/twitch/${rid}`,
+               { method: 'HEAD' });
+      conf.badges.room[rid].avatar = response.url
+        .replace (/300x300/, conf.avatarSize);
+    }
   }
 }
 
