@@ -284,7 +284,10 @@ like this:
 
 <p>This will make the overlay transparent and make sure it has no scrollbars.
 
-<p>You can add more CSS rules to this; here are some examples:
+<p>You can add more CSS rules to this; here are some examples.
+Just pick the one you want and append them in the Custom CSS option.
+(To make the textbox bigger, you can drag the divider below the preview at the
+top upwards.)
 
 <ol>
 
@@ -338,7 +341,7 @@ like this:
 
 <li>Add a colon after regular chat messages that are not a /me action
   <blockquote><code>
-    .PRIVMSG:not(.action) .nick::after { color: white; content: ":"; }
+    .PRIVMSG:not(.action) &gt; .nick::after { color: white; content: ":"; }
   </code></blockquote>
 
 <li>Do not highlight first time chats by overwriting the default rule
