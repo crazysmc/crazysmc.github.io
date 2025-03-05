@@ -173,6 +173,8 @@ animated ones if enabled in 7TV.
 
 <form name=tchat>
 
+<fieldset style=font-weight:bold>
+
 <p>
 <input id=join name=join size=40>
 <label for=join>
@@ -185,6 +187,8 @@ animated ones if enabled in 7TV.
   Time in seconds until each message disappears again (if unset, only messages
   scrolling out the top will be removed)
 </label>
+
+</fieldset>
 
 <fieldset>
 <legend>Image Options</legend>
@@ -339,7 +343,7 @@ like this:
 
 <li>Do not highlight first time chats by overwriting the default rule
   <blockquote><code>
-    .chat-line[data-first-msg="1"] { background-color: inherit; }
+    .PRIVMSG[data-first-msg="1"] { background-color: inherit; }
   </code></blockquote>
 <hr>
 

@@ -92,6 +92,21 @@ img {
 
 .USERNOTICE {
   background-color: #c466ff64;
+  border-right: 0.5em solid transparent;
+  border-image-slice: 1;
+}
+
+.USERNOTICE[data-msg-param-color="BLUE"] {
+  border-image-source: linear-gradient(#00d6d6, #9146ff);
+}
+.USERNOTICE[data-msg-param-color="GREEN"] {
+  border-image-source: linear-gradient(#00db84, #57bee6);
+}
+.USERNOTICE[data-msg-param-color="ORANGE"] {
+  border-image-source: linear-gradient(#ffb31a, #e0e000);
+}
+.USERNOTICE[data-msg-param-color="PURPLE"] {
+  border-image-source: linear-gradient(#9146ff, #ff75e6);
 }
 
 .emote-notice,
@@ -115,8 +130,14 @@ img {
   font-style: italic;
 }
 
-.chat-line[data-first-msg="1"] {
+.PRIVMSG[data-first-msg="1"] {
   background-color: #487f3f3c;
+}
+.PRIVMSG[data-custom-reward-id] {
+  background-color: #1c7e8d3c;
+}
+.PRIVMSG[data-bits] {
+  background-color: #ffae423c;
 }
 
 .reply i {

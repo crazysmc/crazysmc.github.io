@@ -24,7 +24,7 @@ hr
 
 fieldset
 {
-  margin-bottom: 1em;
+  margin: 1em;
 }
 
 fieldset, legend
@@ -47,6 +47,7 @@ blockquote
 input, select
 {
   font: inherit;
+  line-height: 1;
 }
 
 output

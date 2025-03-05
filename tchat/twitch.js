@@ -134,7 +134,7 @@ function receive (event)
       case 'PART':
         if (!msg.source.startsWith (`${conf.nick}!`))
         {
-          msg.params[1] = msg.command == 'JOIN' ? ' joined' : ' parted';
+          msg.params[1] = msg.command == 'JOIN' ? 'joined' : 'parted';
           const prev = conf.chat.firstChild;
           if (prev?.classList.contains (msg.command))
           {
@@ -377,7 +377,7 @@ function formatChat (msg, p)
     span.classList.add ('system-msg');
     span.textContent = systemMsg;
     if (msg.tags['msg-param-category'] == 'watch-streak')
-      span.textContent = systemMsg.replace (/ this month/, '');
+      span.textContent = systemMsg.replace (/this month /, '');
     const br = document.createElement ('br');
     message.prepend (span, br);
   }
