@@ -126,7 +126,7 @@ img {
 }
 
 .reply i::before {
-  content: "↪ ";
+  content: "\21aa\fe0e\ ";
 }
 
 .emote-stack {
