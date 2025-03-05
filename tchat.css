@@ -69,23 +69,26 @@ ol li::marker
   font-weight: bold;
 }
 
-.block
+#main-params
 {
-  max-width: 30vw;
+  font-weight: bold;
 }
 
-.block .chat-line
+#main-params p
+{
+  margin: 0.8em;
+}
+
+#test .chat-line
 {
   display: block;
 }
 
-.block .reply i
+#test .reply i
 {
   float: none;
 }
 
-.block .nick::after
-{
-  color: white;
-  content: ":";
+.bots .chat-line:has(img.ffz-bot) {
+  display: none !important;
 }

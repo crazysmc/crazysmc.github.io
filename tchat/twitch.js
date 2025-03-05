@@ -68,6 +68,7 @@ function login ()
     document.documentElement.dataset.join = join.length;
   }
   document.documentElement.dataset.scale = conf.emoteScale;
+  document.documentElement.classList.add (opt.getAll ('style'));
 }
 
 function receive (event)
@@ -235,7 +236,7 @@ function displayChat (msg)
   }
   finally
   {
-    if (!p.dataset.duplicate)
+    if (!p.dataset.remove)
       conf.chat.prepend (p);
   }
 }
@@ -272,7 +273,7 @@ function formatChat (msg, p)
     const sid = msg.tags['source-id'];
     if (document.getElementById (sid))
     {
-      p.dataset.duplicate = true;
+      p.dataset.remove = true;
       return;
     }
     p.id = sid;
@@ -348,7 +349,7 @@ function formatChat (msg, p)
       badges.append (img);
     }
 
-  extBadges (rid, uid, badges);
+  extBadges (p, rid, uid, badges);
   if (badges.childNodes.length)
     badges.classList.remove ('hidden');
 
@@ -410,17 +411,24 @@ function extCosmetics (uid, nick)
     nick.classList.add (...conf.cosmetics[uid]);
 }
 
-function extBadges (rid, uid, badges)
+function extBadges (p, rid, uid, badges)
 {
   for (const badge in { ...conf.badges.user[uid],
                         ...conf.badges.room[rid].user?.[uid] })
   {
-    let mod;
-    if (badge == 'ffz/2' &&
-        (mod = badges.querySelector ('img[alt="[moderator/1]"]')))
+    if (badge == 'ffz/2')
     {
-      mod.classList.add ('ffz-bot');
-      continue;
+      if (conf.no.bots)
+      {
+        p.dataset.remove = true;
+        return;
+      }
+      const mod = badges.querySelector ('img[alt="[moderator/1]"]');
+      if (mod)
+      {
+        mod.classList.add ('ffz-bot');
+        continue;
+      }
     }
     const img = document.createElement ('img');
     img.src = conf.badges.user[uid][badge];

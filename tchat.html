@@ -4,12 +4,13 @@
 <title>crazysmc – tChat</title>
 <link rel=stylesheet href=tchat/style.css>
 <link rel=stylesheet href=tchat.css>
+<script src=tchat.js></script>
 
 <h1>tChat – Twitch chat overlay for OBS or browser</h1>
 
 <aside>
 
-<p class=chat-line>
+<p class="chat-line PRIVMSG">
   <span class=badges>
     <img alt=[broadcaster/1]
          src=https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/1
@@ -22,7 +23,7 @@
   <span class=nick style=color:springgreen>crazysmc</span>
   <span class=message>this is a chat message</span>
 
-<p class=chat-line>
+<p class="chat-line PRIVMSG">
   <span class=badges>
     <img alt=[broadcaster/1]
          src=https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/1
@@ -45,7 +46,7 @@
     which will make these bots answer as well
   </span>
 
-<p class=chat-line>
+<p class="chat-line PRIVMSG">
   <span class=badges>
     <img alt=[moderator/1]
          class=ffz-bot
@@ -64,7 +65,7 @@
          src=https://cdn.7tv.app/emote/01F6NCKMP000052X5637DW2XDY/1x.avif>
   </span>
 
-<p class=chat-line>
+<p class="chat-line PRIVMSG">
   <span class=badges>
     <img alt=[moderator/1]
          class=ffz-bot
@@ -100,7 +101,7 @@
   <span class=nick>crazysmc</span>
   <span class=message>added emote otag.</span>
 
-<p class=chat-line data-first-msg=1>
+<p class="chat-line PRIVMSG" data-first-msg=1>
   <span class=nick>FirstTimeChatter</span>
   <span class=message>
     yo bro kinda different question but can you please explain me how do
@@ -108,7 +109,7 @@
     chest it starts filling the shulkers that are inside
   </span>
 
-<p class=chat-line>
+<p class="chat-line PRIVMSG">
   <span class=badges>
     <img alt=[broadcaster/1]
          src=https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/1
@@ -157,7 +158,7 @@ soon as possible.
 
 <p>First time chats are also highlighted as this information is publicly
 available and many chat extensions and clients will show this.
-(see Custom Styles below if you want to disable this)
+(see Options below if you want to disable this)
 
 <p><strong>Shared chat</strong> uses the badges and emotes from the respective
 source channel of each message.
@@ -173,7 +174,7 @@ animated ones if enabled in 7TV.
 
 <form name=tchat>
 
-<fieldset style=font-weight:bold>
+<fieldset id=main-params>
 
 <p>
 <input id=join name=join size=40>
@@ -207,6 +208,82 @@ animated ones if enabled in 7TV.
 <input id=static name=static type=checkbox>
 <label for=static>
   Replace animated emotes, badges and paints with static ones
+</label>
+
+</fieldset>
+
+<fieldset>
+<legend>Optional predefined styles</legend>
+
+<aside id=test>
+
+<p class="chat-line PRIVMSG">
+  <span class=badges>
+    <img alt=[broadcaster/1]
+         src=https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/1
+         ><!--
+ --><img alt=[clip-the-halls/1]
+         src=https://static-cdn.jtvnw.net/badges/v1/ce9e266a-f490-4fb2-9989-aee20036bfa5/1
+         ><!--
+ --><span class=pronouns>He/Him</span>
+  </span>
+  <span class=nick style=color:springgreen>crazysmc</span>
+  <span class=reply>
+    <i>
+      this is a longer message containing emotes like :3 and meow which
+      will make these bots answer as well
+    </i>
+    <span class=message>
+      <span class="nick at" style=color:springgreen>@crazysmc</span>
+      this is a reply to myself
+    </span>
+  </span>
+
+<p class="chat-line PRIVMSG">
+  <span class=badges>
+    <img alt=[moderator/1]
+         class=ffz-bot
+         src=https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1
+         ><!--
+ --><img alt=[partner/1]
+         src=https://static-cdn.jtvnw.net/badges/v1/d12a2e27-16f6-41d0-ab77-b780518f00a3/1
+         ><!--
+ --><img alt=[ffz/4]
+         src=https://cdn.frankerfacez.com/badge/4/1/rounded>
+  </span>
+  <span class=nick style=color:#7c7ce1>Nightbot</span>
+  <span class=message>
+    <img alt=meow
+         class="7tv room"
+         src=https://cdn.7tv.app/emote/01F6NCKMP000052X5637DW2XDY/1x.avif>
+  </span>
+
+<p class="chat-line PRIVMSG" data-first-msg=1>
+  <span class=nick>FirstTimeChatter</span>
+  <span class=message>
+    yo bro kinda different question but can you please explain me how do
+    people fill a chest with shulker boxes
+  </span>
+
+</aside>
+
+<p>
+<input id=colon name=colon type=checkbox>
+<label for=colon>
+  Add a colon after regular chat messages that are not a /me action
+</label>
+
+<p>
+<input id=first name=first type=checkbox>
+<label for=first>
+  Do not highlight first time chats
+</label>
+
+<p>
+<input id=bots name=bots type=checkbox>
+<label for=bots>
+  Hide messages from bots
+  (according to the bot badge from FrankerFaceZ)
 </label>
 
 </fieldset>
@@ -301,36 +378,6 @@ top upwards.)
     body { font-family: 'Roboto Mono', monospace; }
   </code></blockquote>
 
-<aside class=block>
-  <p class=chat-line>
-    <span class=badges>
-      <img alt=[broadcaster/1]
-           src=https://static-cdn.jtvnw.net/badges/v1/5527c58c-fb7d-422d-b71b-f309dcb85cc1/1
-           ><!--
-   --><img alt=[clip-the-halls/1]
-           src=https://static-cdn.jtvnw.net/badges/v1/ce9e266a-f490-4fb2-9989-aee20036bfa5/1
-           ><!--
-   --><span class=pronouns>He/Him</span>
-    </span>
-    <span class=nick style=color:springgreen>crazysmc</span>
-    <span class=reply>
-      <i>
-        this is a longer message containing emotes like :3 and meow which
-        will make these bots answer as well
-      </i>
-      <span class=message>
-        <span class="nick at" style=color:springgreen>@crazysmc</span>
-        this is a reply to myself
-      </span>
-    </span>
-  <p class=chat-line>
-    <span class=nick>FirstTimeChatter</span>
-    <span class=message>
-      yo bro kinda different question but can you please explain me how do
-      people fill a chest with shulker boxes and when they put a hopper to the
-      chest it starts filling the shulkers that are inside
-    </span>
-</aside>
 <li>Remove the hanging indent from long messages, especially useful with long
   user names in narrow spaces (this is applied by default when the available
   width is less than 40 times the font size, depending on the scale option)
@@ -338,31 +385,6 @@ top upwards.)
     .chat-line { display: block; }<br>
     .reply i { float: none; }
   </code></blockquote>
-
-<li>Add a colon after regular chat messages that are not a /me action
-  <blockquote><code>
-    .PRIVMSG:not(.action) &gt; .nick::after { color: white; content: ":"; }
-  </code></blockquote>
-
-<li>Do not highlight first time chats by overwriting the default rule
-  <blockquote><code>
-    .PRIVMSG[data-first-msg="1"] { background-color: inherit; }
-  </code></blockquote>
-<hr>
-
-<aside>
-  <img alt=[ffz/bot]
-       src=https://cdn.frankerfacez.com/badge/2/1/rounded>
-</aside>
-<li>Hide messages by certain bots, the easiest way is by name but you can use
-  other selectors as well
-  <blockquote><code>
-    .chat-line[data-display-name="fossabot" i],<br>
-    .chat-line[data-display-name="nightbot" i] {<br>
-    &nbsp; display: none;<br>
-    }
-  </code></blockquote>
-<hr>
 
 <li>Hide messages by their text content, for example hide commands starting
   with an exclamation mark
@@ -394,49 +416,3 @@ top upwards.)
 <hr>
 
 </ol>
-
-<script>
-'use strict';
-
-const form = document.forms.tchat;
-form.addEventListener('input', input);
-form.addEventListener('submit', clip);
-input();
-
-async function clip(event) {
-  event.preventDefault();
-  await navigator.clipboard.writeText(form.elements.url.textContent);
-}
-
-function input() {
-  const joins = form.elements.join.value.trim();
-  if (!joins)
-    return;
-  let p = '';
-  for (const j of joins.split(/\s+/))
-    p += '&join=' + encodeURIComponent(j);
-  if (form.elements.time.value > 0)
-    p += '&time=' + form.elements.time.value;
-  if (form.elements.scale.value > 1)
-    p += '&scale=' + form.elements.scale.value;
-  if (form.elements.static.checked)
-    p += '&static';
-  if (form.elements.bans.checked)
-    p += '&bans';
-  if (form.elements.chatters.checked)
-    p += '&chatters';
-  if (form.elements.noPronouns.checked)
-    p += '&no=pronouns';
-  if (form.elements.noBttv.checked)
-    p += '&no=bttv';
-  if (form.elements.noFfz.checked)
-    p += '&no=ffz';
-  if (form.elements.no7tv.checked)
-    p += '&no=7tv';
-  const url = new URL('tchat/?' + p.slice(1), location);
-  const a = document.createElement('a');
-  a.href = url;
-  a.textContent = url;
-  form.elements.url.replaceChildren(a);
-}
-</script>

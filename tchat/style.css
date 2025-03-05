@@ -302,3 +302,16 @@ html[data-scale="3"] .badges img.ffz-bot {
   background-color: currentcolor;
   background-size: 100% 100%;
 }
+
+/*
+ * Predefined styles
+ */
+
+.colon .PRIVMSG:not(.action) > .nick::after {
+  color: white;
+  content: ":";
+}
+
+.first .PRIVMSG[data-first-msg="1"] {
+  background-color: inherit;
+}
