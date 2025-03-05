@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2\
-?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+?family=Noto+Color+Emoji\
+&family=Noto+Sans+JP:wght@100..900\
+&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 
 html {
   font-size: 18px;
@@ -16,7 +18,7 @@ html[data-scale="3"] {
 body {
   background-color: #18181b; /* OBS will remove the background */
   color: white;
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Roboto', 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
   margin: 0;
 }
 
