@@ -409,9 +409,38 @@ function readableColor (color)
   if (!match)
     return color;
   const [ r, g, b ] = [ 1, 2, 3 ].map (i => parseInt (match[i], 16));
-  return r * 299 + g * 587 + b * 114 <= 50000
-    ? `hsl(from ${color} h s calc(l + 30))`
-    : color;
+  //return r * 299 + g * 587 + b * 114 <= 50000
+  //  ? `hsl(from ${color} h s calc(l + 30))`
+  //  : color;
+  /* OBS does not support Relative Color Syntax yet */
+  if (r * 299 + g * 587 + b * 114 > 50000)
+    return color;
+  const [ h, s, l ] = rgb2hsl (r, g, b);
+  console.debug (`rgb(${r} ${g} ${b}) == hsl(${h} ${s} ${l})`);
+  return `hsl(${h} ${s} ${l + 30})`;
+}
+
+function rgb2hsl (r, g, b)
+{
+  r /= 255; g /= 255; b /= 255;
+  let h, s, l;
+  const cmin = Math.min(r,g,b), cmax = Math.max(r,g,b), delta = cmax - cmin;
+  if (delta == 0)
+    h = 0;
+  else if (cmax == r)
+    h = ((g - b) / delta) % 6;
+  else if (cmax == g)
+    h = (b - r) / delta + 2;
+  else
+    h = (r - g) / delta + 4;
+  h = Math.round(h * 60);
+  if (h < 0)
+    h += 360;
+  l = (cmax + cmin) / 2;
+  s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+  s = +(s * 100).toFixed(1);
+  l = +(l * 100).toFixed(1);
+  return [ h, s, l ];
 }
 
 function extCosmetics (uid, nick)
