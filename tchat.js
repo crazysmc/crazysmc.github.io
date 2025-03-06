@@ -13,7 +13,7 @@ function init ()
 async function clip (event)
 {
   event.preventDefault ();
-  await navigator.clipboard.writeText (form.elements.url.textContent);
+  await navigator.clipboard.writeText (this.elements.url.textContent);
 }
 
 function input ()
