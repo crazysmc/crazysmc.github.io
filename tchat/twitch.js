@@ -68,7 +68,7 @@ function login ()
     document.documentElement.dataset.join = join.length;
   }
   document.documentElement.dataset.scale = conf.emoteScale;
-  document.documentElement.classList.add (opt.getAll ('style'));
+  document.documentElement.classList.add (...opt.getAll ('style'));
 }
 
 function receive (event)
