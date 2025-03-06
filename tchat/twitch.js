@@ -292,7 +292,8 @@ function formatChat (msg, p)
     conf.colors[uid] = { color, login, since: Date.now () };
   nick.style.color = color;
   nick.textContent = msg.tags['display-name'] || login;
-  if (msg.tags['display-name']?.localeCompare (login, 'en',
+  if (uid &&
+      msg.tags['display-name']?.localeCompare (login, 'en',
                                                { sensitivity: 'base' }))
   {
     const info = document.createElement ('span');
@@ -525,7 +526,7 @@ function atMention (message)
 {
   for (const node of message.childNodes)
     if (node.nodeType == Node.TEXT_NODE)
-      for (const at of node.nodeValue.matchAll (/@\S+/g))
+      for (const at of node.nodeValue.matchAll (/@\w+/g))
       {
         const login = at[0].slice (1)
           .toLowerCase ();
