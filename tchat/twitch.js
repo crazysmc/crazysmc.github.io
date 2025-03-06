@@ -416,7 +416,6 @@ function readableColor (color)
   if (r * 299 + g * 587 + b * 114 > 50000)
     return color;
   const [ h, s, l ] = rgb2hsl (r, g, b);
-  console.debug (`rgb(${r} ${g} ${b}) == hsl(${h} ${s} ${l})`);
   return `hsl(${h} ${s} ${l + 30})`;
 }
 

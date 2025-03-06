@@ -304,7 +304,7 @@ function cssFor7tvPaint (data)
       const x = x_offset * 0.06;
       const y = y_offset * 0.06;
       const r = radius   * 0.06;
-      return `drop-shadow(${x}em ${y}em ${r}em ${num2hex (color)})`;
+      return `drop-shadow(${x}em ${y}em ${r}em #${num2hex (color)})`;
     })
     .join (' ');
   if (filter)
