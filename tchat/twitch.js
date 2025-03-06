@@ -253,7 +253,7 @@ function displayError (msg, err)
 
 function formatChat (msg, p)
 {
-  const sourceNick = msg.source.replace (/!.*/, '');
+  const login = msg.tags.login ?? msg.source.replace (/!.*/, '');
   const uid = msg.tags['user-id'];
   let   rid = msg.tags['room-id'];
 
@@ -289,9 +289,17 @@ function formatChat (msg, p)
   const nick = p.querySelector ('.nick');
   const color = readableColor (msg.tags.color) ?? '';
   if (color)
-    conf.colors[uid] = { color, nick: sourceNick, since: Date.now () };
+    conf.colors[uid] = { color, login, since: Date.now () };
   nick.style.color = color;
-  nick.textContent = msg.tags['display-name'] || sourceNick;
+  nick.textContent = msg.tags['display-name'] || login;
+  if (msg.tags['display-name']?.localeCompare (login, 'en',
+                                               { sensitivity: 'base' }))
+  {
+    const info = document.createElement ('span');
+    info.classList.add ('login');
+    info.textContent = ` (${login})`;
+    nick.append (info);
+  }
   if (uid)
     extCosmetics (uid, nick);
 
@@ -357,7 +365,7 @@ function formatChat (msg, p)
   {
     const pro = document.createElement ('span');
     pro.classList.add ('pronouns', 'hidden');
-    getPronouns (msg.tags.login ?? sourceNick)
+    getPronouns (login)
       .then (text => {
         if (!text)
           return;
@@ -522,7 +530,7 @@ function atMention (message)
         const login = at[0].slice (1)
           .toLowerCase ();
         const [uid, col] = Object.entries (conf.colors)
-          .find (([k, v]) => v.nick == login) ?? [];
+          .find (([k, v]) => v.login == login) ?? [];
         if (!uid)
           continue;
         const nick = document.createElement ('span');

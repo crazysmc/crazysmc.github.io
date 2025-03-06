@@ -90,6 +90,11 @@ img {
   font-weight: bold;
 }
 
+.login {
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
 .USERNOTICE {
   background-color: #c466ff64;
   border-right: 0.5em solid transparent;
