@@ -216,7 +216,9 @@ img.party.shake {
 }
 
 .nick.glow {
-  text-shadow: 0 0 1em color-mix(in srgb, currentcolor 80%, transparent);
+  /* text-shadow: 0 0 1em rgb(from currentcolor r g b / 0.8); */
+  /* OBS does not support Relative Color Syntax yet so we just do opaque */
+  text-shadow: 0 0 1em currentcolor;
 }
 
 /*
