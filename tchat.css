@@ -6,14 +6,16 @@ body
 h1, h2
 {
   background-color: #6d0080;
+  padding: 0.2em 0.3em;
 }
 
 aside
 {
-  background-color: #18181b;
+  filter: drop-shadow(0.1rem 0.1rem 0.3rem black);
   float: right;
-  padding-left: 1em;
   max-width: 50vw;
+  padding-left: 1em;
+  padding: 0.4rem;
 }
 
 hr
@@ -58,6 +60,11 @@ output
   padding: 0.2em 0.3em;
 }
 
+output:empty
+{
+  padding: 0;
+}
+
 ol li
 {
   counter-increment: item;
@@ -67,6 +74,16 @@ ol li::marker
 {
   content: "(" counter(item) ") ";
   font-weight: bold;
+}
+
+p, li
+{
+  margin: 0.7em 0;
+}
+
+aside p
+{
+  margin: 0;
 }
 
 #main-params

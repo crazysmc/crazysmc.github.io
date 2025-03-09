@@ -7,7 +7,9 @@ const conf = {
   nick: 'justinfan64537', // same as anonymous chatterino
   timeout: parseInt (opt.get ('time'), 10) * 1000,
   emoteStyle: opt.has ('static') ? 'static' : 'default',
+  cheermoteStyle: opt.has ('static') ? 'static' : 'animated',
   emoteScale: ({ 2: '2', 3: '3' })[opt.get ('scale')] ?? '1',
+  cheermoteScale: ({ 2: '2', 3: '4' })[opt.get ('scale')] ?? '1',
   badgeScale: ({ 2: 'image_url_2x',
                  3: 'image_url_4x' })[opt.get ('scale')] ?? 'image_url_1x',
   // available logo sizes 600x600, 300x300, 150x150, 70x70, 50x50, 28x28
@@ -26,34 +28,45 @@ const conf = {
   colors: {},
   badges: { global: {}, room: {}, user: {} },
   emotes: { global: { __proto__: null }, room: {}, user: {} },
+  cheermotes: {},
   cosmetics: {},
 };
 
 addEventListener ('load', init);
 
-function init ()
+async function init ()
 {
   conf.chat = document.getElementById ('chat-container');
   const template = document.getElementById ('chat-template');
   conf.template.chatLine = template.content.querySelector ('.chat-line');
   conf.template.reply = template.content.querySelector ('.reply');
 
-  fetch ('https://smc.2ix.at/global.php', conf.fetchOpt)
-    .then (response => response.json ())
-    .then (json => {
-      for (const set of json.data)
-        for (const version of set.versions)
-          conf.badges.global[`${set.set_id}/${version.id}`] =
-            version[conf.badgeScale];
-    })
-    .catch (e => displayError ('Failed to load global Twitch badges', e));
-
+  await getGlobalBadges ();
   conf.ws.addEventListener ('open', login);
   conf.ws.addEventListener ('message', receive);
   conf.ws.open ();
   addEventListener ('beforeunload', () => { conf.ws.close (); });
+
   setInterval (reduceChat, 200);
   setInterval (reduceColors, 300000);
+}
+
+async function getGlobalBadges ()
+{
+  try
+  {
+    const response = await
+      fetch ('https://smc.2ix.at/global.php', conf.fetchOpt);
+    const json = await response.json ();
+    for (const set of json.data)
+      for (const version of set.versions)
+        conf.badges.global[`${set.set_id}/${version.id}`] =
+          version[conf.badgeScale];
+  }
+  catch (e)
+  {
+    displayError ('Failed to load global Twitch badges', e);
+  }
 }
 
 function login ()
@@ -185,24 +198,15 @@ async function joinedRoom (rid, channel)
   if (conf.badges.room[rid])
     return;
   conf.badges.room[rid] = { channel };
-  try
-  {
-    const response = await fetch (`https://smc.2ix.at/user.php?id=${rid}`,
-                                  conf.fetchOpt);
-    const json = await response.json ();
-    for (const set of json.data)
-      for (const version of set.versions)
-        conf.badges.room[rid][`${set.set_id}/${version.id}`] =
-          version[conf.badgeScale];
-  }
-  catch (e)
-  {
-    displayError ('Failed to load channel Twitch badges', e);
-  }
+  conf.cheermotes[rid] = { __proto__: null };
+  await Promise.allSettled ([
+    getChannelBadges (rid),
+    getChannelCheermotes (rid),
+  ]);
   conf.joinedRooms.push (rid);
   document.documentElement.dataset.join = conf.joinedRooms.length;
-  await Promise
-    .allSettled (conf.onJoinRoom.map (callback => callback (rid)));
+  await Promise.allSettled (conf.onJoinRoom
+                            .map (callback => callback (rid)));
   if (!conf.badges.room[rid].avatar ||
       conf.badges.room[rid].avatar.includes ('user-default-pictures'))
     try
@@ -217,6 +221,42 @@ async function joinedRoom (rid, channel)
     {
       displayError ('Failed to load channel avatar icon', e);
     }
+}
+
+async function getChannelBadges (rid)
+{
+  try
+  {
+    const response = await
+      fetch (`https://smc.2ix.at/badges.php?id=${rid}`, conf.fetchOpt);
+    const json = await response.json ();
+    for (const set of json.data)
+      for (const version of set.versions)
+        conf.badges.room[rid][`${set.set_id}/${version.id}`] =
+          version[conf.badgeScale];
+  }
+  catch (e)
+  {
+    displayError ('Failed to load channel Twitch badges', e);
+  }
+}
+
+async function getChannelCheermotes (rid)
+{
+  try
+  {
+    const response = await
+      fetch (`https://smc.2ix.at/cheermotes.php?id=${rid}`, conf.fetchOpt);
+    const json = await response.json ();
+    for (const set of json.data)
+      for (const tier of set.tiers)
+        conf.cheermotes[rid][set.prefix + tier.id] =
+          tier.images.dark[conf.cheermoteStyle][conf.cheermoteScale];
+  }
+  catch (e)
+  {
+    displayError ('Failed to load channel Twitch cheermotes', e);
+  }
 }
 
 function displayChat (msg)
@@ -259,12 +299,11 @@ function formatChat (msg, p)
 
   const channel = p.querySelector ('.channel');
   const img = document.createElement ('img');
-  if (rid)
-    img.src = conf.badges.room[rid]?.avatar ?? '';
-  else
-    img.src = Object.values (conf.badges.room)
-      .find (x => x.channel == msg.params[0])
-      ?.avatar ?? '';
+  const avatarSource = rid
+    ? conf.badges.room[rid]
+    : Object.values (conf.badges.room)
+        .find (x => x.channel == msg.params[0]);
+  img.src = avatarSource?.avatar ?? '';
   img.alt = msg.params[0];
   channel.replaceChildren (img);
   const srid = msg.tags['source-room-id'];
@@ -377,6 +416,9 @@ function formatChat (msg, p)
     badges.append (pro);
   }
 
+  if (msg.tags.bits)
+    cheermotes (rid, message);
+
   extEmotes (rid, uid, message);
   atMention (message);
 
@@ -472,6 +514,27 @@ function extBadges (p, rid, uid, badges)
     img.alt = `[${badge}]`;
     badges.append (img);
   }
+}
+
+function cheermotes (rid, message)
+{
+  for (const node of message.childNodes)
+    if (node.nodeType == Node.TEXT_NODE)
+      for (const word of node.nodeValue.matchAll (/\S+/g))
+      {
+        const emote = (conf.cheermotes[rid][word[0]]);
+        if (!emote)
+          continue;
+        const img = newEmote ();
+        img.classList.add ('cheer');
+        img.src = emote;
+        img.alt = word[0];
+        const next = node.splitText (word.index);
+        next.nodeValue = next.nodeValue.slice (word[0].length);
+        node.after (img);
+        break;
+      }
+  message.normalize ();
 }
 
 function extEmotes (rid, uid, message)
