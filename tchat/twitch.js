@@ -17,6 +17,7 @@ const conf = {
   avatarSize: ({ 2: '50x50', 3: '70x70' })[opt.get ('scale')] ?? '28x28',
   fetchOpt: opt.has ('cache', 'reload') ? { cache: 'reload' } : undefined,
   no: new Proxy (opt.getAll ('no'), { get: (arr, x) => arr.includes (x) }),
+  number: new Intl.NumberFormat ('en'),
   duration: (Intl.DurationFormat
              ? new Intl.DurationFormat ('en', { style: 'narrow' })
              : { format: (x) => `${x.seconds}s` }),
@@ -249,9 +250,18 @@ async function getChannelCheermotes (rid)
       fetch (`https://smc.2ix.at/cheermotes.php?id=${rid}`, conf.fetchOpt);
     const json = await response.json ();
     for (const set of json.data)
+    {
+      conf.cheermotes[rid][set.prefix] = [];
       for (const tier of set.tiers)
-        conf.cheermotes[rid][set.prefix + tier.id] =
-          tier.images.dark[conf.cheermoteStyle][conf.cheermoteScale];
+      {
+        const emote = {
+          min_bits: tier.min_bits,
+          color: tier.color,
+          url: tier.images.dark[conf.cheermoteStyle][conf.cheermoteScale],
+        };
+        conf.cheermotes[rid][set.prefix].push (emote);
+      }
+    }
   }
   catch (e)
   {
@@ -520,18 +530,23 @@ function cheermotes (rid, message)
 {
   for (const node of message.childNodes)
     if (node.nodeType == Node.TEXT_NODE)
-      for (const word of node.nodeValue.matchAll (/\S+/g))
+      for (const word of node.nodeValue.matchAll (/\b(\D+)(\d+)\b/g))
       {
-        const emote = (conf.cheermotes[rid][word[0]]);
+        const bits = parseInt (word[2], 10);
+        const emote = conf.cheermotes[rid][word[1]]
+          ?.findLast (x => x.min_bits <= bits);
         if (!emote)
           continue;
         const img = newEmote ();
-        img.classList.add ('cheer');
-        img.src = emote;
-        img.alt = word[0];
+        img.src = emote.url;
+        img.alt = word[1];
+        const span = document.createElement ('span');
+        span.classList.add ('cheer');
+        span.style.color = emote.color;
+        span.append (img, conf.number.format (bits));
         const next = node.splitText (word.index);
         next.nodeValue = next.nodeValue.slice (word[0].length);
-        node.after (img);
+        node.after (span);
         break;
       }
   message.normalize ();
@@ -621,8 +636,8 @@ function atMention (message)
       {
         const login = at[0].slice (1)
           .toLowerCase ();
-        const [uid, col] = Object.entries (conf.colors)
-          .find (([k, v]) => v.login == login) ?? [];
+        const [ uid, col ] = Object.entries (conf.colors)
+          .find (([ k, v ]) => v.login == login) ?? [];
         if (!uid)
           continue;
         const nick = document.createElement ('span');
