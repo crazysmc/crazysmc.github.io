@@ -184,40 +184,55 @@ img {
  * BetterTTV effects and styles
  */
 
-img.cursed   { filter: grayscale(1) brightness(0.7) contrast(2.5); }
-img.flip-x   { transform: scaleX(-1); }
-img.flip-y   { transform: scaleY(-1); }
-img.rotate-l { transform: rotate(-90deg); }
-img.rotate-r { transform: rotate( 90deg); }
-img.party    { animation: party 1.5s linear     infinite; }
-img.shake    { animation: shake 0.5s step-start infinite; }
+.cursed {
+  --filter: grayscale(1) brightness(0.7) contrast(2.5);
+  filter: var(--filter);
+}
 
-img.party.shake {
+.flip-x   { --transform-flip-x: scaleX(-1); }
+.flip-y   { --transform-flip-y: scaleY(-1); }
+.rotate-l { --transform-rotate: rotate(-90deg); }
+.rotate-r { --transform-rotate: rotate( 90deg); }
+
+.rotate-l.rotate-r { --transform-rotate:; }
+
+.flip-x,
+.flip-y,
+.rotate-l,
+.rotate-r {
+  --transform-rot-flip: var(--transform-rotate,)
+                        var(--transform-flip-y,)
+                        var(--transform-flip-x,);
+  transform: var(--transform-rot-flip);
+}
+
+.party { animation: party 1.5s linear     infinite; }
+.shake { animation: shake 0.5s step-start infinite; }
+
+.party.shake {
   animation: party 1.5s linear infinite, shake 500ms step-start infinite;
 }
 
 @keyframes party {
-  0%   { filter: sepia(0.5) hue-rotate(  0deg) saturate(2.5); }
-  100% { filter: sepia(0.5) hue-rotate(360deg) saturate(2.5); }
+  0%   { filter: var(--filter,) sepia(0.5) hue-rotate(  0deg) saturate(2.5); }
+  100% { filter: var(--filter,) sepia(0.5) hue-rotate(360deg) saturate(2.5); }
 }
 
 @keyframes shake {
-  0%   { transform: translate( 0     ,  0.06em); }
-  10%  { transform: translate( 0.12em,  0     ); }
-  20%  { transform: translate( 0.06em, -0.12em); }
-  30%  { transform: translate(-0.12em,  0.06em); }
-  40%  { transform: translate( 0     , -0.06em); }
-  50%  { transform: translate( 0.12em,  0.12em); }
-  60%  { transform: translate(-0.06em, -0.06em); }
-  70%  { transform: translate(-0.12em,  0.12em); }
-  80%  { transform: translate( 0.12em,  0.06em); }
-  90%  { transform: translate(-0.06em, -0.12em); }
-  100% { transform: translate( 0.06em,  0     ); }
+  0%   { transform: translate( 0     ,  0.06em) var(--transform-rot-flip,); }
+  10%  { transform: translate( 0.12em,  0     ) var(--transform-rot-flip,); }
+  20%  { transform: translate( 0.06em, -0.12em) var(--transform-rot-flip,); }
+  30%  { transform: translate(-0.12em,  0.06em) var(--transform-rot-flip,); }
+  40%  { transform: translate( 0     , -0.06em) var(--transform-rot-flip,); }
+  50%  { transform: translate( 0.12em,  0.12em) var(--transform-rot-flip,); }
+  60%  { transform: translate(-0.06em, -0.06em) var(--transform-rot-flip,); }
+  70%  { transform: translate(-0.12em,  0.12em) var(--transform-rot-flip,); }
+  80%  { transform: translate( 0.12em,  0.06em) var(--transform-rot-flip,); }
+  90%  { transform: translate(-0.06em, -0.12em) var(--transform-rot-flip,); }
+  100% { transform: translate( 0.06em,  0     ) var(--transform-rot-flip,); }
 }
 
-.nick.glow {
-  /* text-shadow: 0 0 1em rgb(from currentcolor r g b / 0.8); */
-  /* OBS does not support Relative Color Syntax yet so we just do opaque */
+.glow {
   text-shadow: 0 0 1em currentcolor;
 }
 
@@ -225,11 +240,11 @@ img.party.shake {
  * FrankerFaceZ effects and styles
  */
 
-img.rainbow     { animation: rainbow     2s   linear infinite; }
-img.hyper-shake { animation: hyper-shake 0.1s linear infinite; }
-img.jam         { animation: jam         0.6s linear infinite; }
-img.bounce      { animation: bounce      0.5s linear infinite; }
-img.hyper-red   {
+.rainbow     { animation: rainbow     2s   linear infinite; }
+.hyper-shake { animation: hyper-shake 0.1s linear infinite; }
+.jam         { animation: jam         0.6s linear infinite; }
+.bounce      { animation: bounce      0.5s linear infinite; }
+.hyper-red   {
   filter: brightness(0.2) sepia(1) brightness(2.2) contrast(3) saturate(8);
 }
 
@@ -284,17 +299,17 @@ img.hyper-red   {
   100%    { transform: scale( 0.8, 1  ); }
 }
 
-.badges img.ffz-bot {
+.badges .ffz-bot {
   background-color: #00ad03;
   border-radius: 0.2em;
   content: url(https://cdn.frankerfacez.com/badge/2/1);
 }
 
-html[data-scale="2"] .badges img.ffz-bot {
+html[data-scale="2"] .badges .ffz-bot {
   content: url(https://cdn.frankerfacez.com/badge/2/2);
 }
 
-html[data-scale="3"] .badges img.ffz-bot {
+html[data-scale="3"] .badges .ffz-bot {
   content: url(https://cdn.frankerfacez.com/badge/2/4);
 }
 
@@ -302,7 +317,7 @@ html[data-scale="3"] .badges img.ffz-bot {
  * 7TV name paints
  */
 
-.nick.paint {
+.paint {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
