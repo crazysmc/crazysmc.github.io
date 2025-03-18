@@ -72,14 +72,19 @@ async function joinFfzRoom (rid)
     if (json.room.vip_badge)
     {
       const rule =
-        `.chat-line[data-room-id="${rid}"] .badges img[alt="[vip/1]"]
+        `.chat-line[data-source-room-id="${rid}"] .badges
+            img[alt="[vip/1]"]
+        ,.chat-line[data-room-id="${rid}"]:not([data-source-room-id]) .badges
+            img[alt="[vip/1]"]
         { content: url(${roomUrl}vip/id/${rid}/${ffz.scale}); }`;
       ffz.css.insertRule (rule, ffz.css.cssRules.length);
     }
     if (json.room.mod_urls)
     {
       const rule =
-        `.chat-line[data-room-id="${rid}"] .badges
+        `.chat-line[data-source-room-id="${rid}"] .badges
+            img[alt="[moderator/1]"]:not(.ffz-bot)
+        ,.chat-line[data-room-id="${rid}"]:not([data-source-room-id]) .badges
             img[alt="[moderator/1]"]:not(.ffz-bot)
         { content: url(${roomUrl}mod/id/${rid}/${ffz.scale}/rounded); }`;
       ffz.css.insertRule (rule, ffz.css.cssRules.length);
