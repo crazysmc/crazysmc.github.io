@@ -63,8 +63,6 @@ async function joinFfzRoom (rid)
     if (response.status == 404)
       return;
     const json = await response.json ();
-    if (!conf.badges.room[rid].channel)
-      conf.badges.room[rid].channel = `#${json.room.id}`;
     conf.emotes.room[rid] ??= { __proto__: null };
     for (const emote of json.sets[json.room.set].emoticons)
       addFfzEmote (emote, conf.emotes.room[rid], 'room');

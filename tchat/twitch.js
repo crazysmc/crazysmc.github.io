@@ -5,17 +5,11 @@ const conf = {
   ws: new ReconnectingWebSocket ('wss://irc-ws.chat.twitch.tv:443', null,
                                  { automaticOpen: false }),
   nick: 'justinfan64537', // same as anonymous chatterino
+  joins: opt.getAll ('join'),
   timeout: parseInt (opt.get ('time'), 10) * 1000,
   emoteStyle: opt.has ('static') ? 'static' : 'default',
-  cheermoteStyle: opt.has ('static') ? 'static' : 'animated',
   emoteScale: ({ 2: '2', 3: '3' })[opt.get ('scale')] ?? '1',
-  cheermoteScale: ({ 2: '2', 3: '4' })[opt.get ('scale')] ?? '1',
-  badgeScale: ({ 2: 'image_url_2x',
-                 3: 'image_url_4x' })[opt.get ('scale')] ?? 'image_url_1x',
-  // available logo sizes 600x600, 300x300, 150x150, 70x70, 50x50, 28x28
-  // -- https://www.teamfortress.tv/post/51230
-  avatarSize: ({ 2: '50x50', 3: '70x70' })[opt.get ('scale')] ?? '28x28',
-  fetchOpt: opt.has ('cache', 'reload') ? { cache: 'reload' } : undefined,
+
   no: new Proxy (opt.getAll ('no'), { get: (arr, x) => arr.includes (x) }),
   number: new Intl.NumberFormat ('en'),
   duration: (Intl.DurationFormat
@@ -29,7 +23,7 @@ const conf = {
   colors: {},
   badges: { global: {}, room: {}, user: {} },
   emotes: { global: { __proto__: null }, room: {}, user: {} },
-  cheermotes: {},
+  cheermotes: { global: { __proto__: null }, room: {} },
   cosmetics: {},
 };
 
@@ -42,7 +36,7 @@ async function init ()
   conf.template.chatLine = template.content.querySelector ('.chat-line');
   conf.template.reply = template.content.querySelector ('.reply');
 
-  await getGlobalBadges ();
+  await getInitialAssets ();
   conf.ws.addEventListener ('open', login);
   conf.ws.addEventListener ('message', receive);
   conf.ws.open ();
@@ -52,34 +46,15 @@ async function init ()
   setInterval (reduceColors, 300000);
 }
 
-async function getGlobalBadges ()
-{
-  try
-  {
-    const response = await
-      fetch ('https://smc.2ix.at/global.php', conf.fetchOpt);
-    const json = await response.json ();
-    for (const set of json.data)
-      for (const version of set.versions)
-        conf.badges.global[`${set.set_id}/${version.id}`] =
-          version[conf.badgeScale];
-  }
-  catch (e)
-  {
-    displayError ('Failed to load global Twitch badges', e);
-  }
-}
-
 function login ()
 {
   conf.ws.send (`NICK ${conf.nick}\r\n`);
   const mem = opt.has ('chatters') ? ' twitch.tv/membership' : '';
   conf.ws.send (`CAP REQ :twitch.tv/tags twitch.tv/commands${mem}\r\n`);
-  const join = opt.getAll ('join');
-  if (join.length)
+  if (conf.joins.length)
   {
-    conf.ws.send (`JOIN #${join.join (',#')}\r\n`);
-    document.documentElement.dataset.join = join.length;
+    conf.ws.send (`JOIN #${conf.joins.join (',#')}\r\n`);
+    document.documentElement.dataset.join = conf.joins.length;
   }
   document.documentElement.dataset.scale = conf.emoteScale;
   document.documentElement.classList.add (...opt.getAll ('style'));
@@ -105,7 +80,7 @@ function receive (event)
         break;
 
       case 'ROOMSTATE':
-        joinedRoom (rid, msg.params[0]);
+        joinedRoom (rid);
         break;
 
       case 'PRIVMSG':
@@ -194,79 +169,16 @@ function reduceColors ()
       delete conf.colors[uid];
 }
 
-async function joinedRoom (rid, channel)
+async function joinedRoom (rid)
 {
-  if (conf.badges.room[rid])
+  if (conf.joinedRooms.includes (rid))
     return;
-  conf.badges.room[rid] = { channel };
-  conf.cheermotes[rid] = { __proto__: null };
-  await Promise.allSettled ([
-    getChannelBadges (rid),
-    getChannelCheermotes (rid),
-  ]);
+  if (!conf.badges.room[rid])
+    await getChannelAssets (rid);
   conf.joinedRooms.push (rid);
   document.documentElement.dataset.join = conf.joinedRooms.length;
   await Promise.allSettled (conf.onJoinRoom
                             .map (callback => callback (rid)));
-  if (!conf.badges.room[rid].avatar ||
-      conf.badges.room[rid].avatar.includes ('user-default-pictures'))
-    try
-    {
-      const response = await
-        fetch (`https://cdn.frankerfacez.com/avatar/twitch/${rid}`,
-               { method: 'HEAD' });
-      conf.badges.room[rid].avatar = response.url
-        .replace (/300x300/, conf.avatarSize);
-    }
-    catch (e)
-    {
-      displayError ('Failed to load channel avatar icon', e);
-    }
-}
-
-async function getChannelBadges (rid)
-{
-  try
-  {
-    const response = await
-      fetch (`https://smc.2ix.at/badges.php?id=${rid}`, conf.fetchOpt);
-    const json = await response.json ();
-    for (const set of json.data)
-      for (const version of set.versions)
-        conf.badges.room[rid][`${set.set_id}/${version.id}`] =
-          version[conf.badgeScale];
-  }
-  catch (e)
-  {
-    displayError ('Failed to load channel Twitch badges', e);
-  }
-}
-
-async function getChannelCheermotes (rid)
-{
-  try
-  {
-    const response = await
-      fetch (`https://smc.2ix.at/cheermotes.php?id=${rid}`, conf.fetchOpt);
-    const json = await response.json ();
-    for (const set of json.data)
-    {
-      conf.cheermotes[rid][set.prefix] = [];
-      for (const tier of set.tiers)
-      {
-        const emote = {
-          min_bits: tier.min_bits,
-          color: tier.color,
-          url: tier.images.dark[conf.cheermoteStyle][conf.cheermoteScale],
-        };
-        conf.cheermotes[rid][set.prefix].push (emote);
-      }
-    }
-  }
-  catch (e)
-  {
-    displayError ('Failed to load channel Twitch cheermotes', e);
-  }
 }
 
 function displayChat (msg)
@@ -326,10 +238,14 @@ function formatChat (msg, p)
       return;
     }
     p.id = sid;
-    joinedRoom (srid, null)
+    joinedRoom (srid)
       .then (() => {
-        img.src = conf.badges.room[srid].avatar ?? '';
-        img.alt = conf.badges.room[srid].channel ?? `#[${srid}]`;
+        img.src = conf.badges.room[srid].avatar;
+        img.alt = conf.badges.room[srid].channel;
+        for (const { img, rid, badge } of msg.lateBadges ?? [])
+          img.src = conf.badges.room[rid]?.[badge] ?? '';
+        for (const args of [...msg.lateEmotes ?? []])
+          extEmotes (...args);
       });
     msg.tags.badges = msg.tags['source-badges'];
     rid = srid;
@@ -364,7 +280,7 @@ function formatChat (msg, p)
 
   if (msg.tags.emotes)
   {
-    const list = text.split(/(?:)/u);
+    const list = text.split (/(?:)/u);
     for (const emote of msg.tags.emotes.split ('/'))
     {
       const [id, ranges] = emote.split (':');
@@ -401,8 +317,15 @@ function formatChat (msg, p)
     for (const badge of msg.tags.badges.split (','))
     {
       const img = document.createElement ('img');
-      img.src = (conf.badges.room[rid]?.[badge] ??
-                 conf.badges.global[badge] ?? '');
+      const url = (conf.badges.room[rid]?.[badge] ??
+                   conf.badges.global[badge]);
+      img.src = url ?? '';
+      if (!url)
+      {
+        (msg.lateBadges ??= []).push ({ img, rid, badge });
+        /* in case joinedRoom finished while setting lateBadges: */
+        img.src = conf.badges.room[rid]?.[badge] ?? '';
+      }
       img.alt = `[${badge}]`;
       badges.append (img);
     }
@@ -429,7 +352,7 @@ function formatChat (msg, p)
   if (msg.tags.bits)
     cheermotes (rid, message);
 
-  extEmotes (rid, uid, message);
+  extEmotes (msg, rid, uid, message);
   atMention (message);
 
   const systemMsg = msg.tags['system-msg'];
@@ -439,10 +362,13 @@ function formatChat (msg, p)
     span.classList.add ('system-msg');
     span.textContent = systemMsg;
     if (msg.tags['msg-param-category'] == 'watch-streak')
-      span.textContent = systemMsg.replace (/this month /, '');
+      span.textContent = systemMsg.replace ('this month ', '');
     const br = document.createElement ('br');
     message.prepend (span, br);
   }
+
+  if (msg.tags['msg-param-color'] == 'PRIMARY')
+    p.style.borderRightColor = conf.badges.room[rid]?.primary ?? '';
 
   const replyTo = msg.tags['reply-parent-msg-body'];
   if (replyTo)
@@ -475,7 +401,7 @@ function rgb2hsl (r, g, b)
 {
   r /= 255; g /= 255; b /= 255;
   let h, s, l;
-  const cmin = Math.min(r,g,b), cmax = Math.max(r,g,b), delta = cmax - cmin;
+  const cmin = Math.min (r,g,b), cmax = Math.max (r,g,b), delta = cmax - cmin;
   if (delta == 0)
     h = 0;
   else if (cmax == r)
@@ -484,13 +410,13 @@ function rgb2hsl (r, g, b)
     h = (b - r) / delta + 2;
   else
     h = (r - g) / delta + 4;
-  h = Math.round(h * 60);
+  h = Math.round (h * 60);
   if (h < 0)
     h += 360;
   l = (cmax + cmin) / 2;
-  s = delta === 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
-  s = +(s * 100).toFixed(1);
-  l = +(l * 100).toFixed(1);
+  s = delta === 0 ? 0 : delta / (1 - Math.abs (2 * l - 1));
+  s = +(s * 100).toFixed (1);
+  l = +(l * 100).toFixed (1);
   return [ h, s, l ];
 }
 
@@ -503,7 +429,7 @@ function extCosmetics (uid, nick)
 function extBadges (p, rid, uid, badges)
 {
   for (const badge in { ...conf.badges.user[uid],
-                        ...conf.badges.room[rid].user?.[uid] })
+                        ...conf.badges.room[rid]?.user?.[uid] })
   {
     if (badge == 'ffz/2')
     {
@@ -533,16 +459,21 @@ function cheermotes (rid, message)
       for (const word of node.nodeValue.matchAll (/\b(\D+)(\d+)\b/g))
       {
         const bits = parseInt (word[2], 10);
-        const emote = conf.cheermotes[rid][word[1]]
-          ?.findLast (x => x.min_bits <= bits);
+        const cid = word[1].toLowerCase ();
+        const emotes = (conf.cheermotes.room[rid]?.[cid] ??
+                        conf.cheermotes.global[cid]);
+        if (!emotes)
+          continue;
+        const [ tier, emote ] = Object.entries (emotes)
+          .findLast (([ k, v ]) => k <= bits);
         if (!emote)
           continue;
         const img = newEmote ();
-        img.src = emote.url;
+        img.src = emote;
         img.alt = word[1];
         const span = document.createElement ('span');
         span.classList.add ('cheer');
-        span.style.color = emote.color;
+        span.style.color = conf.cheermotes.color[tier];
         span.append (img, conf.number.format (bits));
         const next = node.splitText (word.index);
         next.nodeValue = next.nodeValue.slice (word[0].length);
@@ -552,8 +483,10 @@ function cheermotes (rid, message)
   message.normalize ();
 }
 
-function extEmotes (rid, uid, message)
+function extEmotes (msg, rid, uid, message)
 {
+  if (!conf.emotes.room[rid])
+    (msg.lateEmotes ??= []).push (arguments);
   for (const node of message.childNodes)
     if (node.nodeType == Node.TEXT_NODE)
       for (const word of node.nodeValue.matchAll (/\S+/g))
