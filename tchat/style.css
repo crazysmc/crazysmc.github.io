@@ -30,7 +30,7 @@ html[data-join="1"] .channel {
 #chat-container {
   box-sizing: border-box;
   display: flex;
-  filter: drop-shadow(0 0 0.2rem black);
+  filter: drop-shadow(0 0 0.1rem black) drop-shadow(0 0 0.1rem black);
   flex-direction: column-reverse;
   height: 100vh;
   padding: 0.4rem;
@@ -57,6 +57,7 @@ img {
   vertical-align: middle;
 }
 
+.system-msg img,
 .channel img {
   border-radius: 0.5em;
   max-height: 1em;

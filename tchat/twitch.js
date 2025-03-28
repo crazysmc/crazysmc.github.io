@@ -9,6 +9,7 @@ const conf = {
   timeout: parseInt (opt.get ('time'), 10) * 1000,
   emoteStyle: opt.has ('static') ? 'static' : 'default',
   emoteScale: ({ 2: '2', 3: '3' })[opt.get ('scale')] ?? '1',
+  avatarSize: ({ 2: '50x50', 3: '70x70' })[opt.get ('scale')] ?? '28x28',
 
   no: new Proxy (opt.getAll ('no'), { get: (arr, x) => arr.includes (x) }),
   number: new Intl.NumberFormat ('en'),
@@ -147,7 +148,7 @@ function reduceChat ()
   const oldest = Date.now () - conf.timeout;
   for (const line of conf.chat.childNodes)
   {
-    if (line.offsetTop + line.offsetHeight < 0)
+    if (!line.offsetHeight || line.offsetTop + line.offsetHeight < 0)
       line.remove ();
     if (oldest && parseInt (line.dataset.tmiSentTs, 10) < oldest)
       line.classList.add ('fade-out');
@@ -363,6 +364,15 @@ function formatChat (msg, p)
     span.textContent = systemMsg;
     if (msg.tags['msg-param-category'] == 'watch-streak')
       span.textContent = systemMsg.replace ('this month ', '');
+    if (msg.tags['msg-param-profileImageURL'])
+    {
+      const img = document.createElement ('img');
+      img.src = msg.tags['msg-param-profileImageURL']
+        .replace ('%s', conf.avatarSize);
+      img.alt = '';
+      span.prepend (img, ' ');
+      span.normalize ();
+    }
     const br = document.createElement ('br');
     message.prepend (span, br);
   }
