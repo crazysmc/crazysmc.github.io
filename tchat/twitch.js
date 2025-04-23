@@ -438,8 +438,9 @@ function extCosmetics (uid, nick)
 
 function extBadges (p, rid, uid, badges)
 {
-  for (const badge in { ...conf.badges.user[uid],
-                        ...conf.badges.room[rid]?.user?.[uid] })
+  const userBadges = { ...conf.badges.user[uid],
+                       ...conf.badges.room[rid]?.user?.[uid] };
+  for (const badge in userBadges)
   {
     if (badge == 'ffz/2')
     {
@@ -456,7 +457,7 @@ function extBadges (p, rid, uid, badges)
       }
     }
     const img = document.createElement ('img');
-    img.src = conf.badges.user[uid][badge];
+    img.src = userBadges[badge];
     img.alt = `[${badge}]`;
     badges.append (img);
   }
