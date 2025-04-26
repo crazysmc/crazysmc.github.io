@@ -333,10 +333,14 @@ html[data-scale="3"] .badges .ffz-bot {
  */
 
 .colon .PRIVMSG:not(.action) > .nick::after {
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+  background: initial;
   color: white;
   content: ":";
+  filter: initial;
 }
 
 .first .PRIVMSG[data-first-msg="1"] {
-  background-color: inherit;
+  background-color: initial;
 }

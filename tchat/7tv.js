@@ -360,7 +360,7 @@ async function join7tvRoom (rid)
     send7tvJoin (rid);
     if (json.user.avatar_url?.startsWith ('//cdn.7tv.app/'))
       conf.badges.room[rid].avatar = 'https:' + json.user.avatar_url
-        .replace (/\/3x\.(avif|webp)$/,
+        .replace (/\/3x(_static)?\.(avif|webp)$/,
                   `/${x7tv.scale}x${x7tv.emoteStyle}.${x7tv.format}`);
     conf.emotes.room[rid] ??= { __proto__: null };
     for (const emote of json.emote_set?.emotes ?? [])
