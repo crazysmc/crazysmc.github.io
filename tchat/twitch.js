@@ -397,21 +397,17 @@ function readableColor (color)
   if (!match)
     return color;
   const [ r, g, b ] = [ 1, 2, 3 ].map (i => parseInt (match[i], 16));
-  //return r * 299 + g * 587 + b * 114 <= 50000
-  //  ? `hsl(from ${color} h s calc(l + 30))`
-  //  : color;
-  /* OBS does not support Relative Color Syntax yet */
-  if (r * 299 + g * 587 + b * 114 > 50000)
-    return color;
   const [ h, s, l ] = rgb2hsl (r, g, b);
-  return `hsl(${h} ${s} ${l + 30})`;
+  return l >= 50 ? color : `hsl(${h} ${s}% 50%)`;
 }
 
 function rgb2hsl (r, g, b)
 {
   r /= 255; g /= 255; b /= 255;
   let h, s, l;
-  const cmin = Math.min (r,g,b), cmax = Math.max (r,g,b), delta = cmax - cmin;
+  const cmin = Math.min (r, g, b);
+  const cmax = Math.max (r, g, b);
+  const delta = cmax - cmin;
   if (delta == 0)
     h = 0;
   else if (cmax == r)
