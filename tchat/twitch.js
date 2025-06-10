@@ -28,6 +28,8 @@ const conf = {
   cosmetics: {},
 };
 
+if (isNaN (conf.timeout))
+  console.warn (`Could not parse time ${opt.get ('time')} as a number`);
 addEventListener ('load', init);
 
 async function init ()
@@ -176,10 +178,10 @@ async function joinedRoom (rid)
     return;
   if (!conf.badges.room[rid])
     await getChannelAssets (rid);
-  conf.joinedRooms.push (rid);
-  document.documentElement.dataset.join = conf.joinedRooms.length;
   await Promise.allSettled (conf.onJoinRoom
                             .map (callback => callback (rid)));
+  conf.joinedRooms.push (rid);
+  document.documentElement.dataset.join = conf.joinedRooms.length;
 }
 
 function displayChat (msg)

@@ -12,8 +12,19 @@ function init ()
 
 async function clip (event)
 {
+  const form = document.forms.tchat;
   event.preventDefault ();
-  await navigator.clipboard.writeText (this.elements.url.textContent);
+  form.elements.copy.disabled = true;
+  try
+  {
+    await navigator.clipboard.writeText (form.elements.url.textContent);
+    setTimeout (() => { form.elements.copy.disabled = false }, 1000);
+  }
+  catch (e)
+  {
+    console.error (e);
+    form.elements.copy.value = 'Failed to access clipboard';
+  }
 }
 
 function input ()
