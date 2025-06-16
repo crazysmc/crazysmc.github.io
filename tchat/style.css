@@ -172,6 +172,8 @@ img {
   .chat-line { display: block; }
   .reply i   { float: none; }
 }
+.wrap .chat-line { display: block; }
+.wrap .reply i   { float: none; }
 
 .fade-out {
   animation: fade-out 0.4s ease-in-out 1;

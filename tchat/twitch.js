@@ -38,6 +38,9 @@ async function init ()
   const template = document.getElementById ('chat-template');
   conf.template.chatLine = template.content.querySelector ('.chat-line');
   conf.template.reply = template.content.querySelector ('.reply');
+  document.documentElement.classList.add (...opt.getAll ('style'));
+  document.documentElement.dataset.join = conf.joins.length;
+  document.documentElement.dataset.scale = conf.emoteScale;
 
   await getInitialAssets ();
   conf.ws.addEventListener ('open', login);
@@ -55,12 +58,7 @@ function login ()
   const mem = opt.has ('chatters') ? ' twitch.tv/membership' : '';
   conf.ws.send (`CAP REQ :twitch.tv/tags twitch.tv/commands${mem}\r\n`);
   if (conf.joins.length)
-  {
     conf.ws.send (`JOIN #${conf.joins.join (',#')}\r\n`);
-    document.documentElement.dataset.join = conf.joins.length;
-  }
-  document.documentElement.dataset.scale = conf.emoteScale;
-  document.documentElement.classList.add (...opt.getAll ('style'));
 }
 
 function receive (event)

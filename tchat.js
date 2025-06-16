@@ -46,6 +46,7 @@ function input ()
   for (const opt of [
     'colon',
     'first',
+    'wrap',
   ])
     if (form.elements[opt].checked)
     {

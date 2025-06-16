@@ -22,6 +22,7 @@ hr
 {
   border-style: none;
   clear: both;
+  margin: 2em 0;
 }
 
 fieldset
@@ -94,16 +95,6 @@ aside p
 #main-params p
 {
   margin: 0.8em;
-}
-
-#test .chat-line
-{
-  display: block;
-}
-
-#test .reply i
-{
-  float: none;
 }
 
 .bots .chat-line:has(img.ffz-bot) {

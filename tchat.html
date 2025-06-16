@@ -179,13 +179,13 @@ You can also join several channels simultaneously and get a combined view.
 <fieldset id=main-params>
 
 <p>
-<input id=join name=join size=40>
+<input id=join name=join size=40 placeholder=twitch_user>
 <label for=join>
   Channel(s) to join (if multiple, separate with white-space)
 </label>
 
 <p>
-<input id=time name=time type=number min=0 style=width:5em>
+<input id=time name=time type=number min=0 placeholder=60 style=width:5em>
 <label for=time>
   Time in seconds until each message disappears again (if unset, only messages
   scrolling out the top will be removed)
@@ -218,6 +218,10 @@ You can also join several channels simultaneously and get a combined view.
 <legend>Optional predefined styles</legend>
 
 <aside id=test>
+
+<p class="chat-line emote-notice">
+  <span class=nick>style options</span>
+  <span class=message>preview</span>
 
 <p class="chat-line PRIVMSG">
   <span class=badges>
@@ -270,7 +274,7 @@ You can also join several channels simultaneously and get a combined view.
 </aside>
 
 <p>
-<input id=colon name=colon type=checkbox>
+<input id=colon name=colon type=checkbox checked>
 <label for=colon>
   Add a colon after regular chat messages that are not a /me action
 </label>
@@ -286,6 +290,14 @@ You can also join several channels simultaneously and get a combined view.
 <label for=bots>
   Hide messages from bots
   (according to the bot badge from FrankerFaceZ)
+</label>
+
+<p>
+<input id=wrap name=wrap type=checkbox checked>
+<label for=wrap>
+  Force the message to wrap all the way, even in wide viewports.
+  (Removes the hanging indent from long messages, especially useful with long
+  user names in narrow spaces.)
 </label>
 
 </fieldset>
@@ -378,14 +390,6 @@ top upwards.)
     -->display=swap');<br>
     <br>
     body { font-family: 'Roboto Mono', monospace; }
-  </code></blockquote>
-
-<li>Remove the hanging indent from long messages, especially useful with long
-  user names in narrow spaces (this is applied by default when the available
-  width is less than 40 times the font size, depending on the scale option)
-  <blockquote><code>
-    .chat-line { display: block; }<br>
-    .reply i { float: none; }
   </code></blockquote>
 
 <li>Hide messages by their text content, for example hide commands starting
