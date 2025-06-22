@@ -373,14 +373,7 @@ function formatChat (msg, p)
   {
     const pro = document.createElement ('span');
     pro.classList.add ('pronouns', 'hidden');
-    getPronouns (login)
-      .then (text => {
-        if (!text)
-          return;
-        pro.textContent = text;
-        pro.classList.remove ('hidden');
-        badges.classList.remove ('hidden');
-      });
+    getPronouns (login, pro, badges);
     badges.append (pro);
   }
 

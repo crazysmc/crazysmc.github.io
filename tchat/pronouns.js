@@ -23,18 +23,25 @@ function reducePronouns ()
       delete pronouns.user[name];
 }
 
-async function getPronouns (name)
+async function getPronouns (name, pro, badges)
 {
   try
   {
     const cached = pronouns.user[name];
     if (cached)
-      return cached.text ?? '';
-    pronouns.user[name] = { since: Date.now () };
+    {
+      if (cached.text)
+        setPronounsText (text, pro, badges);
+      else
+        cached.sync.push ({ pro, badges });
+      return;
+    }
+
+    pronouns.user[name] = { since: Date.now (), sync: [] };
     const response = await
       fetch (`https://api.pronouns.alejo.io/v1/users/${name}`);
     if (!response.ok)
-      return '';
+      return;
     const json = await response.json ();
     const main = pronouns.def[json.pronoun_id];
     const alt = pronouns.def[json.alt_pronoun_id];
@@ -42,10 +49,20 @@ async function getPronouns (name)
                      : main.singular ? main.subject
                                      : `${main.subject}/${main.object}`;
     pronouns.user[name].text = text;
-    return text;
+    setPronounsText (text, pro, badges);
+    for (const { pro, badges } of pronouns.user[name].sync)
+      setPronounsText (text, pro, badges);
+    delete pronouns.user[name].sync;
   }
   catch (e)
   {
     displayError ('Failed to load chatter pronouns', e);
   }
+}
+
+function setPronounsText (text, pro, badges)
+{
+  pro.textContent = text;
+  pro.classList.remove ('hidden');
+  badges.classList.remove ('hidden');
 }
