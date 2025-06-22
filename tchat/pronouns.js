@@ -31,7 +31,7 @@ async function getPronouns (name, pro, badges)
     if (cached)
     {
       if (cached.text)
-        setPronounsText (text, pro, badges);
+        setPronounsText (cached.text, pro, badges);
       else
         cached.sync.push ({ pro, badges });
       return;

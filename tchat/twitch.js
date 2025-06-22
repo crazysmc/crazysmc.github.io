@@ -328,7 +328,7 @@ function formatChat (msg, p)
           `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}.0`;
         const name = list.splice (start, 1 + end - start, img,
                                   ...new Array (end - start));
-        img.alt = name.join ('');
+        img.title = img.alt = name.join ('');
       }
     }
     for (const c of list)
@@ -504,7 +504,7 @@ function cheermotes (rid, message)
           continue;
         const img = newEmote ();
         img.src = emote;
-        img.alt = word[1];
+        img.title = img.alt = word[1];
         const span = document.createElement ('span');
         span.classList.add ('cheer');
         span.style.color = conf.cheermotes.color[tier];
@@ -533,7 +533,7 @@ function extEmotes (msg, rid, uid, message)
         const img = newEmote ();
         img.classList.add (...emote.source);
         img.src = emote.url;
-        img.alt = word[0];
+        img.title = img.alt = word[0];
         const next = node.splitText (word.index);
         next.nodeValue = next.nodeValue.slice (word[0].length);
         node.after (img);
@@ -586,11 +586,13 @@ function extEmotes (msg, rid, uid, message)
       stack.classList.add ('emote-stack');
       img.replaceWith (stack);
       stack.append (img);
+      stack.title = img.alt;
     }
     if (stack instanceof HTMLSpanElement)
     {
       overlay.remove ();
       stack.append (overlay);
+      stack.title += ' ' + overlay.alt;
     }
   }
 }
