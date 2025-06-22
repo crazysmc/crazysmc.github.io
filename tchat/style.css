@@ -63,6 +63,11 @@ img {
   max-height: 1em;
 }
 
+.timestamp {
+  font-family: monospace;
+  font-size: 0.8em;
+}
+
 .badges {
   flex-shrink: 0;
 }

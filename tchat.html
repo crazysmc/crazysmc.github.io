@@ -3,6 +3,7 @@
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width">
 <title>crazysmc – tChat – Chat overlay for Twitch</title>
+<base target=_blank>
 <link rel=stylesheet href=tchat/style.css>
 <link rel=stylesheet href=tchat.css>
 <script src=tchat.js></script>
@@ -136,10 +137,14 @@
 
 <p>Highly customisable chat reader with support for
 <ul>
-<li><strong>Pronouns</strong>.Alejo.io;
-<li>BetterTTV emotes, badges, glow and live updates;
-<li>FrankerFaceZ emotes and badges; as well as
-<li>7TV emotes, badges, name paints and live updates.
+<li><a href=https://pr.alejo.io/><strong>Pronouns</strong>.Alejo.io</a>;
+<li><a href=https://betterttv.com/>BetterTTV</a>
+  emotes, badges, glow and live updates;
+<li><a href=https://www.frankerfacez.com/>FrankerFaceZ</a>
+  emotes and badges;
+  as well as
+<li><a href=https://7tv.app/>7TV</a>
+  emotes, badges, name paints and live updates.
 </ul>
 
 <p>This also includes <strong>emote effects</strong> like
@@ -168,7 +173,7 @@ animated ones if enabled in 7TV.
 You can also join several channels simultaneously and get a combined view.
 
 <p><a href=https://github.com/crazysmc/crazysmc.github.io/tree/master/tchat
-      style=color:inherit>Open source</a>
+      >Open source</a>
 
 <hr>
 
@@ -177,6 +182,7 @@ You can also join several channels simultaneously and get a combined view.
 <form name=tchat>
 
 <fieldset id=main-params>
+<legend>Main Parameters</legend>
 
 <p>
 <input id=join name=join size=40 placeholder=twitch_user>
@@ -215,7 +221,7 @@ You can also join several channels simultaneously and get a combined view.
 </fieldset>
 
 <fieldset>
-<legend>Optional predefined styles</legend>
+<legend>Optional Predefined Styles</legend>
 
 <aside id=test>
 
@@ -303,7 +309,7 @@ You can also join several channels simultaneously and get a combined view.
 </fieldset>
 
 <fieldset>
-<legend>Natively Hidden Details</legend>
+<legend>Extra Features …</legend>
 
 <p>
 <input id=bans name=bans type=checkbox>
@@ -317,6 +323,15 @@ You can also join several channels simultaneously and get a combined view.
 <label for=chatters>
   Show chatters joining and parting from chat (not received in chats with more
   than 1,000 chatters)
+</label>
+
+<p>
+<input id=rm name=rm type=checkbox>
+<label for=rm>
+  Load recent messages and keep the chat history.
+  This is not useful as an overlay but a nice way to scroll chat history in
+  browser using
+  <a href=https://recent-messages.robotty.de/>recent-messages.robotty.de</a>.
 </label>
 
 </fieldset>

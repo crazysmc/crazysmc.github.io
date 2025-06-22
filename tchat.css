@@ -56,6 +56,7 @@ input, select
 output
 {
   background-color: #dfd;
+  color: #000;
   display: inline-block;
   margin-left: 1em;
   padding: 0.2em 0.3em;
@@ -64,6 +65,11 @@ output
 output:empty
 {
   padding: 0;
+}
+
+a
+{
+  color: inherit;
 }
 
 ol li
@@ -97,6 +103,7 @@ aside p
   margin: 0.8em;
 }
 
-.bots .chat-line:has(img.ffz-bot) {
+.bots .chat-line:has(img.ffz-bot)
+{
   display: none !important;
 }

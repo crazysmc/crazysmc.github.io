@@ -28,8 +28,6 @@ const conf = {
   cosmetics: {},
 };
 
-if (isNaN (conf.timeout))
-  console.warn (`Could not parse time ${opt.get ('time')} as a number`);
 addEventListener ('load', init);
 
 async function init ()
@@ -48,7 +46,10 @@ async function init ()
   conf.ws.open ();
   addEventListener ('beforeunload', () => { conf.ws.close (); });
 
-  setInterval (reduceChat, 200);
+  if (opt.has ('rm'))
+    conf.chat.style.height = 'initial';
+  else
+    setInterval (reduceChat, 200);
   setInterval (reduceColors, 300000);
 }
 
@@ -63,7 +64,9 @@ function login ()
 
 function receive (event)
 {
-  for (const line of event.data.split ('\r\n'))
+  if (!event.split)
+    event.split = event.data.split ('\r\n');
+  for (const line of event.split)
   {
     if (!line)
       continue;
@@ -180,6 +183,28 @@ async function joinedRoom (rid)
                             .map (callback => callback (rid)));
   conf.joinedRooms.push (rid);
   document.documentElement.dataset.join = conf.joinedRooms.length;
+  if (opt.has ('rm'))
+    await loadRecentMessages (conf.badges.room[rid].channel);
+}
+
+async function loadRecentMessages (name)
+{
+  name = name.replace (/^#/, '');
+  try
+  {
+    const response = await fetch ('https://recent-messages.robotty.de/api/' +
+                                  `v2/recent-messages/${name}`);
+    if (!response.ok)
+      throw new Error ('API connection failed');
+    const json = await response.json ();
+    if (!json.messages)
+      throw new Error (json.error);
+    receive ({ split: json.messages });
+  }
+  catch (e)
+  {
+    displayError ('Failed to load recent messages', e);
+  }
 }
 
 function displayChat (msg)
@@ -188,7 +213,7 @@ function displayChat (msg)
   for (const key in msg.tags)
     p.setAttribute ('data-' + key, msg.tags[key]);
   if (!p.dataset.tmiSentTs)
-    p.dataset.tmiSentTs = Date.now ();
+    p.dataset.tmiSentTs = p.dataset.rmReceivedTs ?? Date.now ();
   p.dataset.channel = msg.params[0];
   if (msg.tags.id)
     p.id = msg.tags.id;
@@ -250,6 +275,15 @@ function formatChat (msg, p)
       });
     msg.tags.badges = msg.tags['source-badges'];
     rid = srid;
+  }
+
+  if (opt.has ('rm'))
+  {
+    const ts = document.createElement ('span');
+    ts.classList.add ('timestamp');
+    const date = new Date (parseInt (p.dataset.tmiSentTs, 10));
+    ts.textContent = date.toISOString ();
+    channel.after (ts);
   }
 
   const nick = p.querySelector ('.nick');

@@ -68,6 +68,8 @@ function input ()
     p += '&bans';
   if (form.elements.chatters.checked)
     p += '&chatters';
+  if (form.elements.rm.checked)
+    p += '&rm';
 
   if (form.elements.noPronouns.checked)
     p += '&no=pronouns';
