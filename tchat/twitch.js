@@ -587,12 +587,14 @@ function extEmotes (msg, rid, uid, message)
       img.replaceWith (stack);
       stack.append (img);
       stack.title = img.alt;
+      img.removeAttribute ('title');
     }
     if (stack instanceof HTMLSpanElement)
     {
       overlay.remove ();
       stack.append (overlay);
       stack.title += ' ' + overlay.alt;
+      overlay.removeAttribute ('title');
     }
   }
 }
