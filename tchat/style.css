@@ -164,6 +164,7 @@ img {
 }
 
 .emote-stack {
+  align-items: center;
   display: inline-grid;
   justify-items: center;
 }
