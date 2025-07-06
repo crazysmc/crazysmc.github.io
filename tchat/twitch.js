@@ -7,6 +7,7 @@ const conf = {
   nick: 'justinfan64537', // same as anonymous chatterino
   joins: opt.getAll ('join'),
   timeout: parseInt (opt.get ('time'), 10) * 1000,
+  maxReplyLen: 100,
   emoteStyle: opt.has ('static') ? 'static' : 'default',
   emoteScale: ({ 2: '2', 3: '3' })[opt.get ('scale')] ?? '1',
   avatarSize: ({ 2: '50x50', 3: '70x70' })[opt.get ('scale')] ?? '28x28',
@@ -99,7 +100,7 @@ function receive (event)
         {
           for (const del of conf.chat.querySelectorAll
                (`.chat-line[data-room-id="${rid}"][data-user-id="${uid}"]`))
-            del.remove ();
+            deleteMessage (del);
           const seconds = msg.tags['ban-duration'];
           const action = seconds
             ? 'timed out for ' + conf.duration.format ({ seconds })
@@ -111,7 +112,7 @@ function receive (event)
         {
           for (const del of conf.chat.querySelectorAll
                (`.chat-line[data-room-id="${rid}"]`))
-            del.remove ();
+            deleteMessage (del);
           msg.source = '';
           msg.params[1] = 'The chat has been cleared.';
         }
@@ -120,8 +121,7 @@ function receive (event)
         break;
 
       case 'CLEARMSG':
-        document.getElementById (msg.tags['target-msg-id'])
-          ?.remove ();
+        deleteMessage (document.getElementById (msg.tags['target-msg-id']));
         break;
 
       case 'JOIN':
@@ -171,6 +171,16 @@ function reduceColors ()
   for (const uid in conf.colors)
     if (conf.colors[uid].since < oldest)
       delete conf.colors[uid];
+}
+
+function deleteMessage (msg)
+{
+  if (!msg)
+    return;
+  if (opt.has ('rm'))
+    msg.classList.add ('delete');
+  else
+    msg.remove ();
 }
 
 async function joinedRoom (rid)
@@ -407,10 +417,12 @@ function formatChat (msg, p)
   if (msg.tags['msg-param-color'] == 'PRIMARY')
     p.style.borderRightColor = conf.badges.room[rid]?.primary ?? '';
 
-  const replyTo = msg.tags['reply-parent-msg-body'];
+  let replyTo = msg.tags['reply-parent-msg-body'];
   if (replyTo)
   {
     const reply = conf.template.reply.cloneNode (true);
+    if (opt.has ('style', 'wrap') && replyTo.length > conf.maxReplyLen)
+      replyTo = replyTo.slice (0, conf.maxReplyLen) + '…';
     reply.firstElementChild.textContent = replyTo;
     const replyMsg = reply.querySelector ('.message');
     replyMsg.replaceChildren (...message.childNodes);
@@ -556,6 +568,7 @@ function extEmotes (msg, rid, uid, message)
         prefix.previousSibling.remove ();
       prefix.classList.remove ('prefix');
       prefix.nextSibling.classList.add (...prefix.classList);
+      prefix.nextSibling.title = prefix.alt + ' ' + prefix.nextSibling.title;
       prefix.remove ();
     }
   }
@@ -569,6 +582,7 @@ function extEmotes (msg, rid, uid, message)
     {
       suffix.classList.remove ('suffix');
       suffix.previousSibling.classList.add (...suffix.classList);
+      suffix.previousSibling.title += ' ' + suffix.alt;
       suffix.remove ();
     }
   }

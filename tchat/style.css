@@ -154,8 +154,10 @@ img {
 }
 
 .reply i {
-  font-size: 0.8em;
   float: left;
+  font-size: 0.8em;
+  line-height: initial;
+  margin-top: 0.777778em;
   width: 100%;
 }
 
@@ -172,6 +174,10 @@ img {
 .emote-stack img {
   grid-column-start: 1;
   grid-row-start: 1;
+}
+
+.delete {
+  text-decoration: line-through 0.24em #ff00007f;
 }
 
 @media (max-width: 40rem) {
