@@ -98,9 +98,9 @@ function receive (event)
         const uid = msg.tags['target-user-id'];
         if (uid) /* user timeout or ban */
         {
-          for (const del of conf.chat.querySelectorAll
-               (`.chat-line[data-room-id="${rid}"][data-user-id="${uid}"]`))
-            deleteMessage (del);
+          deleteMessages (
+              `.chat-line[data-room-id="${rid}"][data-user-id="${uid}"], ` +
+              `.chat-line[data-room-id="${rid}"] i[data-user-id="${uid}"]`);
           const seconds = msg.tags['ban-duration'];
           const action = seconds
             ? 'timed out for ' + conf.duration.format ({ seconds })
@@ -110,9 +110,7 @@ function receive (event)
         }
         else /* channel /clear */
         {
-          for (const del of conf.chat.querySelectorAll
-               (`.chat-line[data-room-id="${rid}"]`))
-            deleteMessage (del);
+          deleteMessages (`.chat-line[data-room-id="${rid}"]`);
           msg.source = '';
           msg.params[1] = 'The chat has been cleared.';
         }
@@ -121,7 +119,10 @@ function receive (event)
         break;
 
       case 'CLEARMSG':
-        deleteMessage (document.getElementById (msg.tags['target-msg-id']));
+        const mid = msg.tags['target-msg-id'];
+        deleteMessages (
+            `#${CSS.escape (mid)}, ` +
+            `.chat-line[data-room-id="${rid}"] i[data-msg-id="${mid}"]`);
         break;
 
       case 'JOIN':
@@ -173,14 +174,13 @@ function reduceColors ()
       delete conf.colors[uid];
 }
 
-function deleteMessage (msg)
+function deleteMessages (sel)
 {
-  if (!msg)
-    return;
-  if (opt.has ('rm'))
-    msg.classList.add ('delete');
-  else
-    msg.remove ();
+  for (const msg of conf.chat.querySelectorAll (sel))
+    if (opt.has ('rm'))
+      msg.classList.add ('delete');
+    else
+      msg.remove ();
 }
 
 async function joinedRoom (rid)
@@ -424,6 +424,8 @@ function formatChat (msg, p)
     if (opt.has ('style', 'wrap') && replyTo.length > conf.maxReplyLen)
       replyTo = replyTo.slice (0, conf.maxReplyLen) + '…';
     reply.firstElementChild.textContent = replyTo;
+    reply.firstElementChild.dataset.msgId = msg.tags['reply-parent-msg-id'];
+    reply.firstElementChild.dataset.userId = msg.tags['reply-parent-user-id'];
     const replyMsg = reply.querySelector ('.message');
     replyMsg.replaceChildren (...message.childNodes);
     message.replaceWith (reply);
