@@ -90,7 +90,12 @@ function receive (event)
 
       case 'PRIVMSG':
       case 'USERNOTICE':
+        displayChat (msg);
+        break;
+
       case 'NOTICE':
+        if (opt.has ('rm') && msg.tags['msg-id'] === 'msg_channel_suspended')
+          loadRecentMessages (msg.params[0]);
         displayChat (msg);
         break;
 
