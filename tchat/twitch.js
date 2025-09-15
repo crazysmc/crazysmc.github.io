@@ -48,7 +48,7 @@ async function init ()
   addEventListener ('beforeunload', () => { conf.ws.close (); });
 
   if (opt.has ('rm'))
-    conf.chat.style.height = 'initial';
+    conf.chat.style.overflowY = 'scroll';
   else
     setInterval (reduceChat, 200);
   setInterval (reduceColors, 300000);
