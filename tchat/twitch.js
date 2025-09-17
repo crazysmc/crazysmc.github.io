@@ -227,7 +227,7 @@ function displayChat (msg)
   const p = conf.template.chatLine.cloneNode (true);
   for (const key in msg.tags)
     p.setAttribute ('data-' + key, msg.tags[key]);
-  if (!p.dataset.tmiSentTs)
+  if (!p.dataset.tmiSentTs || conf.no.timestamp)
     p.dataset.tmiSentTs = p.dataset.rmReceivedTs ?? Date.now ();
   p.dataset.channel = msg.params[0];
   if (msg.tags.id)

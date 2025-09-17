@@ -68,6 +68,8 @@ function input ()
     p += '&bans';
   if (form.elements.chatters.checked)
     p += '&chatters';
+  if (form.elements.noTimestamp.checked)
+    p += '&no=timestamp';
   if (form.elements.rm.checked)
     p += '&rm';
 
