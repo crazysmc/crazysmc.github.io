@@ -159,7 +159,7 @@ function reduceChat ()
   {
     if (!line.offsetHeight || line.offsetTop + line.offsetHeight < 0)
       line.remove ();
-    if (oldest && parseInt (line.dataset.tmiSentTs, 10) < oldest)
+    if (oldest && parseInt (line.dataset.ts, 10) < oldest)
       line.classList.add ('fade-out');
   }
   const url = conf.preload.shift ();
@@ -227,8 +227,10 @@ function displayChat (msg)
   const p = conf.template.chatLine.cloneNode (true);
   for (const key in msg.tags)
     p.setAttribute ('data-' + key, msg.tags[key]);
-  if (!p.dataset.tmiSentTs || conf.no.timestamp)
-    p.dataset.tmiSentTs = p.dataset.rmReceivedTs ?? Date.now ();
+  const now = Date.now ();
+  p.dataset.ts = now;
+  if (!p.dataset.tmiSentTs)
+    p.dataset.tmiSentTs = p.dataset.rmReceivedTs ?? now;
   p.dataset.channel = msg.params[0];
   if (msg.tags.id)
     p.id = msg.tags.id;
@@ -249,7 +251,7 @@ function displayError (msg, err)
   console.error (msg, err);
   const p = document.createElement ('p');
   p.classList.add ('error');
-  p.dataset.tmiSentTs = Date.now ();
+  p.dataset.ts = p.dataset.tmiSentTs = Date.now ();
   p.textContent = msg;
   conf.chat.prepend (p);
 }
