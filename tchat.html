@@ -156,15 +156,15 @@
 </ul>
 
 <p>This also includes <strong>emote effects</strong> like
-<em>w! meow</em>
+<q>w! meow →
 <img alt=meow
      style=height:32px;width:64px
-     src=https://cdn.7tv.app/emote/01F6NCKMP000052X5637DW2XDY/1x.avif>
+     src=https://cdn.7tv.app/emote/01F6NCKMP000052X5637DW2XDY/1x.avif></q>
 or
-<em>meow ffzX</em>
+<q>meow ffzX →
 <img alt=meow
      class=flip-x
-     src=https://cdn.7tv.app/emote/01F6NCKMP000052X5637DW2XDY/1x.avif>.
+     src=https://cdn.7tv.app/emote/01F6NCKMP000052X5637DW2XDY/1x.avif></q>.
 
 <p>Mod actions like deleting a message or clearing the chat are actioned as
 soon as possible.
@@ -411,7 +411,12 @@ top upwards.)
 
 <ol>
 
-<li>Change the font of the page, for example to a monospace one
+<li>Change the font of the page, for example to a system local font
+  <blockquote><code>
+    body { font-family: 'Comic Sans MS', cursive; }
+  </code></blockquote>
+  or to a monospace one
+  (@import rules have to be at the top, others can be arranged freely)
   <blockquote><code>
     @import
     url('https://fonts.googleapis.com/css2?<!--
