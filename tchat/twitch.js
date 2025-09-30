@@ -653,7 +653,9 @@ function newEmote ()
     if (img.classList.contains ('rotate-l') ||
         img.classList.contains ('rotate-r'))
       img.style.width = `${img.naturalHeight}px`;
-    else if (img.classList.contains ('grow-x'))
+    else if (img.classList.contains ('grow-x') &&
+             !img.classList.contains ('prefix') &&
+             !img.classList.contains ('suffix'))
     {
       img.style.height = `${img.naturalHeight}px`;
       img.style.width  = `${2 * img.naturalWidth}px`;

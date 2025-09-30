@@ -197,6 +197,13 @@ img {
   100% { opacity: 0; }
 }
 
+img.prefix,
+img.suffix {
+  animation: initial;
+  filter: initial;
+  transform: initial;
+}
+
 /*
  * BetterTTV effects and styles
  */
