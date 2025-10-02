@@ -39,6 +39,7 @@ html[data-join="1"] .channel {
 p {
   line-height: 1.777778;
   margin: 0;
+  overflow: clip;
 }
 
 .error {
@@ -61,11 +62,6 @@ img {
 .channel img {
   border-radius: 0.5em;
   max-height: 1em;
-}
-
-.timestamp {
-  font-family: monospace;
-  font-size: 0.8em;
 }
 
 .badges {
@@ -146,9 +142,13 @@ img {
 .PRIVMSG[data-first-msg="1"] {
   background-color: #487f3f3c;
 }
-.PRIVMSG[data-custom-reward-id] {
+
+.reward-redeemed,
+.PRIVMSG[data-msg-id="highlighted-message"],
+.PRIVMSG[data-custom-reward-id]:not([data-custom-reward-id=""]) {
   background-color: #1c7e8d3c;
 }
+
 .PRIVMSG[data-bits] {
   background-color: #ffae423c;
 }
@@ -202,6 +202,21 @@ img.suffix {
   animation: initial;
   filter: initial;
   transform: initial;
+}
+
+/*
+ * Recent messages reader mode
+ */
+
+.timestamp {
+  font-family: monospace;
+  font-size: 0.8em;
+}
+
+.chat-line[data-flagged]::after {
+  background-color: #f007;
+  content: attr(data-flagged);
+  margin-left: auto;
 }
 
 /*
@@ -353,7 +368,7 @@ html[data-scale="3"] .badges .ffz-bot {
  * Predefined styles
  */
 
-.colon .PRIVMSG:not(.action) > .nick::after {
+.colon .PRIVMSG:not(.action, .reward-redeemed) > .nick::after {
   -webkit-background-clip: initial;
   -webkit-text-fill-color: initial;
   background: initial;

@@ -17,6 +17,8 @@ const conf = {
   duration: (Intl.DurationFormat
              ? new Intl.DurationFormat ('en', { style: 'narrow' })
              : { format: (x) => `${x.seconds}s` }),
+  textEncoder: new TextEncoder (),
+  textDecoder: new TextDecoder (),
 
   template: {},
   joinedRooms: [],
@@ -291,6 +293,7 @@ function formatChat (msg, p)
           extEmotes (...args);
       });
     msg.tags.badges = msg.tags['source-badges'];
+    msg.tags['badge-info'] = msg.tags['source-badge-info'];
     rid = srid;
   }
 
@@ -315,7 +318,7 @@ function formatChat (msg, p)
   {
     const info = document.createElement ('span');
     info.classList.add ('login');
-    info.textContent = ` (${login})`;
+    info.textContent = `\u00A0(${login})`;
     nick.append (info);
   }
   if (uid)
@@ -330,42 +333,41 @@ function formatChat (msg, p)
   }
   p.dataset.text = text;
 
-  if (msg.tags.emotes)
+  if (opt.has ('rm') && msg.tags.flags)
   {
-    const list = text.split (/(?:)/u);
-    for (const emote of msg.tags.emotes.split ('/'))
+    const list = [];
+    for (const flag of msg.tags.flags.split (','))
     {
-      const [id, ranges] = emote.split (':');
-      for (const range of ranges.split (','))
-      {
-        const [start, end] = range.split ('-').map (x => parseInt (x, 10));
-        const img = newEmote ();
-        img.classList.add ('native');
-        img.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' +
-          `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}.0`;
-        const name = list.splice (start, 1 + end - start, img,
-                                  ...new Array (end - start));
-        img.title = img.alt = name.join ('');
-      }
+      const [ , start, end, rest ] = /(\d+)-(\d+)(:.*)/.exec (flag);
+      const utf8 = conf.textEncoder.encode (text);
+      const slice = utf8.slice (start, end - 0 + 1);
+      list.push (conf.textDecoder.decode (slice) + rest);
     }
-    for (const c of list)
-    {
-      if (c == undefined)
-        continue;
-      if (c.nodeType || message.lastChild?.nodeType != Node.TEXT_NODE)
-        message.append (c);
-      else
-        message.lastChild.textContent += c;
-    }
+    p.dataset.flagged = list.join ('; ');
   }
+
+  if (msg.tags.emotes)
+    nativeEmotes (text, msg, message);
   else
     message.textContent = text;
+
+  if (msg.reward)
+  {
+    nick.style.color = conf.colors[uid]?.color;
+    rewardRedeemed (p, msg, uid, message);
+    return;
+  }
 
   if (!msg.tags.id)
     return;
 
   const badges = p.querySelector ('.badges');
   if (msg.tags.badges)
+  {
+    const infos = msg.tags['badge-info']?.split (',');
+    const info = infos
+      ? Object.fromEntries (infos.map (x => x.split ('/')))
+      : {};
     for (const badge of msg.tags.badges.split (','))
     {
       const img = document.createElement ('img');
@@ -379,8 +381,10 @@ function formatChat (msg, p)
         img.src = conf.badges.room[rid]?.[badge] ?? '';
       }
       img.alt = `[${badge}]`;
+      img.title = info[badge.replace (/\/.*/, '')] ?? '';
       badges.append (img);
     }
+  }
 
   extBadges (p, rid, uid, badges);
   if (badges.childNodes.length)
@@ -406,8 +410,6 @@ function formatChat (msg, p)
     const span = document.createElement ('span');
     span.classList.add ('system-msg');
     span.textContent = systemMsg;
-    if (msg.tags['msg-param-category'] == 'watch-streak')
-      span.textContent = systemMsg.replace ('this month ', '');
     if (msg.tags['msg-param-profileImageURL'])
     {
       const img = document.createElement ('img');
@@ -417,8 +419,7 @@ function formatChat (msg, p)
       span.prepend (img, ' ');
       span.normalize ();
     }
-    const br = document.createElement ('br');
-    message.prepend (span, br);
+    message.prepend (span, document.createElement ('br'));
   }
 
   if (msg.tags['msg-param-color'] == 'PRIMARY')
@@ -437,6 +438,54 @@ function formatChat (msg, p)
     replyMsg.replaceChildren (...message.childNodes);
     message.replaceWith (reply);
   }
+}
+
+function nativeEmotes (text, msg, message)
+{
+  const list = text.split (/(?:)/u);
+  for (const emote of msg.tags.emotes.split ('/'))
+  {
+    const [ id, ranges ] = emote.split (':');
+    for (const range of ranges.split (','))
+    {
+      const [ start, end ] = range.split ('-')
+        .map (x => parseInt (x, 10));
+      const img = newEmote ();
+      img.classList.add ('native');
+      img.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' +
+        `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}.0`;
+      const name = list.splice (start, 1 + end - start, img,
+                                ...new Array (end - start));
+      img.title = img.alt = name.join ('');
+    }
+  }
+  for (const c of list)
+  {
+    if (c == undefined)
+      continue;
+    if (c.nodeType || message.lastChild?.nodeType != Node.TEXT_NODE)
+      message.append (c);
+    else
+      message.lastChild.textContent += c;
+  }
+}
+
+function rewardRedeemed (p, msg, uid, message)
+{
+  if (message.textContent)
+  {
+    const rewardId = msg.tags['reward-id'];
+    const sel = `.PRIVMSG[data-custom-reward-id="${rewardId}"]`;
+    const prev = conf.chat.querySelector (sel);
+    if (prev)
+    {
+      message = prev.querySelector ('.message');
+      prev.classList.add ('reward-redeemed');
+      p.dataset.remove = true;
+    }
+    message.prepend (document.createElement ('br'));
+  }
+  message.prepend (...msg.reward);
 }
 
 function readableColor (color)
@@ -511,7 +560,7 @@ function cheermotes (rid, message)
 {
   for (const node of message.childNodes)
     if (node.nodeType == Node.TEXT_NODE)
-      for (const word of node.nodeValue.matchAll (/\b(\D+)(\d+)\b/g))
+      for (const word of node.nodeValue.matchAll (/\b([A-Za-z]+)(\d+)\b/g))
       {
         const bits = parseInt (word[2], 10);
         const cid = word[1].toLowerCase ();
