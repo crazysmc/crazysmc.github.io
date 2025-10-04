@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2\
 ?family=Noto+Color+Emoji\
-&family=Noto+Sans+JP:wght@400..700\
-&family=Roboto:ital,wdth,wght@0,75,400;0,100,400..700;1,100,400\
+&family=Noto+Sans+JP:wght@400..900\
+&family=Roboto:ital,wdth,wght@0,75,400..600;0,100,400..900;1,100,400..600\
 &display=swap');
 
 html {
@@ -64,8 +64,14 @@ img {
   max-height: 1em;
 }
 
-.badges {
+.badges,
+.nick {
   flex-shrink: 0;
+}
+
+.JOIN .nick,
+.PART .nick {
+  flex-shrink: 1;
 }
 
 .badges img {
@@ -119,6 +125,7 @@ img {
 }
 
 .emote-notice,
+.reload-notice,
 .CLEARCHAT,
 .NOTICE {
   color: #fff8;
@@ -163,6 +170,7 @@ img {
 
 .reply i::before {
   content: "\21aa\fe0e\ ";
+  font-style: normal;
 }
 
 .emote-stack {
@@ -379,4 +387,16 @@ html[data-scale="3"] .badges .ffz-bot {
 
 .first .PRIVMSG[data-first-msg="1"] {
   background-color: initial;
+}
+
+.bold body {
+  font-weight: 600;
+}
+
+.bold .nick {
+  font-weight: 900;
+}
+
+.bold .login {
+  font-weight: bold;
 }

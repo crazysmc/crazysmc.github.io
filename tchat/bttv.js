@@ -165,7 +165,10 @@ function updateBttvUser (data)
 }
 
 if (!conf.no.bttv)
+{
   conf.onJoinRoom.push (joinBttvRoom);
+  conf.reloadCmds.bttv = joinBttvRoom;
+}
 
 async function joinBttvRoom (rid)
 {

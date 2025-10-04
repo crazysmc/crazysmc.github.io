@@ -339,7 +339,10 @@ async function load7tvEmoteSet (rid, set)
 }
 
 if (!conf.no['7tv'])
+{
   conf.onJoinRoom.push (join7tvRoom);
+  conf.reloadCmds['7tv'] = join7tvRoom;
+}
 
 async function join7tvRoom (rid)
 {

@@ -62,8 +62,8 @@
          class=ffz-bot
          src=https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1
          ><!--
- --><img alt=[partner/1]
-         src=https://static-cdn.jtvnw.net/badges/v1/d12a2e27-16f6-41d0-ab77-b780518f00a3/1
+ --><img alt=[bot-badge/1]
+         src=https://static-cdn.jtvnw.net/badges/v1/3ffa9565-c35b-4cad-800b-041e60659cf2/1
          ><!--
  --><img alt=[ffz/4]
          src=https://cdn.frankerfacez.com/badge/4/1/rounded>
@@ -81,8 +81,8 @@
          class=ffz-bot
          src=https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1
          ><!--
- --><img alt=[partner/1]
-         src=https://static-cdn.jtvnw.net/badges/v1/d12a2e27-16f6-41d0-ab77-b780518f00a3/1
+ --><img alt=[bot-badge/1]
+         src=https://static-cdn.jtvnw.net/badges/v1/3ffa9565-c35b-4cad-800b-041e60659cf2/1
          ><!--
  --><img alt=[ffz/4]
          src=https://cdn.frankerfacez.com/badge/4/1/rounded>
@@ -180,6 +180,10 @@ The source channel is indicated by default via channel avatar icons, using
 animated ones if enabled in 7TV.
 You can also join several channels simultaneously and get a combined view.
 
+<p>Moderators can force reload the channel emotes by sending
+<q>!tchat reload</q> followed by <q>bttv</q>, <q>ffz</q> and/or <q>7tv</q>,
+just in case the live updates failed.
+
 <p>Runs without a backend, fully in Javascript.
 <a href=https://github.com/crazysmc/crazysmc.github.io/tree/master/tchat
    >Open source</a>
@@ -266,8 +270,8 @@ You can also join several channels simultaneously and get a combined view.
          class=ffz-bot
          src=https://static-cdn.jtvnw.net/badges/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1
          ><!--
- --><img alt=[partner/1]
-         src=https://static-cdn.jtvnw.net/badges/v1/d12a2e27-16f6-41d0-ab77-b780518f00a3/1
+ --><img alt=[bot-badge/1]
+         src=https://static-cdn.jtvnw.net/badges/v1/3ffa9565-c35b-4cad-800b-041e60659cf2/1
          ><!--
  --><img alt=[ffz/4]
          src=https://cdn.frankerfacez.com/badge/4/1/rounded>
@@ -313,6 +317,12 @@ You can also join several channels simultaneously and get a combined view.
   Force the message to wrap all the way, even in wide viewports.
   (Removes the hanging indent from long messages, especially useful with long
   user names in narrow spaces.)
+</label>
+
+<p>
+<input id=bold name=bold type=checkbox>
+<label for=bold>
+  Higher font weights (regular → semibold, bold → heavy)
 </label>
 
 </fieldset>

@@ -107,6 +107,11 @@ aside p
   margin: 0;
 }
 
+aside.bold
+{
+  font-weight: 600;
+}
+
 #main-params
 {
   font-weight: bold;

@@ -47,6 +47,7 @@ function input ()
     'colon',
     'first',
     'wrap',
+    'bold',
   ])
     if (form.elements[opt].checked)
     {

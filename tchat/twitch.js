@@ -7,7 +7,8 @@ const conf = {
   nick: 'justinfan64537', // same as anonymous chatterino
   joins: opt.getAll ('join'),
   timeout: parseInt (opt.get ('time'), 10) * 1000,
-  maxReplyLen: 100,
+  maxReplyLen: 80,
+  cmdPrefix: opt.get ('prefix') ?? '!tchat ',
   emoteStyle: opt.has ('static') ? 'static' : 'default',
   emoteScale: ({ 2: '2', 3: '3' })[opt.get ('scale')] ?? '1',
   avatarSize: ({ 2: '50x50', 3: '70x70' })[opt.get ('scale')] ?? '28x28',
@@ -23,6 +24,7 @@ const conf = {
   template: {},
   joinedRooms: [],
   onJoinRoom: [],
+  reloadCmds: { __proto__: null },
   preload: [],
   colors: {},
   badges: { global: {}, room: {}, user: {} },
@@ -91,6 +93,7 @@ function receive (event)
         break;
 
       case 'PRIVMSG':
+        handleCmd (rid, msg);
       case 'USERNOTICE':
         displayChat (msg);
         break;
@@ -224,6 +227,44 @@ async function loadRecentMessages (name)
   }
 }
 
+async function handleCmd (rid, msg)
+{
+  if (msg.tags.historical ||
+      !/(^|,)(broadcaster|moderator)\/1/.exec (msg.tags.badges) ||
+      !msg.params[1].startsWith (conf.cmdPrefix))
+    return;
+  const line = msg.params[1].slice (conf.cmdPrefix.length);
+  const args = line.split (' ');
+  switch (args[0])
+  {
+    case 'reload':
+      const set = new Set (args.slice (1));
+      for (const service of set.values ())
+        reloadService (rid, msg, service);
+      break;
+
+    case 'refresh-page':
+      setTimeout (() => { location.reload (true) }, 1000);
+      break;
+  }
+}
+
+function reloadService (rid, msg, service)
+{
+  const cmd = conf.reloadCmds[service];
+  if (!cmd)
+    return;
+  if (!cmd.silent)
+  {
+    const notice = `Reloading ${service.toUpperCase ()} channel emotes`;
+    displayChat ({ tags: { reload: service },
+                   source: msg.source,
+                   command: 'reload-notice',
+                   params: [ msg.params[0], notice ] });
+  }
+  cmd (rid);
+}
+
 function displayChat (msg)
 {
   const p = conf.template.chatLine.cloneNode (true);
@@ -318,7 +359,7 @@ function formatChat (msg, p)
   {
     const info = document.createElement ('span');
     info.classList.add ('login');
-    info.textContent = `\u00A0(${login})`;
+    info.textContent = ` (${login})`;
     nick.append (info);
   }
   if (uid)

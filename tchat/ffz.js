@@ -51,8 +51,11 @@ function initFfz ()
     .catch (e => displayError ('Failed to load global FFZ badges', e));
 }
 
-if (!conf.no.bttv)
+if (!conf.no.ffz)
+{
   conf.onJoinRoom.push (joinFfzRoom);
+  conf.reloadCmds.ffz = joinFfzRoom;
+}
 
 async function joinFfzRoom (rid)
 {

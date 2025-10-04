@@ -23,6 +23,17 @@ function reducePronouns ()
       delete pronouns.user[name];
 }
 
+function reloadPronouns ()
+{
+  pronouns.user = { __proto__: null };
+}
+
+if (!conf.no.pronouns)
+{
+  conf.reloadCmds.pronouns = reloadPronouns;
+  conf.reloadCmds.pronouns.silent = true;
+}
+
 async function getPronouns (name, pro, badges)
 {
   try
@@ -44,6 +55,8 @@ async function getPronouns (name, pro, badges)
       return;
     const json = await response.json ();
     const main = pronouns.def[json.pronoun_id];
+    if (!main)
+      return;
     const alt = pronouns.def[json.alt_pronoun_id];
     const text = alt ? `${main.subject}/${alt.subject}`
                      : main.singular ? main.subject
