@@ -41,6 +41,15 @@ async function getUserInfo (variables)
     }
     chatColor
     displayBadges { title, imageURL(size: DOUBLE) }
+    primaryTeam {
+      name
+      displayName
+      owner {
+        id
+        displayName
+        profileImageURL(width: 28)
+      }
+    }
     mods(first: ${gqlConf.pagesize}) {
       edges {
         cursor

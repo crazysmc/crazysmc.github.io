@@ -131,8 +131,7 @@ async function query (event)
       let cursor;
       for (const edge of user[key].edges)
       {
-        const card = makeCard (edge);
-        list.append (card);
+        list.append (makeCard (edge));
         cursor = edge.cursor;
       }
       if (user[key].pageInfo?.hasNextPage)
@@ -145,6 +144,22 @@ async function query (event)
         list.append (more);
       }
     }
+  }
+
+  const team = document.getElementById ('team');
+  const owner = document.getElementById ('owner');
+  if (user.primaryTeam)
+  {
+    team.href = `https://www.twitch.tv/team/${user.primaryTeam.name}`;
+    team.textContent = user.primaryTeam.displayName;
+    const edge = { node: user.primaryTeam.owner };
+    owner.replaceChildren (makeCard (edge));
+  }
+  else
+  {
+    team.removeAttribute ('href');
+    team.textContent = '—';
+    owner.textContent = '—';
   }
 
   const startedValue = user.lastBroadcast?.startedAt;
@@ -188,8 +203,13 @@ function makeCard (edge)
   const card = conf.template.content.firstElementChild.cloneNode (true);
   card.children[0].src = edge.node?.profileImageURL ?? '';
   card.children[1].textContent = edge.node?.displayName ?? '<deleted>';
-  card.children[2].dateTime = edge.grantedAt;
-  card.children[2].textContent = edge.grantedAt.replace (/T.*/, '');
+  if (edge.grantedAt)
+  {
+    card.children[2].dateTime = edge.grantedAt;
+    card.children[2].textContent = edge.grantedAt.replace (/T.*/, '');
+  }
+  else
+    card.children[2].remove ();
   card.dataset.id = edge.node?.id ?? '-null-';
   card.addEventListener ('click', selectUser);
   card.addEventListener ('contextmenu', openUser);

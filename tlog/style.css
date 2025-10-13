@@ -37,6 +37,11 @@ input[type="submit"]
   vertical-align: top;
 }
 
+#owner .card
+{
+  vertical-align: middle;
+}
+
 .card img
 {
   grid-row: span 2;
