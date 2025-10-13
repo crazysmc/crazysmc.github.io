@@ -36,16 +36,14 @@ async function query (event)
   displayError (info);
   const user = info.data?.user ?? {};
   conf.user = user;
-  if (user.id)
+  if (user.id && !opt.has ('q', user.id))
   {
-    if (!opt.has ('q', user.id))
-    {
-      const url = new URL (location);
-      url.searchParams.set ('q', user.id);
-      history.pushState ({ id: user.id, login: user.login }, '', url);
-      document.title = user.login + ' – tLog – User viewer for Twitch';
-    }
+    const url = new URL (location);
+    url.searchParams.set ('q', user.id);
+    history.pushState ({ id: user.id, login: user.login }, '', url);
   }
+  if (user.login)
+    document.title = user.login + ' – tLog – User viewer for Twitch';
   else
     document.title = 'tLog – User viewer for Twitch';
 
