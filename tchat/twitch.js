@@ -17,7 +17,7 @@ const conf = {
   number: new Intl.NumberFormat ('en'),
   duration: (Intl.DurationFormat
              ? new Intl.DurationFormat ('en', { style: 'narrow' })
-             : { format: (x) => `${x.seconds}s` }),
+             : null),
   textEncoder: new TextEncoder (),
   textDecoder: new TextDecoder (),
 
@@ -113,7 +113,7 @@ function receive (event)
               `.chat-line[data-room-id="${rid}"] i[data-user-id="${uid}"]`);
           const seconds = msg.tags['ban-duration'];
           const action = seconds
-            ? 'timed out for ' + conf.duration.format ({ seconds })
+            ? 'timed out for ' + formatDuration ({ seconds })
             : 'permanently banned';
           msg.source = msg.params[1];
           msg.params[1] = `has been ${action}.`;
@@ -527,6 +527,29 @@ function rewardRedeemed (p, msg, uid, message)
     message.prepend (document.createElement ('br'));
   }
   message.prepend (...msg.reward);
+}
+
+function formatDuration (info)
+{
+  if (!conf.duration)
+    return `${info.seconds}s`;
+  let balanced;
+  if (window.Temporal?.Duration)
+  {
+    const duration = Temporal.Duration.from (info);
+    balanced = duration.round ({ largestUnit: 'days' });
+  }
+  else
+  {
+    balanced = info;
+    balanced.days = Math.floor (balanced.seconds / 86400);
+    balanced.seconds -= 86400 * balanced.days;
+    balanced.hours = Math.floor (balanced.seconds / 3600);
+    balanced.seconds -= 3600 * balanced.hours;
+    balanced.minutes = Math.floor (balanced.seconds / 60);
+    balanced.seconds -= 60 * balanced.minutes;
+  }
+  return conf.duration.format (balanced);
 }
 
 function readableColor (color)

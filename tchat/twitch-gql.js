@@ -75,7 +75,8 @@ fragment cheerGroup on CheermoteGroup {
     conf.cheermotes.color = json.data.cheerConfig.displayConfig.colors;
     addCheermoteGroups (json.data.cheerConfig.groups, conf.cheermotes.global);
     for (const user of json.data.users ?? [])
-      addUserAssets (user.id, user);
+      if (user)
+        addUserAssets (user.id, user);
   }
   catch (e)
   {
