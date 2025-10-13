@@ -4,18 +4,27 @@ const opt = new URLSearchParams (location.search);
 const conf = {};
 
 addEventListener ('load', init);
+addEventListener ('popstate', checkParam);
 
 function init ()
 {
   conf.template = document.getElementById ('list');
   document.forms.tlog.addEventListener ('submit', query);
   document.forms.tlog.save.addEventListener ('click', save);
-  const q = opt.get ('q');
-  if (q)
+  checkParam ();
+}
+
+function checkParam (event)
+{
+  if (event?.state)
   {
-    document.forms.tlog.channel.value = q;
-    query ();
+    opt.set ('q', event.state.id);
+    document.title = event.state.login +
+      ' – tLog – User viewer for Twitch';
   }
+  const q = opt.get ('q');
+  document.forms.tlog.channel.value = q ?? '';
+  query ();
 }
 
 async function query (event)
@@ -27,6 +36,18 @@ async function query (event)
   displayError (info);
   const user = info.data?.user ?? {};
   conf.user = user;
+  if (user.id)
+  {
+    if (!opt.has ('q', user.id))
+    {
+      const url = new URL (location);
+      url.searchParams.set ('q', user.id);
+      history.pushState ({ id: user.id, login: user.login }, '', url);
+      document.title = user.login + ' – tLog – User viewer for Twitch';
+    }
+  }
+  else
+    document.title = 'tLog – User viewer for Twitch';
 
   const profileImage = document.getElementById ('profileImage');
   profileImage.firstChild.src = user.small_profileImageURL ?? '';
@@ -171,6 +192,7 @@ function selectUser (event)
 {
   event.preventDefault ();
   document.forms.tlog.channel.value = event.currentTarget.dataset.id;
+  query ();
 }
 
 function openUser (event)

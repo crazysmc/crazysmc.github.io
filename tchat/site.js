@@ -10,6 +10,8 @@ async function init ()
   const template = document.getElementById ('chat-template');
   conf.template.chatLine = template.content.querySelector ('.chat-line');
   conf.template.reply = template.content.querySelector ('.reply');
+  document.title = conf.joins.join (' ') +
+    ' – tChat – Chat overlay for Twitch';
   document.documentElement.classList.add (...opt.getAll ('style'));
   document.documentElement.dataset.join = conf.joins.length;
   document.documentElement.dataset.scale = conf.emoteScale;
