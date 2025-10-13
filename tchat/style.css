@@ -27,6 +27,13 @@ html[data-join="1"] .channel {
   display: none;
 }
 
+#save {
+  position: absolute;
+  right: 1em;
+  top: 1em;
+  z-index: 1;
+}
+
 #chat-container {
   box-sizing: border-box;
   display: flex;

@@ -5,6 +5,7 @@
 <link rel=stylesheet href=style.css>
 <script src=../lib/reconnecting-websocket/reconnecting-websocket.min.js
         ></script>
+<script src=site.js></script>
 <script src=twitch.js></script>
 <script src=twitch-gql.js></script>
 <script src=twitch-hermes.js></script>
@@ -14,6 +15,7 @@
 <script src=7tv.js></script>
 
 <title>tChat – Chat overlay for Twitch</title>
+<input id=save class=hidden type=button value="Save as HTML">
 <main id=chat-container></main>
 <template id=chat-template>
   <p class=chat-line>

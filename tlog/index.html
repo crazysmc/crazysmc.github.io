@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang=en>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width">
+<link rel=stylesheet href=../tchat/style.css>
+<link rel=stylesheet href=../tchat.css>
+<link rel=stylesheet href=style.css>
+<script src=setup.js></script>
+<script src=twitch-gql.js></script>
+<base target=_blank>
+
+<title>tLog – User viewer for Twitch</title>
+
+<h1>tLog – Twitch user viewer and log recorder</h1>
+
+<form name=tlog>
+
+<fieldset>
+<legend>User lookup</legend>
+
+<p>
+<input name=channel id=channel
+       placeholder="639267013 or crazysmc or https://www.twitch.tv/crazysmc">
+<label for=channel>user ID, login or channel link</label>
+
+<p>
+<input name=query type=submit value=Query>
+
+</fieldset>
+
+<fieldset>
+<legend>Channel information</legend>
+
+<p id=error class=hidden>
+
+<p>
+<span class=lbl>profile image:</span> <a id=profileImage><img alt=—></a>
+<span class=lbl>user ID:</span> <code id=id>—</code>
+<span class=lbl>login:</span> <a id=login>—</a>
+<span class=lbl>display name:</span> <a id=displayName>—</a>
+
+<p>
+<span class=lbl>created:</span> <time datetime=P0D id=created>—</time>
+<span class=lbl>updated:</span> <time datetime=P0D id=updated>—</time>
+<span class=lbl>deleted:</span> <time datetime=P0D id=deleted>—</time>
+
+<p>
+<span class=lbl>primary:</span> <span id=primaryColor>—</span>
+<span class=lbl>banner:</span> <a id=bannerImage>—</a>
+<span class=lbl>offline:</span> <a id=offlineImage>—</a>
+
+<p>
+<span class=lbl>description:</span> <span id=description>—</span>
+
+<p>
+<span class=lbl>rules:</span> <span id=rules>—</span>
+
+<p>
+<span class=lbl>roles:</span> <span id=roles>—</span>
+<span class=lbl>color:</span> <span id=chatColor>—</span>
+<span class=lbl>badges:</span> <span id=badges>—</span>
+
+<p>
+<span class=lbl>mods:</span> <span id=mods>—</span>
+
+<p>
+<span class=lbl>vips:</span> <span id=vips>—</span>
+
+<template id=list>
+
+<button class=card
+        title="left click to set input field, right click to open in new tab">
+  <img alt=—>
+  <span>—</span>
+  <time datetime=P0D></time>
+</button>
+
+<input type=button value="More … (not yet implemented)" disabled>
+
+</template>
+
+<p>
+<input name=save type=button value="Save as JSON">
+
+</fieldset>
+
+<fieldset>
+<legend>Recent chat</legend>
+
+<p>
+<a id=tchat>—</a>
+
+</fieldset>
+
+</form>

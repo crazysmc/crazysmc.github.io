@@ -1,0 +1,56 @@
+#channel
+{
+  min-width: 30em;
+}
+
+input[type="button"],
+input[type="submit"]
+{
+  padding: 0.3em 1.5em;
+}
+
+#error
+{
+  background-color: #f88;
+}
+
+.lbl
+{
+  color: #008;
+}
+
+* + .lbl
+{
+  padding-left: 2em;
+}
+
+#login
+{
+  font-family: monospace;
+}
+
+.card
+{
+  display: inline-grid;
+  font: inherit;
+  margin: 0.1em;
+  vertical-align: top;
+}
+
+.card img
+{
+  grid-row: span 2;
+  padding-right: 0.2em;
+}
+
+.card span,
+.card time
+{
+  grid-column: 2;
+}
+
+.card time
+{
+  font-size: 0.8em;
+  text-align: right;
+}
