@@ -147,6 +147,16 @@ async function query (event)
     }
   }
 
+  const startedValue = user.lastBroadcast?.startedAt;
+  const startedTime = document.getElementById ('started');
+  startedTime.textContent = startedValue?.replace (/T.*/, '') ?? '—';
+  startedTime.dateTime = startedValue ?? 'P0D';
+
+  document.getElementById ('game')
+    .textContent = user.lastBroadcast?.game?.displayName ?? '—';
+  document.getElementById ('title')
+    .textContent = user.lastBroadcast?.title ?? '—';
+
   const options = '&style=colon&bans&chatters';
   const tchat = document.getElementById ('tchat');
   if (user.login)

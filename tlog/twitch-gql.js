@@ -65,6 +65,11 @@ async function getUserInfo (variables)
       }
       pageInfo { hasNextPage }
     }
+    lastBroadcast {
+      startedAt
+      game { displayName }
+      title
+    }
   }
 }`,
     variables,
