@@ -71,14 +71,25 @@ img {
   max-height: 1em;
 }
 
+.channel,
+.timestamp,
 .badges,
 .nick {
   flex-shrink: 0;
 }
 
+.message {
+  overflow-wrap: anywhere;
+}
+
 .JOIN .nick,
 .PART .nick {
   flex-shrink: 1;
+}
+
+.JOIN .message,
+.PART .message {
+  overflow-wrap: normal;
 }
 
 .badges img {
@@ -231,7 +242,9 @@ img.suffix {
 .chat-line[data-flagged]::after {
   background-color: #f007;
   content: attr(data-flagged);
+  float: right;
   margin-left: auto;
+  text-wrap: nowrap;
 }
 
 /*

@@ -48,15 +48,19 @@ input[type="submit"]
   padding-right: 0.2em;
 }
 
-.card span,
-.card time
+.card span
 {
   grid-column: 2;
+  max-width: 7em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card time
 {
   font-size: 0.8em;
+  grid-column: 2;
   text-align: right;
 }
 
