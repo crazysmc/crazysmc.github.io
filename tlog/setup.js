@@ -9,8 +9,13 @@ addEventListener ('popstate', checkParam);
 function init ()
 {
   conf.template = document.getElementById ('list');
+  document.forms.tlog.reset ();
   document.forms.tlog.addEventListener ('submit', query);
   document.forms.tlog.save.addEventListener ('click', save);
+  document.getElementById ('follow')
+    .addEventListener ('click', followers);
+  document.forms.tlog.followerOrder.addEventListener ('change', selectOrder);
+  document.forms.tlog.followOrder.addEventListener ('change', selectOrder);
   checkParam ();
 }
 
@@ -30,6 +35,8 @@ function checkParam (event)
 async function query (event)
 {
   event?.preventDefault?.();
+  document.getElementById ('follow-extra')
+    .classList.add ('hidden');
   const text = document.forms.tlog.channel.value.trim ();
   const variables = parse (text);
   const info = variables ? await getUserInfo (variables) ?? {} : {};
@@ -71,6 +78,9 @@ async function query (event)
     time.textContent = value?.replace (/T.*/, '') ?? '—';
     time.dateTime = value ?? 'P0D';
   }
+
+  document.getElementById ('follow')
+    .textContent = user.followers?.totalCount ?? '—';
 
   const primaryColor = document.getElementById ('primaryColor');
   primaryColor.textContent = user.primaryColorHex ?? '—';
@@ -128,21 +138,10 @@ async function query (event)
     if (user[key]?.edges?.length)
     {
       list.replaceChildren ();
-      let cursor;
       for (const edge of user[key].edges)
-      {
         list.append (makeCard (edge));
-        cursor = edge.cursor;
-      }
       if (user[key].pageInfo?.hasNextPage)
-      {
-        const more = conf.template.content.lastElementChild.cloneNode ();
-        more.dataset.id = user.id;
-        more.dataset.key = key;
-        more.dataset.cursor = cursor;
-        more.addEventListener ('click', fetchMore);
-        list.append (more);
-      }
+        list.append (conf.template.content.lastElementChild.cloneNode (true));
     }
   }
 
@@ -201,19 +200,75 @@ function displayError (info)
 function makeCard (edge)
 {
   const card = conf.template.content.firstElementChild.cloneNode (true);
-  card.children[0].src = edge.node?.profileImageURL ?? '';
   card.children[1].textContent = edge.node?.displayName ?? '<deleted>';
-  if (edge.grantedAt)
+  const when = edge.grantedAt ?? edge.followedAt;
+  if (when)
   {
-    card.children[2].dateTime = edge.grantedAt;
-    card.children[2].textContent = edge.grantedAt.replace (/T.*/, '');
+    card.children[2].dateTime = when;
+    card.children[2].textContent = when.replace (/T.*/, '');
   }
+  if (edge.node?.profileImageURL)
+    card.children[0].src = edge.node.profileImageURL;
   else
-    card.children[2].remove ();
+    card.children[0].remove ();
   card.dataset.id = edge.node?.id ?? '-null-';
   card.addEventListener ('click', selectUser);
   card.addEventListener ('contextmenu', openUser);
   return card;
+}
+
+async function followers (event)
+{
+  event.preventDefault ();
+  if (!conf.user?.id)
+    return;
+  const section = document.getElementById ('follow-extra');
+  section.classList.remove ('hidden');
+  section.scrollIntoView (true);
+
+  const variables = { id: conf.user.id };
+  const info = await getFollowInfo (variables) ?? {};
+  displayError (info);
+  const user = info.data?.user ?? {};
+  conf.follow = user;
+
+  const copy = document.getElementById ('follow')
+    .textContent;
+  document.getElementById ('follow2')
+    .textContent = copy;
+
+  const followedGames = user.followedGames?.nodes?.map (x => x.displayName);
+  document.getElementById ('followedGames')
+    .textContent = followedGames?.join (' | ') || '—';
+  document.getElementById ('following')
+    .textContent = user.follows?.totalCount ?? '—';
+
+  for (const key of [ 'asc_followers', 'desc_followers',
+                      'asc_follows', 'desc_follows' ])
+  {
+    const list = document.getElementById (key);
+    list.textContent = '—';
+    if (user[key]?.edges?.length)
+    {
+      list.replaceChildren ();
+      for (const edge of user[key].edges)
+        list.append (makeCard (edge));
+      if (user[key].pageInfo?.hasNextPage)
+        list.append (conf.template.content.lastElementChild.cloneNode (true));
+    }
+  }
+}
+
+function selectOrder (event)
+{
+  for (const option of event.target.options)
+  {
+    const element = document.getElementById (option.value);
+    if (option.selected)
+      element.classList.remove ('hidden');
+    else
+      element.classList.add ('hidden');
+  }
 }
 
 function selectUser (event)
@@ -227,36 +282,6 @@ function openUser (event)
 {
   event.preventDefault ();
   open ('?q=' + event.currentTarget.dataset.id, '_blank');
-}
-
-async function fetchMore (event)
-{
-  event.preventDefault ();
-  const more = event.currentTarget;
-  const { id, key, cursor } = more.dataset;
-  const info = await getMoreInfo (key, { id, cursor });
-  displayError (info);
-  const user = info.data?.user ?? {};
-  if (!user[key])
-    return;
-
-  let cursorNew;
-  for (const edge of user[key].edges ?? [])
-  {
-    const card = makeCard (edge);
-    more.before (card);
-    cursorNew = edge.cursor;
-  }
-  if (user[key].pageInfo?.hasNextPage)
-    more.dataset.cursor = cursorNew;
-  else
-    more.remove ();
-
-  if (conf.user?.id === id)
-  {
-    conf.user[key].edges.push (...(user[key].edges ?? []));
-    conf.user[key].pageInfo = user[key].pageInfo;
-  }
 }
 
 function parse (text)
@@ -275,7 +300,7 @@ function parse (text)
 function save (event)
 {
   event.preventDefault ();
-  if (!conf.user)
+  if (!conf.user?.id)
     return;
   const json = JSON.stringify (conf.user);
   const blob = new Blob ([ json ], { type: 'application/json' });

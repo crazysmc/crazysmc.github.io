@@ -8,7 +8,6 @@ const gqlConf = {
       'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', // public information
     },
   }),
-  pagesize: 100,
 };
 
 async function getUserInfo (variables)
@@ -23,6 +22,7 @@ async function getUserInfo (variables)
     createdAt
     updatedAt
     deletedAt
+    followers(first: 1) { totalCount }
     primaryColorHex
     small_profileImageURL: profileImageURL(width: 70)
     large_profileImageURL: profileImageURL(width: 600)
@@ -40,37 +40,26 @@ async function getUserInfo (variables)
       isStaff
     }
     chatColor
-    displayBadges { title, imageURL(size: DOUBLE) }
+    displayBadges {
+      title
+      imageURL(size: DOUBLE)
+    }
     primaryTeam {
       name
       displayName
-      owner {
-        id
-        displayName
-        profileImageURL(width: 28)
-      }
+      owner { ...user }
     }
-    mods(first: ${gqlConf.pagesize}) {
+    mods(first: 100) {
       edges {
-        cursor
         grantedAt
-        node {
-          id
-          displayName
-          profileImageURL(width: 28)
-        }
+        node { ...user }
       }
       pageInfo { hasNextPage }
     }
-    vips(first: ${gqlConf.pagesize}) {
+    vips(first: 100) {
       edges {
-        cursor
         grantedAt
-        node {
-          id
-          displayName
-          profileImageURL(width: 28)
-        }
+        node { ...user }
       }
       pageInfo { hasNextPage }
     }
@@ -80,6 +69,11 @@ async function getUserInfo (variables)
       title
     }
   }
+}
+fragment user on User {
+  id
+  displayName
+  profileImageURL(width: 28)
 }`,
     variables,
   };
@@ -95,30 +89,41 @@ async function getUserInfo (variables)
   }
 }
 
-async function getMoreInfo (key, variables)
+async function getFollowInfo (variables)
 {
-  if (key != 'mods' && key != 'vips')
-    return;
   const query = { query:
-`query TLogMore($id: ID!, $cursor: Cursor!) {
+`query TLogFollow($id: ID!) {
   user(id: $id, lookupType: ALL) {
-    ${key}(first: ${gqlConf.pagesize}, after: $cursor) {
-      edges {
-        cursor
-        grantedAt
-        node {
-          id
-          displayName
-          profileImageURL(width: 28)
-        }
-      }
-      pageInfo { hasNextPage }
-    }
+    followedGames { nodes { displayName } }
+    asc_followers: followers(first: 100, order: ASC) { ...follower }
+    desc_followers: followers(first: 100, order: DESC) { ...follower }
+    follows(first: 1) { totalCount }
+    asc_follows: follows(first: 100, order: ASC) { ...follow }
+    desc_follows: follows(first: 100, order: DESC) { ...follow }
   }
+}
+fragment follower on FollowerConnection {
+  edges {
+    followedAt
+    node { ...user }
+  }
+  pageInfo { hasNextPage }
+}
+fragment follow on FollowConnection {
+  edges {
+    followedAt
+    node { ...user }
+  }
+  pageInfo { hasNextPage }
+}
+fragment user on User {
+  id
+  displayName
+  profileImageURL(width: 28)
 }`,
     variables,
   };
-  const opt = { body: JSON.stringify (query) };
+  const opt = { body: JSON.stringify (query), };
   try
   {
     const response = await fetch (gqlConf.request, opt);

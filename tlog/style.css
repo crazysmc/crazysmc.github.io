@@ -59,3 +59,9 @@ input[type="submit"]
   font-size: 0.8em;
   text-align: right;
 }
+
+.more
+{
+  padding: 1em;
+  vertical-align: bottom;
+}
