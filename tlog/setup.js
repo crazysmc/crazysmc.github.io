@@ -56,16 +56,10 @@ async function query (event)
 
   const profileImage = document.getElementById ('profileImage');
   profileImage.firstChild.src = user.small_profileImageURL ?? '';
-  if (user.large_profileImageURL)
-    profileImage.href = user.large_profileImageURL;
-  else
-    profileImage.removeAttribute ('href');
+  setHref (profileImage, user.large_profileImageURL);
 
   const login = document.getElementById ('login');
-  if (user.profileURL)
-    login.href = user.profileURL;
-  else
-    login.removeAttribute ('href');
+  setHref (login, user.profileURL);
 
   for (const key of [ 'id', 'login', 'displayName', 'description' ])
     document.getElementById (key)
@@ -94,10 +88,7 @@ async function query (event)
     const value = user[key + 'URL'];
     const image = document.getElementById (key);
     image.textContent = value?.replace (/.*\./, '') ?? '—';
-    if (value)
-      image.href = value;
-    else
-      image.removeAttribute ('href');
+    setHref (image, value);
   }
 
   document.getElementById ('rules')
@@ -145,44 +136,41 @@ async function query (event)
     }
   }
 
-  const team = document.getElementById ('team');
+  setHref (document.getElementById ('team'),
+           `https://www.twitch.tv/team/${user.primaryTeam?.name}`,
+           user.primaryTeam?.displayName);
   const owner = document.getElementById ('owner');
   if (user.primaryTeam)
-  {
-    team.href = `https://www.twitch.tv/team/${user.primaryTeam.name}`;
-    team.textContent = user.primaryTeam.displayName;
-    const edge = { node: user.primaryTeam.owner };
-    owner.replaceChildren (makeCard (edge));
-  }
+    owner.replaceChildren (makeCard ({ node: user.primaryTeam.owner }));
   else
-  {
-    team.removeAttribute ('href');
-    team.textContent = '—';
     owner.textContent = '—';
-  }
 
   const startedValue = user.lastBroadcast?.startedAt;
   const startedTime = document.getElementById ('started');
   startedTime.textContent = startedValue?.replace (/T.*/, '') ?? '—';
   startedTime.dateTime = startedValue ?? 'P0D';
 
-  document.getElementById ('game')
-    .textContent = user.lastBroadcast?.game?.displayName ?? '—';
+  const game = user.lastBroadcast?.game;
+  setHref (document.getElementById ('game'),
+           `https://www.twitch.tv/directory/category/${game?.slug}`,
+           game?.displayName);
   document.getElementById ('title')
     .textContent = user.lastBroadcast?.title ?? '—';
 
   const options = '&style=colon&bans&chatters';
-  const tchat = document.getElementById ('tchat');
-  if (user.login)
-  {
-    tchat.href = `../tchat/?join=${user.login}${options}&rm`;
-    tchat.textContent = 'tChat recent messages';
-  }
+  setHref (document.getElementById ('tchat'),
+           `../tchat/?join=${user.login}${options}&rm`,
+           user.login ? 'tChat recent messages' : null);
+}
+
+function setHref (a, href, text)
+{
+  if (arguments.length == 3 ? text : href)
+    a.href = href;
   else
-  {
-    tchat.removeAttribute ('href');
-    tchat.textContent = '—';
-  }
+    a.removeAttribute ('href');
+  if (arguments.length == 3)
+    a.textContent = text ?? '—';
 }
 
 function displayError (info)
@@ -237,9 +225,21 @@ async function followers (event)
   document.getElementById ('follow2')
     .textContent = copy;
 
-  const followedGames = user.followedGames?.nodes?.map (x => x.displayName);
-  document.getElementById ('followedGames')
-    .textContent = followedGames?.join (' | ') || '—';
+  const followedGames = document.getElementById ('followedGames');
+  followedGames.textContent = '—';
+  if (user.followedGames?.nodes?.length)
+  {
+    followedGames.replaceChildren ();
+    for (const game of user.followedGames.nodes)
+    {
+      const a = document.createElement ('a');
+      a.href = `https://www.twitch.tv/directory/category/${game.slug}`;
+      a.textContent = game.displayName;
+      followedGames.append (a, ' | ');
+    }
+    followedGames.lastChild.remove ();
+  }
+
   document.getElementById ('following')
     .textContent = user.follows?.totalCount ?? '—';
 

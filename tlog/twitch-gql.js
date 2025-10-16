@@ -65,7 +65,10 @@ async function getUserInfo (variables)
     }
     lastBroadcast {
       startedAt
-      game { displayName }
+      game {
+        slug
+        displayName
+      }
       title
     }
   }
@@ -94,7 +97,12 @@ async function getFollowInfo (variables)
   const query = { query:
 `query TLogFollow($id: ID!) {
   user(id: $id, lookupType: ALL) {
-    followedGames { nodes { displayName } }
+    followedGames {
+      nodes {
+        slug
+        displayName
+      }
+    }
     asc_followers: followers(first: 100, order: ASC) { ...follower }
     desc_followers: followers(first: 100, order: DESC) { ...follower }
     follows(first: 1) { totalCount }
