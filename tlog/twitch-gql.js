@@ -10,10 +10,28 @@ const gqlConf = {
   }),
 };
 
-async function getUserInfo (variables)
+async function gqlQuery (query, variables)
 {
-  const query = { query:
-`query TLogUser($id: ID, $login: String) {
+  const opt = { body: JSON.stringify ({ query, variables }) };
+  try
+  {
+    const response = await fetch (gqlConf.request, opt);
+    return await response.json ();
+  }
+  catch (e)
+  {
+    console.error (e);
+  }
+}
+
+function gql (strings, ...values)
+{
+  const query = String.raw ({ raw: strings }, ...values);
+  return variables => gqlQuery (query.trim (), variables);
+}
+
+const getUserInfo = gql`
+query TLogUser($id: ID, $login: String) {
   user(id: $id, login: $login, lookupType: ALL) {
     id
     login
@@ -77,25 +95,10 @@ fragment user on User {
   id
   displayName
   profileImageURL(width: 28)
-}`,
-    variables,
-  };
-  const opt = { body: JSON.stringify (query) };
-  try
-  {
-    const response = await fetch (gqlConf.request, opt);
-    return await response.json ();
-  }
-  catch (e)
-  {
-    console.error (e);
-  }
-}
+}`;
 
-async function getFollowInfo (variables)
-{
-  const query = { query:
-`query TLogFollow($id: ID!) {
+const getFollowInfo = gql`
+query TLogFollow($id: ID!) {
   user(id: $id, lookupType: ALL) {
     followedGames {
       nodes {
@@ -128,17 +131,4 @@ fragment user on User {
   id
   displayName
   profileImageURL(width: 28)
-}`,
-    variables,
-  };
-  const opt = { body: JSON.stringify (query), };
-  try
-  {
-    const response = await fetch (gqlConf.request, opt);
-    return await response.json ();
-  }
-  catch (e)
-  {
-    console.error (e);
-  }
-}
+}`;

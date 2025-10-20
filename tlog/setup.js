@@ -58,12 +58,10 @@ async function query (event)
   profileImage.firstChild.src = user.small_profileImageURL ?? '';
   setHref (profileImage, user.large_profileImageURL);
 
-  const login = document.getElementById ('login');
-  setHref (login, user.profileURL);
-
   for (const key of [ 'id', 'login', 'displayName', 'description' ])
     document.getElementById (key)
       .textContent = user[key] ?? '—';
+  setHref (document.getElementById ('login'), user.profileURL);
 
   for (const key of [ 'created', 'updated', 'deleted' ])
   {
@@ -72,17 +70,10 @@ async function query (event)
     time.textContent = value?.replace (/T.*/, '') ?? '—';
     time.dateTime = value ?? 'P0D';
   }
+  setHref (document.getElementById ('follow'), '#follow-extra',
+           user.followers?.totalCount);
 
-  document.getElementById ('follow')
-    .textContent = user.followers?.totalCount ?? '—';
-
-  const primaryColor = document.getElementById ('primaryColor');
-  primaryColor.textContent = user.primaryColorHex ?? '—';
-  if (user.primaryColorHex)
-    primaryColor.style.backgroundColor = '#' + user.primaryColorHex;
-  else
-    primaryColor.style.removeProperty ('background-color');
-
+  setColor (document.getElementById ('primaryColor'), user.primaryColorHex);
   for (const key of [ 'bannerImage', 'offlineImage' ])
   {
     const value = user[key + 'URL'];
@@ -100,13 +91,7 @@ async function query (event)
     .join (', ');
   document.getElementById ('roles')
     .textContent = roles || '—';
-
-  const chatColor = document.getElementById ('chatColor');
-  chatColor.textContent = user.chatColor ?? '—';
-  if (user.chatColor)
-    chatColor.style.backgroundColor = user.chatColor;
-  else
-    chatColor.style.removeProperty ('background-color');
+  setColor (document.getElementById ('chatColor'), user.chatColor);
 
   const badges = document.getElementById ('badges');
   badges.textContent = '—';
@@ -173,16 +158,36 @@ function setHref (a, href, text)
     a.textContent = text ?? '—';
 }
 
+function setColor (span, color)
+{
+  color = color?.replace (/^#?/, '#');
+  span.textContent = color ?? '—';
+  if (color)
+  {
+    span.style.backgroundColor = color;
+    let contrastColor = `contrast-color(${color})`;
+    if (!CSS.supports ('color', contrastColor))
+    {
+      const [ r, g, b ] = color.match (/^#(..)(..)(..)$/)
+        .slice (1)
+        .map (x => parseInt (x, 16));
+      contrastColor = r * 0.299 + g * 0.587 + b * 0.114 <= 150
+        ? 'white' : 'black';
+    }
+    span.style.color = contrastColor;
+  }
+  else
+  {
+    span.style.removeProperty ('background-color');
+    span.style.removeProperty ('color');
+  }
+}
+
 function displayError (info)
 {
   const error = document.getElementById ('error');
-  if (info.errors)
-  {
-    error.textContent = JSON.stringify (info.errors);
-    error.classList.remove ('hidden');
-  }
-  else
-    error.classList.add ('hidden');
+  error.textContent = JSON.stringify (info.errors);
+  error.classList.toggle ('hidden', !info.errors);
 }
 
 function makeCard (edge)
@@ -264,10 +269,7 @@ function selectOrder (event)
   for (const option of event.target.options)
   {
     const element = document.getElementById (option.value);
-    if (option.selected)
-      element.classList.remove ('hidden');
-    else
-      element.classList.add ('hidden');
+    element.classList.toggle ('hidden', !option.selected);
   }
 }
 

@@ -120,7 +120,8 @@ function readableColor (color)
   const match = color?.match (/^#(..)(..)(..)$/);
   if (!match)
     return color;
-  const [ r, g, b ] = [ 1, 2, 3 ].map (i => parseInt (match[i], 16));
+  const [ r, g, b ] = match.slice (1)
+    .map (x => parseInt (x, 16));
   const [ h, s, l ] = rgb2hsl (r, g, b);
   return l >= 50 ? color : `hsl(${h} ${s}% 50%)`;
 }
