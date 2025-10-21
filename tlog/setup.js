@@ -8,12 +8,15 @@ addEventListener ('popstate', checkParam);
 
 function init ()
 {
-  conf.template = document.getElementById ('list');
+  conf.cards = document.getElementById ('cards');
+  conf.preds = document.getElementById ('preds');
   document.forms.tlog.reset ();
   document.forms.tlog.addEventListener ('submit', query);
   document.forms.tlog.save.addEventListener ('click', save);
   document.getElementById ('follow')
     .addEventListener ('click', followers);
+  document.getElementById ('pred')
+    .addEventListener ('click', predictions);
   document.forms.tlog.followerOrder.addEventListener ('change', selectOrder);
   document.forms.tlog.followOrder.addEventListener ('change', selectOrder);
   checkParam ();
@@ -35,8 +38,9 @@ function checkParam (event)
 async function query (event)
 {
   event?.preventDefault?.();
-  document.getElementById ('follow-extra')
-    .classList.add ('hidden');
+  for (const key of [ 'follow-extra', 'pred-extra' ])
+    document.getElementById (key)
+      .classList.add ('hidden');
   const text = document.forms.tlog.channel.value.trim ();
   const variables = parse (text);
   const info = variables ? await getUserInfo (variables) ?? {} : {};
@@ -117,7 +121,7 @@ async function query (event)
       for (const edge of user[key].edges)
         list.append (makeCard (edge));
       if (user[key].pageInfo?.hasNextPage)
-        list.append (conf.template.content.lastElementChild.cloneNode (true));
+        list.append (conf.cards.content.lastElementChild.cloneNode (true));
     }
   }
 
@@ -141,6 +145,14 @@ async function query (event)
            game?.displayName);
   document.getElementById ('title')
     .textContent = user.lastBroadcast?.title ?? '—';
+
+  const count =
+    (user.channel?.activePredictionEvents?.length ?? 0) +
+    (user.channel?.lockedPredictionEvents?.length ?? 0) +
+    (user.channel?.resolvedPredictionEvents?.edges?.length ?? 0);
+  const plus = user.channel?.resolvedPredictionEvents?.pageInfo?.hasNextPage;
+  setHref (document.getElementById ('pred'), '#pred-extra',
+           count ? `load… (${count}${plus ? '+' : ''})` : null);
 
   const options = '&style=colon&bans&chatters';
   setHref (document.getElementById ('tchat'),
@@ -192,13 +204,14 @@ function displayError (info)
 
 function makeCard (edge)
 {
-  const card = conf.template.content.firstElementChild.cloneNode (true);
+  const card = conf.cards.content.firstElementChild.cloneNode (true);
   card.children[1].textContent = edge.node?.displayName ?? '<deleted>';
   const when = edge.grantedAt ?? edge.followedAt;
   if (when)
   {
     card.children[2].dateTime = when;
     card.children[2].textContent = when.replace (/T.*/, '');
+    card.title = when + '\n' + card.title;
   }
   if (edge.node?.profileImageURL)
     card.children[0].src = edge.node.profileImageURL;
@@ -259,9 +272,146 @@ async function followers (event)
       for (const edge of user[key].edges)
         list.append (makeCard (edge));
       if (user[key].pageInfo?.hasNextPage)
-        list.append (conf.template.content.lastElementChild.cloneNode (true));
+        list.append (conf.cards.content.lastElementChild.cloneNode (true));
     }
   }
+}
+
+async function predictions (event)
+{
+  event.preventDefault ();
+  if (!conf.user?.id)
+    return;
+  const section = document.getElementById ('pred-extra');
+  section.classList.remove ('hidden');
+  section.scrollIntoView (true);
+
+  const variables = { id: conf.user.id };
+  const info = await getPredInfo (variables) ?? {};
+  displayError (info);
+  const channel = info.data?.channel ?? {};
+  conf.channel = channel;
+
+  const list = document.getElementById ('pred-list');
+  list.replaceChildren ();
+  for (const pred of channel.activePredictionEvents ?? [])
+    list.append (makePred (pred));
+  for (const pred of channel.lockedPredictionEvents ?? [])
+    list.append (makePred (pred));
+  let cursor;
+  for (const edge of channel.resolvedPredictionEvents?.edges ?? [])
+  {
+    list.append (makePred (edge.node));
+    cursor = edge.cursor;
+  }
+  if (channel.resolvedPredictionEvents?.pageInfo?.hasNextPage)
+  {
+    const more = conf.preds.content.lastElementChild.cloneNode (true);
+    more.firstChild.dataset.cursor = cursor;
+    more.firstChild.addEventListener ('click', morePredictions);
+    list.append (more);
+  }
+  if (!list.children.length)
+  {
+    const li = document.createElement ('li');
+    li.textContent = '—';
+    list.append (li);
+  }
+}
+
+function makePred (pred)
+{
+  const li = conf.preds.content.firstElementChild.cloneNode (true);
+  li.querySelector ('.status')
+    .textContent = pred.status;
+  for (const key of [ 'created', 'locked', 'ended' ])
+  {
+    const actor = pred[key + 'By'];
+    const when = pred[key + 'At'];
+    let card;
+    switch (actor.__typename)
+    {
+      case 'ExtensionClient': // TODO find a channel where this exists
+        card = document.createElement ('a');
+        card.textContent = `${actor.name} (${when.replace (/T.*/, '')})`;
+        card.title = when + '\n' + actor.organization?.name;
+        if (actor.organization?.url)
+          card.href = actor.organization.url;
+        break;
+
+      case 'User':
+        card = makeCard ({ node: actor, grantedAt: when });
+        break;
+
+      default:
+        if (key != 'locked' || !pred.predictionWindowSeconds)
+          break;
+        card = pred.predictionWindowSeconds + 's'; /* normal timeout */
+    }
+    if (card)
+      li.querySelector ('.' + key)
+        .replaceChildren (card);
+  }
+  li.querySelector ('.title')
+    .textContent = pred.title;
+  const list = li.querySelector ('.outcomes');
+  for (const outcome of pred.outcomes)
+  {
+    const choice = conf.preds.content.children[1].cloneNode (true);
+    choice.id = outcome.id;
+    choice.firstChild.alt = choice.firstChild.title = outcome.badge.title;
+    choice.firstChild.src = outcome.badge.imageURL;
+    for (const key of [ 'title', 'totalPoints', 'totalUsers' ])
+      choice.querySelector ('.' + key)
+        .textContent = outcome[key];
+    const predictors = choice.querySelector ('.topPredictors');
+    for (const bet of outcome.topPredictors)
+    {
+      const card = makeCard ({ node: bet.user, grantedAt: bet.predictedAt });
+      const spent = document.createElement ('small');
+      spent.textContent = '−' + bet.points;
+      const won = document.createElement ('small');
+      won.textContent = bet.pointsWon == undefined
+        ? '—' : '+' + bet.pointsWon;
+      card.append (spent, won);
+      predictors.append (card);
+    }
+    list.append (choice);
+  }
+  list.querySelector ('#' + CSS.escape (pred.winningOutcome?.id))
+    ?.classList.add ('winning');
+  return li;
+}
+
+async function morePredictions (event)
+{
+  event.preventDefault ();
+  if (!conf.user?.id)
+    return;
+  const more = event.currentTarget;
+
+  const variables = {
+    id: conf.user.id,
+    cursor: more.dataset.cursor,
+  };
+  const info = await getPredMore (variables) ?? {};
+  displayError (info);
+  const channel = info.data?.channel ?? {};
+  conf.channel.resolvedPredictionEvents.pageInfo =
+    channel.resolvedPredictionEvents?.pageInfo;
+  const edges = channel.resolvedPredictionEvents?.edges ?? [];
+  conf.channel.resolvedPredictionEvents.edges.push (...edges);
+
+  let cursor;
+  for (const edge of edges)
+  {
+    more.parentElement.before (makePred (edge.node));
+    cursor = edge.cursor;
+  }
+  if (channel.resolvedPredictionEvents?.pageInfo?.hasNextPage)
+    more.dataset.cursor = cursor;
+  else
+    more.parentElement.remove ();
 }
 
 function selectOrder (event)

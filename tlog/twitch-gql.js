@@ -89,6 +89,16 @@ query TLogUser($id: ID, $login: String) {
       }
       title
     }
+    channel {
+      activePredictionEvents { __typename }
+      lockedPredictionEvents { __typename }
+      resolvedPredictionEvents(first: 25) {
+        edges {
+          node { __typename }
+        }
+        pageInfo { hasNextPage }
+      }
+    }
   }
 }
 fragment user on User {
@@ -126,6 +136,122 @@ fragment follow on FollowConnection {
     node { ...user }
   }
   pageInfo { hasNextPage }
+}
+fragment user on User {
+  id
+  displayName
+  profileImageURL(width: 28)
+}`;
+
+const getPredInfo = gql`
+query TLogPred($id: ID!) {
+  channel(id: $id) {
+    activePredictionEvents { ...prediction }
+    lockedPredictionEvents { ...prediction }
+    resolvedPredictionEvents {
+      edges {
+        cursor
+        node { ...prediction }
+      }
+      pageInfo { hasNextPage }
+    }
+  }
+}
+fragment prediction on PredictionEvent {
+  status
+  createdAt
+  createdBy { ...actor }
+  lockedAt
+  lockedBy { ...actor }
+  predictionWindowSeconds
+  endedAt
+  endedBy { ...actor }
+  title
+  outcomes {
+    id
+    title
+    badge {
+      title
+      imageURL(size: NORMAL)
+    }
+    totalPoints
+    totalUsers
+    topPredictors {
+      points
+      pointsWon
+      predictedAt
+      user { ...user }
+    }
+  }
+  winningOutcome { id }
+}
+fragment actor on PredictionEventActor {
+  __typename
+  ... on ExtensionClient {
+    name
+    organization {
+      name
+      url
+    }
+  }
+  ...user
+}
+fragment user on User {
+  id
+  displayName
+  profileImageURL(width: 28)
+}`;
+
+const getPredMore = gql`
+query TLogPred($id: ID!, $cursor: Cursor!) {
+  channel(id: $id) {
+    resolvedPredictionEvents(after: $cursor) {
+      edges {
+        cursor
+        node { ...prediction }
+      }
+      pageInfo { hasNextPage }
+    }
+  }
+}
+fragment prediction on PredictionEvent {
+  status
+  createdAt
+  createdBy { ...actor }
+  lockedAt
+  lockedBy { ...actor }
+  predictionWindowSeconds
+  endedAt
+  endedBy { ...actor }
+  title
+  outcomes {
+    id
+    title
+    badge {
+      title
+      imageURL(size: NORMAL)
+    }
+    totalPoints
+    totalUsers
+    topPredictors {
+      points
+      pointsWon
+      predictedAt
+      user { ...user }
+    }
+  }
+  winningOutcome { id }
+}
+fragment actor on PredictionEventActor {
+  __typename
+  ... on ExtensionClient {
+    name
+    organization {
+      name
+      url
+    }
+  }
+  ...user
 }
 fragment user on User {
   id

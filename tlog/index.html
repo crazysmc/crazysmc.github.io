@@ -33,17 +33,14 @@
 
 <p id=error class=hidden>
 
-<template id=list>
-
+<template id=cards>
 <button class=card title="left click to query user,
 right click to open in new tab">
   <img alt=—>
   <span>—</span>
   <time datetime=P0D></time>
 </button>
-
 <span class=more>more than 100 …</span>
-
 </template>
 
 <p>
@@ -56,7 +53,7 @@ right click to open in new tab">
 <span class=lbl>created:</span> <time datetime=P0D id=created>—</time>
 <span class=lbl>updated:</span> <time datetime=P0D id=updated>—</time>
 <span class=lbl>deleted:</span> <time datetime=P0D id=deleted>—</time>
-<span class=lbl>followers:</span> <a id=follow>—</a>
+<span class=lbl>followers:</span> <a id=follow accesskey=f>—</a>
 
 <p>
 <span class=lbl>primary:</span> <span id=primaryColor>—</span>
@@ -89,6 +86,9 @@ right click to open in new tab">
   <time datetime=P0D id=started>—</time>
 <span class=lbl>game:</span> <a id=game>—</a>
 <span class=lbl>title:</span> <span id=title>—</span>
+
+<p>
+<span class=lbl>predictions:</span> <a id=pred accesskey=p>—</a>
 
 <p>
 <input name=save type=button value="Save as JSON">
@@ -128,6 +128,29 @@ right click to open in new tab">
 <span class=lbl>follows:</span>
 <span id=asc_follows class=hidden>—</span>
 <span id=desc_follows>—</span>
+
+</fieldset>
+
+<fieldset id=pred-extra class=hidden>
+<legend>Predictions</legend>
+
+<template id=preds>
+<li><span class=lbl>status:</span> <span class=status>—</span>
+    <span class=lbl>created:</span> <span class=created>—</span>
+    <span class=lbl>locked:</span> <span class=locked>—</span>
+    <span class=lbl>ended:</span> <span class=ended>—</span>
+<br><span class=lbl>title:</span> <span class=title>—</span>
+    <ul class=outcomes></ul>
+<li class=outcome><img>
+    <span class=title></span>
+    <span class=lbl>points:</span> <span class=totalPoints></span>
+    <span class=lbl>voters:</span> <span class=totalUsers></span>
+    <span class=topPredictors></span>
+<li><input type=button value="More …">
+</template>
+
+<ul id=pred-list>
+</ul>
 
 </fieldset>
 
