@@ -33,6 +33,7 @@ input[type="submit"]
 {
   display: inline-grid;
   font: inherit;
+  line-height: normal;
   margin: 0.1em;
   vertical-align: top;
 }
@@ -72,6 +73,7 @@ input[type="submit"]
 
 #pred-list
 {
+  line-height: 1.777778;
   list-style-type: none;
   padding: 0;
 }
