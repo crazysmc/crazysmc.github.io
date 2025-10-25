@@ -12,7 +12,9 @@ function init ()
   conf.preds = document.getElementById ('preds');
   document.forms.tlog.reset ();
   document.forms.tlog.addEventListener ('submit', query);
-  document.forms.tlog.save.addEventListener ('click', save);
+  document.forms.tlog.saveUser.addEventListener ('click', saveUser);
+  document.forms.tlog.saveFollow.addEventListener ('click', saveFollow);
+  document.forms.tlog.savePred.addEventListener ('click', savePred);
   document.getElementById ('follow')
     .addEventListener ('click', followers);
   document.getElementById ('pred')
@@ -22,7 +24,7 @@ function init ()
   checkParam ();
 }
 
-function checkParam (event)
+async function checkParam (event)
 {
   if (event?.state)
   {
@@ -32,7 +34,11 @@ function checkParam (event)
   }
   const q = opt.get ('q');
   document.forms.tlog.channel.value = q ?? '';
-  query ();
+  await query ();
+  if (opt.has ('extra', 'follow'))
+    followers ();
+  if (opt.has ('extra', 'pred'))
+    predictions ();
 }
 
 async function query (event)
@@ -51,6 +57,7 @@ async function query (event)
   {
     const url = new URL (location);
     url.searchParams.set ('q', user.id);
+    url.searchParams.delete ('extra');
     history.pushState ({ id: user.id, login: user.login }, '', url);
   }
   if (user.login)
@@ -225,7 +232,7 @@ function makeCard (edge)
 
 async function followers (event)
 {
-  event.preventDefault ();
+  event?.preventDefault?.();
   if (!conf.user?.id)
     return;
   const section = document.getElementById ('follow-extra');
@@ -279,7 +286,7 @@ async function followers (event)
 
 async function predictions (event)
 {
-  event.preventDefault ();
+  event?.preventDefault?.();
   if (!conf.user?.id)
     return;
   const section = document.getElementById ('pred-extra');
@@ -383,35 +390,48 @@ function makePred (pred)
   return li;
 }
 
-async function morePredictions (event)
+function morePredictions (event)
 {
   event.preventDefault ();
   if (!conf.user?.id)
     return;
-  const more = event.currentTarget;
+  morePredLoad (event.currentTarget, event.shiftKey);
+}
 
-  const variables = {
-    id: conf.user.id,
-    cursor: more.dataset.cursor,
-  };
-  const info = await getPredMore (variables) ?? {};
-  displayError (info);
-  const channel = info.data?.channel ?? {};
-  conf.channel.resolvedPredictionEvents.pageInfo =
-    channel.resolvedPredictionEvents?.pageInfo;
-  const edges = channel.resolvedPredictionEvents?.edges ?? [];
-  conf.channel.resolvedPredictionEvents.edges.push (...edges);
-
-  let cursor;
-  for (const edge of edges)
+async function morePredLoad (more, repeat)
+{
+  more.disabled = true;
+  do
   {
-    more.parentElement.before (makePred (edge.node));
-    cursor = edge.cursor;
+    const variables = {
+      id: conf.user.id,
+      cursor: more.dataset.cursor,
+    };
+    const info = await getPredMore (variables) ?? {};
+    displayError (info);
+    const channel = info.data?.channel ?? {};
+    conf.channel.resolvedPredictionEvents.pageInfo =
+      channel.resolvedPredictionEvents?.pageInfo;
+    const edges = channel.resolvedPredictionEvents?.edges ?? [];
+    conf.channel.resolvedPredictionEvents.edges.push (...edges);
+
+    let cursor;
+    for (const edge of edges)
+    {
+      more.parentElement.before (makePred (edge.node));
+      cursor = edge.cursor;
+    }
+    if (channel.resolvedPredictionEvents?.pageInfo?.hasNextPage)
+      more.dataset.cursor = cursor;
+    else
+    {
+      more.parentElement.remove ();
+      return;
+    }
+    await new Promise (resolve => { setTimeout (resolve, 200); });
   }
-  if (channel.resolvedPredictionEvents?.pageInfo?.hasNextPage)
-    more.dataset.cursor = cursor;
-  else
-    more.parentElement.remove ();
+  while (repeat);
+  more.disabled = false;
 }
 
 function selectOrder (event)
@@ -449,16 +469,37 @@ function parse (text)
     return { login: text };
 }
 
-function save (event)
+function saveUser (event)
 {
   event.preventDefault ();
   if (!conf.user?.id)
     return;
-  const json = JSON.stringify (conf.user);
+  save (conf.user, `tlog-${conf.user.login}.json`);
+}
+
+function saveFollow (event)
+{
+  event.preventDefault ();
+  if (!conf.follow?.follows)
+    return;
+  save (conf.follow, `tlog-${conf.user.login}-follow.json`);
+}
+
+function savePred (event)
+{
+  event.preventDefault ();
+  if (!conf.channel?.resolvedPredictionEvents)
+    return;
+  save (conf.channel, `tlog-${conf.user.login}-pred.json`);
+}
+
+function save (obj, name)
+{
+  const json = JSON.stringify (obj);
   const blob = new Blob ([ json ], { type: 'application/json' });
   const a = document.createElement ('a');
   a.href = URL.createObjectURL (blob);
-  a.download = `tlog-${conf.user.login}.json`;
+  a.download = name;
   document.body.append (a);
   a.click ();
   a.remove ();

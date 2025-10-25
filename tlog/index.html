@@ -24,7 +24,7 @@
 <label for=channel>user ID, login or channel link</label>
 
 <p>
-<input name=query type=submit value=Query>
+<input name=query type=submit accesskey=q value=Query>
 
 </fieldset>
 
@@ -91,7 +91,7 @@ right click to open in new tab">
 <span class=lbl>predictions:</span> <a id=pred accesskey=p>—</a>
 
 <p>
-<input name=save type=button value="Save as JSON">
+<input name=saveUser type=button value="Save as JSON">
 
 </fieldset>
 
@@ -129,6 +129,9 @@ right click to open in new tab">
 <span id=asc_follows class=hidden>—</span>
 <span id=desc_follows>—</span>
 
+<p>
+<input name=saveFollow type=button value="Save as JSON">
+
 </fieldset>
 
 <fieldset id=pred-extra class=hidden>
@@ -146,11 +149,15 @@ right click to open in new tab">
     <span class=lbl>points:</span> <span class=totalPoints></span>
     <span class=lbl>voters:</span> <span class=totalUsers></span>
     <span class=topPredictors></span>
-<li><input type=button value="More …">
+<li><input type=button value="More …"
+           title="Shift click to load all repeatedly">
 </template>
 
 <ul id=pred-list>
 </ul>
+
+<p>
+<input name=savePred type=button value="Save as JSON">
 
 </fieldset>
 
