@@ -99,6 +99,12 @@ query TLogUser($id: ID, $login: String) {
         pageInfo { hasNextPage }
       }
     }
+    broadcastSettings {
+      liveUpNotificationInfo {
+        isDefault
+        liveUpNotification
+      }
+    }
   }
 }
 fragment user on User {
@@ -257,4 +263,14 @@ fragment user on User {
   id
   displayName
   profileImageURL(width: 28)
+}`;
+
+const getUserError = gql`
+query TLogUserError($id: ID!) {
+  userResultByID(id: $id) {
+    __typename
+    ... on UserDoesNotExist {
+      reason
+    }
+  }
 }`;

@@ -73,6 +73,11 @@ input[type="submit"]
   vertical-align: bottom;
 }
 
+.default
+{
+  font-style: italic;
+}
+
 #pred-list
 {
   line-height: 1.777778;

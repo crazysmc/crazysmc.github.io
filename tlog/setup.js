@@ -53,6 +53,9 @@ async function query (event)
   displayError (info);
   const user = info.data?.user ?? {};
   conf.user = user;
+  delete conf.follow;
+  delete conf.channel;
+
   if (user.id && !opt.has ('q', user.id))
   {
     const url = new URL (location);
@@ -160,6 +163,11 @@ async function query (event)
   const plus = user.channel?.resolvedPredictionEvents?.pageInfo?.hasNextPage;
   setHref (document.getElementById ('pred'), '#pred-extra',
            count ? `load… (${count}${plus ? '+' : ''})` : null);
+
+  const liveInfo = user.broadcastSettings?.liveUpNotificationInfo;
+  const notif = document.getElementById ('notif');
+  notif.textContent = liveInfo?.liveUpNotification ?? '—';
+  notif.classList.toggle ('default', liveInfo?.isDefault);
 
   const options = '&style=colon&bans&chatters';
   setHref (document.getElementById ('tchat'),
@@ -339,6 +347,7 @@ function makePred (pred)
     switch (actor.__typename)
     {
       case 'ExtensionClient': // TODO find a channel where this exists
+        console.log (actor);
         card = document.createElement ('a');
         card.textContent = `${actor.name} (${when.replace (/T.*/, '')})`;
         card.title = when + '\n' + actor.organization?.name;
@@ -432,6 +441,14 @@ async function morePredLoad (more, repeat)
   }
   while (repeat);
   more.disabled = false;
+}
+
+async function checkUserError () // console only, not used in the GUI
+{
+  if (!conf.user?.id)
+    return;
+  const variables = { id: conf.user.id };
+  console.log (await getUserError (variables));
 }
 
 function selectOrder (event)
