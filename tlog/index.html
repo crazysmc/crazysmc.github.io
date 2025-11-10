@@ -13,6 +13,8 @@
 
 <h1>tLog – Twitch user viewer and log recorder</h1>
 
+<div id=dialogs></div>
+
 <form name=tlog>
 
 <fieldset>
@@ -31,8 +33,6 @@
 <fieldset>
 <legend>Channel information</legend>
 
-<p id=error class=hidden>
-
 <template id=cards>
 <button class=card title="left click to query user,
 right click to open in new tab">
@@ -40,6 +40,11 @@ right click to open in new tab">
   <span>—</span>
   <time datetime=P0D></time>
 </button>
+<p class=error><strong>Error:</strong> <span></span>
+  <input type=button formmethod=dialog value=X>
+<p class=rename><code>—</code> last seen as <code>—</code>
+  changed login to <code>—</code>
+  <input type=button formmethod=dialog value=X></p>
 <span class=more>more than 100 …</span>
 </template>
 

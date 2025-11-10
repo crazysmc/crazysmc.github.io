@@ -11,9 +11,37 @@ input[type="submit"]
   padding: 0.3em 1.5em;
 }
 
-#error
+#dialogs
+{
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  right: 3em;
+}
+
+#dialogs p
+{
+  border-radius: 1em;
+  border: 1px solid #6d0080;
+  margin: 0.3em;
+  padding: 0.3em 0.4em;
+  text-align: right;
+}
+
+#dialogs input[type="button"]
+{
+  margin-left: 1em;
+  padding: 0.3em;
+}
+
+.error
 {
   background-color: #f88;
+}
+
+.rename
+{
+  background-color: #eef;
 }
 
 .lbl

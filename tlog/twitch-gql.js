@@ -30,6 +30,54 @@ function gql (strings, ...values)
   return variables => gqlQuery (query.trim (), variables);
 }
 
+gqlConf.fragmentUser = `fragment user on User {
+  id
+  login
+  displayName
+  profileImageURL(width: 28)
+}`;
+
+gqlConf.fragmentPred = `fragment prediction on PredictionEvent {
+  status
+  createdAt
+  createdBy { ...actor }
+  lockedAt
+  lockedBy { ...actor }
+  predictionWindowSeconds
+  endedAt
+  endedBy { ...actor }
+  title
+  outcomes {
+    id
+    title
+    badge {
+      title
+      imageURL(size: NORMAL)
+    }
+    totalPoints
+    totalUsers
+    topPredictors {
+      points
+      pointsWon
+      predictedAt
+      user { ...user }
+    }
+  }
+  winningOutcome { id }
+}`;
+
+gqlConf.fragmentActor = `fragment actor on PredictionEventActor {
+  __typename
+  ... on ExtensionClient {
+    name
+    organization {
+      name
+      url
+    }
+  }
+  ...user
+}`;
+
 const getUserInfo = gql`
 query TLogUser($id: ID, $login: String) {
   user(id: $id, login: $login, lookupType: ALL) {
@@ -107,11 +155,8 @@ query TLogUser($id: ID, $login: String) {
     }
   }
 }
-fragment user on User {
-  id
-  displayName
-  profileImageURL(width: 28)
-}`;
+${gqlConf.fragmentUser}
+`;
 
 const getFollowInfo = gql`
 query TLogFollow($id: ID!) {
@@ -143,11 +188,8 @@ fragment follow on FollowConnection {
   }
   pageInfo { hasNextPage }
 }
-fragment user on User {
-  id
-  displayName
-  profileImageURL(width: 28)
-}`;
+${gqlConf.fragmentUser}
+`;
 
 const getPredInfo = gql`
 query TLogPred($id: ID!) {
@@ -163,50 +205,10 @@ query TLogPred($id: ID!) {
     }
   }
 }
-fragment prediction on PredictionEvent {
-  status
-  createdAt
-  createdBy { ...actor }
-  lockedAt
-  lockedBy { ...actor }
-  predictionWindowSeconds
-  endedAt
-  endedBy { ...actor }
-  title
-  outcomes {
-    id
-    title
-    badge {
-      title
-      imageURL(size: NORMAL)
-    }
-    totalPoints
-    totalUsers
-    topPredictors {
-      points
-      pointsWon
-      predictedAt
-      user { ...user }
-    }
-  }
-  winningOutcome { id }
-}
-fragment actor on PredictionEventActor {
-  __typename
-  ... on ExtensionClient {
-    name
-    organization {
-      name
-      url
-    }
-  }
-  ...user
-}
-fragment user on User {
-  id
-  displayName
-  profileImageURL(width: 28)
-}`;
+${gqlConf.fragmentPred}
+${gqlConf.fragmentActor}
+${gqlConf.fragmentUser}
+`;
 
 const getPredMore = gql`
 query TLogPred($id: ID!, $cursor: Cursor!) {
@@ -220,50 +222,10 @@ query TLogPred($id: ID!, $cursor: Cursor!) {
     }
   }
 }
-fragment prediction on PredictionEvent {
-  status
-  createdAt
-  createdBy { ...actor }
-  lockedAt
-  lockedBy { ...actor }
-  predictionWindowSeconds
-  endedAt
-  endedBy { ...actor }
-  title
-  outcomes {
-    id
-    title
-    badge {
-      title
-      imageURL(size: NORMAL)
-    }
-    totalPoints
-    totalUsers
-    topPredictors {
-      points
-      pointsWon
-      predictedAt
-      user { ...user }
-    }
-  }
-  winningOutcome { id }
-}
-fragment actor on PredictionEventActor {
-  __typename
-  ... on ExtensionClient {
-    name
-    organization {
-      name
-      url
-    }
-  }
-  ...user
-}
-fragment user on User {
-  id
-  displayName
-  profileImageURL(width: 28)
-}`;
+${gqlConf.fragmentPred}
+${gqlConf.fragmentActor}
+${gqlConf.fragmentUser}
+`;
 
 const getUserError = gql`
 query TLogUserError($id: ID!) {
@@ -274,3 +236,21 @@ query TLogUserError($id: ID!) {
     }
   }
 }`;
+
+const getAllLogins = gql`
+query TLogUsers($ids: [ID!]) {
+  users(ids: $ids) {
+    id
+    login
+  }
+}`;
+
+const getTeam = gql`
+query TLogTeam($name: String!) {
+  team(name: $name) {
+    owner { ...user }
+    members { ...user }
+  }
+}
+${gqlConf.fragmentUser}
+`;

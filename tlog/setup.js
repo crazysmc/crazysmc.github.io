@@ -21,6 +21,8 @@ function init ()
     .addEventListener ('click', predictions);
   document.forms.tlog.followerOrder.addEventListener ('change', selectOrder);
   document.forms.tlog.followOrder.addEventListener ('change', selectOrder);
+  document.getElementById ('dialogs')
+    .replaceChildren ();
   checkParam ();
 }
 
@@ -76,6 +78,7 @@ async function query (event)
     document.getElementById (key)
       .textContent = user[key] ?? '—';
   setHref (document.getElementById ('login'), user.profileURL);
+  changed (user.id, user.login);
 
   for (const key of [ 'created', 'updated', 'deleted' ])
   {
@@ -212,9 +215,13 @@ function setColor (span, color)
 
 function displayError (info)
 {
-  const error = document.getElementById ('error');
-  error.textContent = JSON.stringify (info.errors);
-  error.classList.toggle ('hidden', !info.errors);
+  if (!info.errors)
+    return;
+  const error = conf.cards.content.querySelector ('.error')
+    .cloneNode (true);
+  error.querySelector ('span')
+    .textContent = JSON.stringify (info.errors);
+  showDialog (error);
 }
 
 function makeCard (edge)
@@ -233,6 +240,7 @@ function makeCard (edge)
   else
     card.children[0].remove ();
   card.dataset.id = edge.node?.id ?? '-null-';
+  changed (edge.node?.id, edge.node?.login);
   card.addEventListener ('click', selectUser);
   card.addEventListener ('contextmenu', openUser);
   return card;
@@ -441,6 +449,39 @@ async function morePredLoad (more, repeat)
   }
   while (repeat);
   more.disabled = false;
+}
+
+function changed (id, login)
+{
+  if (!id || !login)
+    return;
+  const prevLogin = localStorage[id];
+  if (prevLogin && prevLogin != login)
+  {
+    const rename = conf.cards.content.querySelector ('.rename')
+      .cloneNode (true);
+    const codes = rename.querySelectorAll ('code');
+    codes[0].textContent = id;
+    codes[1].textContent = prevLogin;
+    codes[2].textContent = login;
+    showDialog (rename);
+  }
+  try
+  {
+    localStorage[id] = login;
+  }
+  catch (e)
+  {
+    console.error (e);
+  }
+}
+
+function showDialog (dialog)
+{
+  document.getElementById ('dialogs')
+    .append (dialog);
+  dialog.querySelector ('input')
+    .addEventListener ('click', () => { dialog.remove (); });
 }
 
 async function checkUserError () // console only, not used in the GUI
