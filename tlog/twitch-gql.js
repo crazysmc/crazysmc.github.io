@@ -245,11 +245,40 @@ query TLogUsers($ids: [ID!]) {
   }
 }`;
 
-const getTeam = gql`
+const getTeamInfo = gql`
 query TLogTeam($name: String!) {
   team(name: $name) {
+    id
+    name
+    displayName
+    backgroundImageURL
+    bannerURL
+    logoURL
+    description
     owner { ...user }
-    members { ...user }
+    members(first: 100) {
+      totalCount
+      edges {
+        cursor
+        node { ...user }
+      }
+      pageInfo { hasNextPage }
+    }
+  }
+}
+${gqlConf.fragmentUser}
+`;
+
+const getTeamMore = gql`
+query TLogTeam($name: String!, $cursor: Cursor!) {
+  team(name: $name) {
+    members(first: 100, after: $cursor) {
+      edges {
+        cursor
+        node { ...user }
+      }
+      pageInfo { hasNextPage }
+    }
   }
 }
 ${gqlConf.fragmentUser}

@@ -5,6 +5,7 @@
 <link rel=stylesheet href=../tchat/style.css>
 <link rel=stylesheet href=../tchat.css>
 <link rel=stylesheet href=style.css>
+<script src=common.js></script>
 <script src=setup.js></script>
 <script src=twitch-gql.js></script>
 <base target=_blank>
@@ -21,7 +22,7 @@
 <legend>User lookup</legend>
 
 <p>
-<input name=channel id=channel
+<input name=channel id=channel size=40
        placeholder="639267013 or crazysmc or https://www.twitch.tv/crazysmc">
 <label for=channel>user ID, login or channel link</label>
 
@@ -49,10 +50,11 @@ right click to open in new tab">
 </template>
 
 <p>
-<span class=lbl>profile image:</span> <a id=profileImage><img alt=—></a>
+<span class=lbl>profile image:</span>
+  <a id=profileImage><img alt=— src=data:,></a>
 <span class=lbl>user ID:</span> <code id=id>—</code>
 <span class=lbl>login:</span> <a id=login>—</a>
-<span class=lbl>display name:</span> <a id=displayName>—</a>
+<span class=lbl>display name:</span> <span id=displayName>—</span>
 
 <p>
 <span class=lbl>created:</span> <time datetime=P0D id=created>—</time>

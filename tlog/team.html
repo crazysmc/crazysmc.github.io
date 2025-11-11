@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang=en>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width">
+<link rel=stylesheet href=../tchat/style.css>
+<link rel=stylesheet href=../tchat.css>
+<link rel=stylesheet href=style.css>
+<script src=common.js></script>
+<script src=team.js></script>
+<script src=twitch-gql.js></script>
+<base target=_blank>
+
+<title>tLog/team – User viewer for Twitch</title>
+
+<h1>tLog/team – Twitch team viewer and log recorder</h1>
+
+<div id=dialogs></div>
+
+<form name=tlog>
+
+<fieldset>
+<legend>Team lookup</legend>
+
+<p>
+<input name=team id=team size=40
+       placeholder="twitchcon or https://www.twitch.tv/team/twitchcon">
+<label for=team>team name or link</label>
+
+<p>
+<input name=query type=submit accesskey=q value=Query>
+
+</fieldset>
+
+<fieldset>
+<legend>Team information</legend>
+
+<template id=cards>
+<button class=card title="left click to query user,
+right click to open in new tab">
+  <img alt=—>
+  <span>—</span>
+  <time datetime=P0D></time>
+</button>
+<p class=error><strong>Error:</strong> <span></span>
+  <input type=button formmethod=dialog value=X>
+<p class=rename><code>—</code> last seen as <code>—</code>
+  changed login to <code>—</code>
+  <input type=button formmethod=dialog value=X></p>
+<input type=button value="More …"
+       title="Shift click to load all repeatedly">
+</template>
+
+<p>
+<span class=lbl>team ID:</span> <code id=id>—</code>
+<span class=lbl>name:</span> <a id=name>—</a>
+<span class=lbl>display name:</span> <span id=displayName>—</span>
+
+<p>
+<span class=lbl>logo:</span> <a id=logo>—</a>
+<span class=lbl>banner:</span> <a id=banner>—</a>
+<span class=lbl>background:</span> <a id=backgroundImage>—</a>
+
+<p>
+<span class=lbl>owner:</span> <span id=owner>—</span>
+<span class=lbl>description:</span> <span id=description>—</span>
+
+<p>
+<span class=lbl>members:</span> <span id=members>—</span>
+
+<p>
+<input name=saveTeam type=button value="Save as JSON">
+
+</fieldset>
+
+</form>
