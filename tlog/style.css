@@ -26,7 +26,7 @@ input[type="button"][value="—"]
 {
   display: flex;
   flex-direction: column;
-  position: absolute;
+  position: fixed;
   right: 3em;
 }
 
