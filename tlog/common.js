@@ -26,6 +26,11 @@ function displayError (info)
     return;
   const error = conf.cards.content.querySelector ('.error')
     .cloneNode (true);
+  const strong = error.querySelector ('strong');
+  if (conf.user?.login)
+    strong.textContent = `Error with user ${conf.user.login}:`;
+  else if (conf.team?.name)
+    strong.textContent = `Error with team ${conf.team.name}:`;
   error.querySelector ('span')
     .textContent = JSON.stringify (info.errors);
   showDialog (error);

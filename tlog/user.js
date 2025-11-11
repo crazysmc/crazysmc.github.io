@@ -151,6 +151,8 @@ async function query (event)
   document.getElementById ('title')
     .textContent = user.lastBroadcast?.title ?? '—';
 
+  if (user.channel && !user.channel.displayName)
+    checkUserError ();
   const count =
     (user.channel?.activePredictionEvents?.length ?? 0) +
     (user.channel?.lockedPredictionEvents?.length ?? 0) +
@@ -403,12 +405,23 @@ async function morePredLoad (more, repeat)
   more.disabled = false;
 }
 
-async function checkUserError () // console only, not used in the GUI
+async function checkUserError ()
 {
   if (!conf.user?.id)
     return;
   const variables = { id: conf.user.id };
-  console.log (await getUserError (variables));
+  const info = await getUserError (variables) ?? {};
+  displayError (info);
+  const result = info.data?.userResultByID ?? {};
+  if (result.__typename != 'UserDoesNotExist')
+    return;
+  const error = conf.cards.content.querySelector ('.error')
+    .cloneNode (true);
+  error.querySelector ('strong')
+    .textContent = `User ${conf.user.login} does not exist:`;
+  error.querySelector ('span')
+    .textContent = result.reason ?? '<unknown>';
+  showDialog (error);
 }
 
 function selectOrder (event)

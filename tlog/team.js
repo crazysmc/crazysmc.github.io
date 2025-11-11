@@ -70,7 +70,7 @@ async function query (event)
   const list = document.getElementById ('members');
   list.textContent = '—';
   if (team.members?.totalCount)
-    list.textContent = team.members.totalCount + ' ';
+    list.textContent = number (team.members.totalCount) + ' ';
   if (team.members?.edges?.length)
   {
     let cursor;

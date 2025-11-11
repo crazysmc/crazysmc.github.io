@@ -138,6 +138,7 @@ query TLogUser($id: ID, $login: String) {
       title
     }
     channel {
+      displayName
       activePredictionEvents { __typename }
       lockedPredictionEvents { __typename }
       resolvedPredictionEvents(first: 25) {
