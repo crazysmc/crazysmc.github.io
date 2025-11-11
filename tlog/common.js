@@ -1,5 +1,15 @@
 'use strict';
 
+const opt = new URLSearchParams (location.search);
+const conf = {
+  num: new Intl.NumberFormat ('en-US'),
+};
+
+function number (text)
+{
+  return text == undefined ? '—' : conf.num.format (text);
+}
+
 function setHref (a, href, text)
 {
   if (arguments.length == 3 ? text != undefined : href)

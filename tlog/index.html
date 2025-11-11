@@ -22,7 +22,7 @@
 <legend>User lookup</legend>
 
 <p>
-<input name=channel id=channel size=40
+<input name=channel size=40
        placeholder="639267013 or crazysmc or https://www.twitch.tv/crazysmc">
 <label for=channel>user ID, login or channel link</label>
 
@@ -35,7 +35,7 @@
 <legend>Channel information</legend>
 
 <template id=cards>
-<button class=card title="left click to query user,
+<button type=button class=card title="left click to query user,
 right click to open in new tab">
   <img alt=—>
   <span>—</span>
@@ -60,7 +60,8 @@ right click to open in new tab">
 <span class=lbl>created:</span> <time datetime=P0D id=created>—</time>
 <span class=lbl>updated:</span> <time datetime=P0D id=updated>—</time>
 <span class=lbl>deleted:</span> <time datetime=P0D id=deleted>—</time>
-<span class=lbl>followers:</span> <a id=follow accesskey=f>—</a>
+<span class=lbl>followers:</span>
+  <input name=follow type=button class=small accesskey=f value=—>
 
 <p>
 <span class=lbl>primary:</span> <span id=primaryColor>—</span>
@@ -85,7 +86,8 @@ right click to open in new tab">
 <span class=lbl>vips:</span> <span id=vips>—</span>
 
 <p>
-<span class=lbl>team:</span> <a id=team>—</a>
+<span class=lbl>team:</span>
+  <input name=team type=button class=small accesskey=t value=—>
 <span class=lbl>team owner:</span> <span id=owner>—</span>
 
 <p>
@@ -95,7 +97,8 @@ right click to open in new tab">
 <span class=lbl>title:</span> <span id=title>—</span>
 
 <p>
-<span class=lbl>predictions:</span> <a id=pred accesskey=p>—</a>
+<span class=lbl>predictions:</span>
+  <input name=pred type=button class=small accesskey=p value=—>
 <span class=lbl>live notification:</span> <span id=notif>—</span>
 
 <p>
@@ -104,7 +107,7 @@ right click to open in new tab">
 </fieldset>
 
 <fieldset id=follow-extra class=hidden>
-<legend>Following (why is this public?)</legend>
+<legend>Following status</legend>
 
 <p>
 <span class=lbl>followed games:</span> <span id=followedGames>—</span>
@@ -112,7 +115,7 @@ right click to open in new tab">
 <hr>
 
 <p>
-<span class=lbl>followers:</span> <span id=follow2>—</span>
+<span class=lbl>followers:</span> <span id=follow>—</span>
 
 <p>
 <select name=followerOrder>

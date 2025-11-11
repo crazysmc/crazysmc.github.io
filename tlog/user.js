@@ -1,8 +1,5 @@
 'use strict';
 
-const opt = new URLSearchParams (location.search);
-const conf = {};
-
 addEventListener ('load', init);
 addEventListener ('popstate', checkParam);
 
@@ -15,10 +12,9 @@ function init ()
   document.forms.tlog.saveUser.addEventListener ('click', saveUser);
   document.forms.tlog.saveFollow.addEventListener ('click', saveFollow);
   document.forms.tlog.savePred.addEventListener ('click', savePred);
-  document.getElementById ('follow')
-    .addEventListener ('click', followers);
-  document.getElementById ('pred')
-    .addEventListener ('click', predictions);
+  document.forms.tlog.follow.addEventListener ('click', followers);
+  document.forms.tlog.team.addEventListener ('click', openTeam);
+  document.forms.tlog.pred.addEventListener ('click', predictions);
   document.forms.tlog.followerOrder.addEventListener ('change', selectOrder);
   document.forms.tlog.followOrder.addEventListener ('change', selectOrder);
   document.getElementById ('dialogs')
@@ -86,8 +82,7 @@ async function query (event)
     time.textContent = value?.replace (/T.*/, '') ?? '—';
     time.dateTime = value ?? 'P0D';
   }
-  setHref (document.getElementById ('follow'), '#follow-extra',
-           user.followers?.totalCount);
+  document.forms.tlog.follow.value = number (user.followers?.totalCount);
 
   setColor (document.getElementById ('primaryColor'), user.primaryColorHex);
   for (const key of [ 'bannerImage', 'offlineImage' ])
@@ -137,9 +132,7 @@ async function query (event)
     }
   }
 
-  setHref (document.getElementById ('team'),
-           `team.html?q=${user.primaryTeam?.name}`,
-           user.primaryTeam?.displayName);
+  document.forms.tlog.team.value = user.primaryTeam?.displayName ?? '—';
   const owner = document.getElementById ('owner');
   if (user.primaryTeam)
     owner.replaceChildren (makeCard ({ node: user.primaryTeam.owner }));
@@ -163,8 +156,7 @@ async function query (event)
     (user.channel?.lockedPredictionEvents?.length ?? 0) +
     (user.channel?.resolvedPredictionEvents?.edges?.length ?? 0);
   const plus = user.channel?.resolvedPredictionEvents?.pageInfo?.hasNextPage;
-  setHref (document.getElementById ('pred'), '#pred-extra',
-           count ? `load… (${count}${plus ? '+' : ''})` : null);
+  document.forms.tlog.pred.value = count ? (plus ? '>' : '') + count : '—';
 
   const liveInfo = user.broadcastSettings?.liveUpNotificationInfo;
   const notif = document.getElementById ('notif');
@@ -217,10 +209,8 @@ async function followers (event)
   const user = info.data?.user ?? {};
   conf.follow = user;
 
-  const copy = document.getElementById ('follow')
-    .textContent;
-  document.getElementById ('follow2')
-    .textContent = copy;
+  document.getElementById ('follow')
+    .textContent = document.forms.tlog.follow.value;
 
   const followedGames = document.getElementById ('followedGames');
   followedGames.textContent = '—';
@@ -238,7 +228,7 @@ async function followers (event)
   }
 
   document.getElementById ('following')
-    .textContent = user.follows?.totalCount ?? '—';
+    .textContent = number (user.follows?.totalCount);
 
   for (const key of [ 'asc_followers', 'desc_followers',
                       'asc_follows', 'desc_follows' ])
@@ -259,7 +249,11 @@ async function followers (event)
 async function predictions (event)
 {
   event?.preventDefault?.();
-  if (!conf.user?.id)
+  const count =
+    (user.channel?.activePredictionEvents?.length ?? 0) +
+    (user.channel?.lockedPredictionEvents?.length ?? 0) +
+    (user.channel?.resolvedPredictionEvents?.edges?.length ?? 0);
+  if (!conf.user?.id || !count)
     return;
   const section = document.getElementById ('pred-extra');
   section.classList.remove ('hidden');
@@ -341,18 +335,20 @@ function makePred (pred)
     choice.id = outcome.id;
     choice.firstChild.alt = choice.firstChild.title = outcome.badge.title;
     choice.firstChild.src = outcome.badge.imageURL;
-    for (const key of [ 'title', 'totalPoints', 'totalUsers' ])
+    choice.querySelector ('.title')
+      .textContent = outcome.title;
+    for (const key of [ 'totalPoints', 'totalUsers' ])
       choice.querySelector ('.' + key)
-        .textContent = outcome[key];
+        .textContent = number (outcome[key]);
     const predictors = choice.querySelector ('.topPredictors');
     for (const bet of outcome.topPredictors)
     {
       const card = makeCard ({ node: bet.user, grantedAt: bet.predictedAt });
       const spent = document.createElement ('small');
-      spent.textContent = '−' + bet.points;
+      spent.textContent = '−' + number (bet.points);
       const won = document.createElement ('small');
       won.textContent = bet.pointsWon == undefined
-        ? '—' : '+' + bet.pointsWon;
+        ? '—' : '+' + number (bet.pointsWon);
       card.append (spent, won);
       predictors.append (card);
     }
@@ -422,6 +418,13 @@ function selectOrder (event)
     const element = document.getElementById (option.value);
     element.classList.toggle ('hidden', !option.selected);
   }
+}
+
+function openTeam (event)
+{
+  event.preventDefault ();
+  if (conf.user?.primaryTeam?.name)
+    open ('team.html?q=' + conf.user.primaryTeam.name, '_self');
 }
 
 function selectUser (event)

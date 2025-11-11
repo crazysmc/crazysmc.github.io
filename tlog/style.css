@@ -11,6 +11,17 @@ input[type="submit"]
   padding: 0.3em 1.5em;
 }
 
+input[type="button"].small
+{
+  padding: 0.1em 0.2em;
+}
+
+input[type="button"][value="—"]
+{
+  background: initial;
+  border: initial;
+}
+
 #dialogs
 {
   display: flex;

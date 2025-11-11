@@ -1,8 +1,5 @@
 'use strict';
 
-const opt = new URLSearchParams (location.search);
-const conf = {};
-
 addEventListener ('load', init);
 addEventListener ('popstate', checkParam);
 
