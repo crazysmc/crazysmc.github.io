@@ -250,10 +250,10 @@ async function predictions (event)
 {
   event?.preventDefault?.();
   const count =
-    (user.channel?.activePredictionEvents?.length ?? 0) +
-    (user.channel?.lockedPredictionEvents?.length ?? 0) +
-    (user.channel?.resolvedPredictionEvents?.edges?.length ?? 0);
-  if (!conf.user?.id || !count)
+    (conf.user?.channel?.activePredictionEvents?.length ?? 0) +
+    (conf.user?.channel?.lockedPredictionEvents?.length ?? 0) +
+    (conf.user?.channel?.resolvedPredictionEvents?.edges?.length ?? 0);
+  if (!count)
     return;
   const section = document.getElementById ('pred-extra');
   section.classList.remove ('hidden');
