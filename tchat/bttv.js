@@ -99,7 +99,7 @@ function receiveBttv (event)
       else
         addBttvEmote (emote, conf.emotes.room[rid], 'room');
       displayBttvAction (rid, 'rename',
-                         `renamed emote ${old} -> ${emote.code}.`);
+                         `renamed emote ${old} → ${emote.code}.`);
       break;
 
     case 'emote_delete':

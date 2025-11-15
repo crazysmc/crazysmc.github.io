@@ -33,7 +33,7 @@ function input ()
   const joins = form.elements.join.value.trim ();
 
   let p = '';
-  for (const j of joins.split (/\s+/))
+  for (const j of joins.split (/\W+/))
     p += '&join=' + encodeURIComponent (j);
   if (form.elements.time.value > 0)
     p += '&time=' + form.elements.time.value;
@@ -49,13 +49,16 @@ function input ()
     'wrap',
     'bold',
   ])
-    if (form.elements[opt].checked)
+  {
+    const checked = form.elements[opt].checked;
+    if (opt == 'first' ? !checked : checked)
     {
       p += `&style=${opt}`;
       test.classList.add (opt);
     }
     else
       test.classList.remove (opt);
+  }
   if (form.elements.bots.checked)
   {
     p += `&no=bots`;

@@ -199,15 +199,12 @@ just in case the live updates failed.
 
 <p>
 <input id=join name=join size=40 placeholder=twitch_user>
-<label for=join>
-  Channel(s) to join (if multiple, separate with white-space)
-</label>
+<label for=join>Channel(s) to join</label>
 
 <p>
 <input id=time name=time type=number min=0 placeholder=60 style=width:5em>
 <label for=time>
-  Time in seconds until each message disappears again (if unset, only messages
-  scrolling out the top will be removed)
+  Seconds to display each message (infinite if unset)
 </label>
 
 </fieldset>
@@ -217,9 +214,9 @@ just in case the live updates failed.
 
 <p>
 <select id=scale name=scale>
-  <option value=1>1.0</option>
-  <option value=2>2.0</option>
-  <option value=3>3.0</option>
+  <option value=1>1x (1.0)</option>
+  <option value=2>2x (2.0)</option>
+  <option value=3>4x (3.0)</option>
 </select>
 <label for=scale>
   Size of the emotes and badges to load (the font size scales accordingly)
@@ -299,9 +296,9 @@ just in case the live updates failed.
 </label>
 
 <p>
-<input id=first name=first type=checkbox>
+<input id=first name=first type=checkbox checked>
 <label for=first>
-  Do not highlight first time chats
+  Highlight first time chats
 </label>
 
 <p>

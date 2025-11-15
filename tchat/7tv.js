@@ -136,7 +136,7 @@ function dispatch7tv ({ type, body })
               add7tvEmote (value, conf.emotes.room[rid], 'room');
             display7tvAction (rid, 'rename', body.actor.display_name,
                               `renamed emote ${old_value.name}` +
-                              ` -> ${value.name}.`);
+                              ` → ${value.name}.`);
           }
           for (const { value } of body.pushed ?? [])
           {
@@ -169,7 +169,7 @@ function dispatch7tv ({ type, body })
               display7tvAction (rid, 'set-swap',
                                 body.actor.display_name,
                                 `switched emote set ${old_value.name}` +
-                                ` -> ${value.name}.`);
+                                ` → ${value.name}.`);
             }
       break;
 
