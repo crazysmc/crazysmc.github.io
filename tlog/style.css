@@ -60,7 +60,7 @@ input[type="button"][value="—"]
   color: #008;
 }
 
-:not(br) + .lbl
+:not(br, select) + .lbl
 {
   padding-left: 2em;
 }

@@ -104,20 +104,6 @@ async function query (event)
     .textContent = roles || '—';
   setColor (document.getElementById ('chatColor'), user.chatColor);
 
-  const badges = document.getElementById ('badges');
-  badges.textContent = '—';
-  if (user.displayBadges?.length)
-  {
-    badges.replaceChildren ();
-    for (const badge of user.displayBadges)
-    {
-      const img = document.createElement ('img');
-      img.alt = img.title = badge.title;
-      img.src = badge.imageURL;
-      badges.append (img);
-    }
-  }
-
   for (const key of [ 'mods', 'vips' ])
   {
     const list = document.getElementById (key);
@@ -169,6 +155,39 @@ async function query (event)
   setHref (document.getElementById ('tchat'),
            `../tchat/?join=${user.login}${options}&rm`,
            user.login ? 'tChat recent messages' : null);
+
+  queryUserBadges (user.login);
+}
+
+async function queryUserBadges (login)
+{
+  const badges = document.getElementById ('badges');
+  badges.textContent = '—';
+  if (!login)
+    return;
+
+  badges.textContent = '…';
+  const info = await getUserBadges ({ login }) ?? {};
+  displayError (info);
+  const channelViewer = info.data?.channelViewer ?? {};
+  conf.user.channelViewer = channelViewer;
+
+  badges.textContent = '—';
+  if (channelViewer.earnedBadges?.length)
+  {
+    badges.replaceChildren ();
+    for (const badge of channelViewer.earnedBadges)
+    {
+      if (badge.setID == 'broadcaster')
+        continue;
+      const img = document.createElement ('img');
+      img.alt = `[${badge.setID}/${badge.version}]`;
+      img.title = badge.title +
+        (badge.title == badge.description ? '' : '\n' + badge.description);
+      img.src = badge.imageURL;
+      badges.append (img, ' ');
+    }
+  }
 }
 
 function setColor (span, color)

@@ -106,10 +106,6 @@ query TLogUser($id: ID, $login: String) {
       isStaff
     }
     chatColor
-    displayBadges {
-      title
-      imageURL(size: DOUBLE)
-    }
     primaryTeam {
       name
       displayName
@@ -158,6 +154,19 @@ query TLogUser($id: ID, $login: String) {
 }
 ${gqlConf.fragmentUser}
 `;
+
+const getUserBadges = gql`
+query TLogBadges($login: String!) {
+  channelViewer(userLogin: $login, channelLogin: $login) {
+    earnedBadges {
+      setID
+      version
+      title
+      description
+      imageURL(size: DOUBLE)
+    }
+  }
+}`;
 
 const getFollowInfo = gql`
 query TLogFollow($id: ID!) {
