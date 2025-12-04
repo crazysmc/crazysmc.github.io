@@ -327,6 +327,13 @@ function formatChat (msg, p)
     nativeEmotes (text, msg, message);
   else
     message.textContent = text;
+  try
+  {
+    twemoji.parse (message);
+  }
+  catch
+  {
+  }
 
   if (msg.reward)
   {
