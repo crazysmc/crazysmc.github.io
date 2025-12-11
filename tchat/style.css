@@ -141,6 +141,10 @@ img {
   border-image-source: linear-gradient(#9146ff, #ff75e6);
 }
 
+.USERNOTICE[data-msg-param-category="watch-streak"] {
+  background-color: #0082ff35;
+}
+
 .emote-notice,
 .reload-notice,
 .CLEARCHAT,
