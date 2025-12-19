@@ -37,7 +37,7 @@ async function init ()
 async function handleCmd (rid, msg)
 {
   if (msg.tags.historical ||
-      !/(^|,)(broadcaster|moderator)\/1/.exec (msg.tags.badges) ||
+      msg.tags.mod != '1' && msg.tags['user-id'] != rid ||
       !msg.params[1].startsWith (conf.cmdPrefix))
     return;
   const line = msg.params[1].slice (conf.cmdPrefix.length);
