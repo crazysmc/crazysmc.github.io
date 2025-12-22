@@ -151,6 +151,31 @@ async function query (event)
   notif.textContent = liveInfo?.liveUpNotification ?? '—';
   notif.classList.toggle ('default', liveInfo?.isDefault);
 
+  const list = document.getElementById ('founders');
+  list.textContent = '—';
+  if (user.channel?.founders?.length)
+  {
+    list.replaceChildren ();
+    for (const founder of user.channel.founders)
+    {
+      const card = makeCard ({ node:      founder.user,
+                               grantedAt: founder.entitlementStart });
+      if (founder.isSubscribed)
+      {
+        const sub = document.createElement ('small');
+        const img = document.createElement ('img');
+        img.alt = '⭐';
+        img.src = 'https://static-cdn.jtvnw.net/badges' +
+          '/v1/511b78a9-ab37-472f-9569-457753bbe7d3/1';
+        sub.append (img);
+        card.append (sub);
+      }
+      list.append (card);
+    }
+  }
+  document.getElementById ('available')
+    .textContent = user.channel?.founderBadgeAvailability ?? '—';
+
   const options = '&style=colon&bans&chatters';
   setHref (document.getElementById ('tchat'),
            `../tchat/?join=${user.login}${options}&rm`,

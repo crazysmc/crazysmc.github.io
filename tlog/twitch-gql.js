@@ -143,6 +143,12 @@ query TLogUser($id: ID, $login: String) {
         }
         pageInfo { hasNextPage }
       }
+      founderBadgeAvailability
+      founders {
+        entitlementStart
+        isSubscribed
+        user { ...user }
+      }
     }
     broadcastSettings {
       liveUpNotificationInfo {
