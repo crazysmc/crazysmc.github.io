@@ -178,7 +178,13 @@ async function joinedRoom (rid)
   conf.joinedRooms.push (rid);
   document.documentElement.dataset.join = conf.joinedRooms.length;
   if (opt.has ('rm'))
+  {
+    const option = document.createElement ('option');
+    option.value = option.textContent = conf.badges.room[rid].channel;
+    document.getElementById ('channel')
+      .append (option);
     await loadRecentMessages (conf.badges.room[rid].channel);
+  }
 }
 
 async function loadRecentMessages (name)

@@ -28,6 +28,12 @@ async function init ()
     const save = document.getElementById ('save');
     save.addEventListener ('click', saveLog);
     save.classList.remove ('hidden');
+    const style = document.createElement ('style');
+    document.head.append (style);
+    conf.css = style.sheet;
+    const channel = document.getElementById ('channel');
+    channel.addEventListener ('change', selectChannel);
+    channel.classList.remove ('hidden');
   }
   else
     setInterval (reduceChat, 200);
@@ -70,6 +76,17 @@ function reloadService (rid, msg, service)
                    params: [ msg.params[0], notice ] });
   }
   cmd (rid);
+}
+
+function selectChannel (event)
+{
+  const channel = event.currentTarget.value;
+  if (conf.css.cssRules.length)
+    conf.css.deleteRule (0);
+  if (!channel)
+    return;
+  const r = `.chat-line:not([data-channel="${channel}"]) { display: none; }`;
+  conf.css.insertRule (r);
 }
 
 async function saveLog (event)

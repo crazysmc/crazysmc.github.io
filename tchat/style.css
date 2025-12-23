@@ -26,6 +26,13 @@ html[data-join="1"] .channel {
   display: none;
 }
 
+#channel {
+  position: absolute;
+  left: 1em;
+  top: 1em;
+  z-index: 1;
+}
+
 #save {
   position: absolute;
   right: 1em;
