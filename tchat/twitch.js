@@ -181,8 +181,13 @@ async function joinedRoom (rid)
   {
     const option = document.createElement ('option');
     option.value = option.textContent = conf.badges.room[rid].channel;
-    document.getElementById ('channel')
-      .append (option);
+    const channel = document.getElementById ('channel');
+    const before = [ ...channel.children ].slice (1)
+      .find (o => o.value > conf.badges.room[rid].channel);
+    if (before)
+      before.before (option);
+    else
+      channel.append (option);
     await loadRecentMessages (conf.badges.room[rid].channel);
   }
 }
@@ -200,6 +205,8 @@ async function loadRecentMessages (name)
     if (!json.messages)
       throw new Error (json.error);
     receive ({ split: json.messages });
+    if (json.error)
+      console.warn (json.error);
   }
   catch (e)
   {

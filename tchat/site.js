@@ -83,6 +83,8 @@ function selectChannel (event)
   const channel = event.currentTarget.value;
   if (conf.css.cssRules.length)
     conf.css.deleteRule (0);
+  document.getElementById ('save')
+    .classList.toggle ('hidden', channel);
   if (!channel)
     return;
   const r = `.chat-line:not([data-channel="${channel}"]) { display: none; }`;
