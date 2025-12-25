@@ -55,6 +55,7 @@ function makeCard (edge)
     card.children[2].textContent = when.replace (/T.*/, '');
     card.title = when + '\n' + card.title;
   }
+  card.title = card.children[1].textContent + '\n' + card.title;
   if (edge.node?.profileImageURL)
     card.children[0].src = edge.node.profileImageURL;
   else
