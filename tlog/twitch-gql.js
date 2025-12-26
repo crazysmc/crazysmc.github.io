@@ -276,7 +276,10 @@ query TLogTeam($name: String!) {
       totalCount
       edges {
         cursor
-        node { ...user }
+        node {
+          ...user
+          primaryTeam { id }
+        }
       }
       pageInfo { hasNextPage }
     }

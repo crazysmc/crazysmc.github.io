@@ -169,6 +169,7 @@ async function query (event)
           '/v1/511b78a9-ab37-472f-9569-457753bbe7d3/1';
         sub.append (img);
         card.append (sub);
+        card.title = card.title.replace (/\n/, ' (currently subscribed)\n');
       }
       list.append (card);
     }

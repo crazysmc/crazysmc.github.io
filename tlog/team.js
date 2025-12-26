@@ -76,7 +76,10 @@ async function query (event)
     let cursor;
     for (const edge of team.members.edges)
     {
-      list.append (makeCard (edge));
+      const card = makeCard (edge);
+      if (edge.node?.primaryTeam?.id == team.id)
+        isPrimary (card);
+      list.append (card);
       cursor = edge.cursor;
     }
     if (team.members.pageInfo?.hasNextPage)
@@ -116,7 +119,10 @@ async function moreMembersLoad (more, repeat)
     let cursor;
     for (const edge of edges)
     {
-      more.before (makeCard (edge));
+      const card = makeCard (edge);
+      if (edge.node?.primaryTeam?.id == team.id)
+        isPrimary (card);
+      more.before (card);
       cursor = edge.cursor;
     }
     if (team.members?.pageInfo?.hasNextPage)
@@ -130,6 +136,18 @@ async function moreMembersLoad (more, repeat)
   }
   while (repeat);
   more.disabled = false;
+}
+
+function isPrimary (card)
+{
+  const primary = document.createElement ('small');
+  const img = document.createElement ('img');
+  img.alt = '⭐';
+  img.src = 'https://static-cdn.jtvnw.net/badges' +
+    '/v1/bbbe0db0-a598-423e-86d0-f9fb98ca1933/1';
+  primary.append (img);
+  card.append (primary);
+  card.title = card.title.replace (/\n/, ' (primary team)\n');
 }
 
 function selectUser (event)
