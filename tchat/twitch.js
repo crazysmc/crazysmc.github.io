@@ -199,8 +199,6 @@ async function loadRecentMessages (name)
   {
     const response = await fetch ('https://recent-messages.robotty.de/api/' +
                                   `v2/recent-messages/${name}`);
-    if (!response.ok)
-      throw new Error ('API connection failed');
     const json = await response.json ();
     if (!json.messages)
       throw new Error (json.error);
