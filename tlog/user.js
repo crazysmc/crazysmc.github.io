@@ -182,6 +182,16 @@ async function query (event)
            `../tchat/?join=${user.login}${options}&rm`,
            user.login ? 'tChat recent messages' : null);
 
+  const live = document.getElementById ('live');
+  if (user.stream)
+  {
+    live.textContent = `live with ${number (user.stream.viewersCount)} viewers`;
+    if (user.stream.clipCount)
+      live.textContent += ` (chat created ${number (user.stream.clipCount)} clips)`;
+  }
+  else
+    live.textContent = '';
+
   queryUserBadges (user.login);
 }
 

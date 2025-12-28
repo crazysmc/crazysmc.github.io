@@ -156,6 +156,10 @@ query TLogUser($id: ID, $login: String) {
         liveUpNotification
       }
     }
+    stream {
+      viewersCount
+      clipCount
+    }
   }
 }
 ${gqlConf.fragmentUser}
