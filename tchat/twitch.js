@@ -259,7 +259,7 @@ function formatChat (msg, p)
     : Object.values (conf.badges.room)
         .find (x => x.channel == msg.params[0]);
   img.src = avatarSource?.avatar ?? '';
-  img.alt = msg.params[0];
+  img.title = img.alt = msg.params[0];
   channel.replaceChildren (img);
   const srid = msg.tags['source-room-id'];
   if (srid && srid != rid)
@@ -274,7 +274,7 @@ function formatChat (msg, p)
     joinedRoom (srid)
       .then (() => {
         img.src = conf.badges.room[srid].avatar;
-        img.alt = conf.badges.room[srid].channel;
+        img.title = img.alt = conf.badges.room[srid].channel;
         for (const { img, rid, badge } of msg.lateBadges ?? [])
           img.src = conf.badges.room[rid]?.[badge] ?? '';
         for (const args of [...msg.lateEmotes ?? []])

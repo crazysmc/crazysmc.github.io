@@ -67,6 +67,16 @@ function makeCard (edge)
   return card;
 }
 
+function makeBadge (badge)
+{
+  const img = document.createElement ('img');
+  img.alt = `[${badge.setID}/${badge.version}]`;
+  img.title = badge.title +
+    (badge.title == badge.description ? '' : '\n' + badge.description);
+  img.src = badge.imageURL;
+  return img;
+}
+
 function changed (id, login)
 {
   if (!id || !login)

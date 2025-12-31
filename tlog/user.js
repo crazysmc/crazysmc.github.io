@@ -112,7 +112,17 @@ async function query (event)
     {
       list.replaceChildren ();
       for (const edge of user[key].edges)
-        list.append (makeCard (edge));
+      {
+        const card = makeCard (edge);
+        for (const badge of edge.node?.displayBadges ?? [])
+          if (badge.setID == 'lead_moderator')
+          {
+            const small = document.createElement ('small');
+            small.append (makeBadge (badge));
+            card.append (small);
+          }
+        list.append (card);
+      }
       if (user[key].pageInfo?.hasNextPage)
         list.append (conf.cards.content.lastElementChild.cloneNode (true));
     }
@@ -185,9 +195,11 @@ async function query (event)
   const live = document.getElementById ('live');
   if (user.stream)
   {
-    live.textContent = `live with ${number (user.stream.viewersCount)} viewers`;
+    live.textContent =
+      `live with ${number (user.stream.viewersCount)} viewers`;
     if (user.stream.clipCount)
-      live.textContent += ` (chat created ${number (user.stream.clipCount)} clips)`;
+      live.textContent +=
+        ` (chat created ${number (user.stream.clipCount)} clips)`;
   }
   else
     live.textContent = '';
@@ -213,16 +225,8 @@ async function queryUserBadges (login)
   {
     badges.replaceChildren ();
     for (const badge of channelViewer.earnedBadges)
-    {
-      if (badge.setID == 'broadcaster')
-        continue;
-      const img = document.createElement ('img');
-      img.alt = `[${badge.setID}/${badge.version}]`;
-      img.title = badge.title +
-        (badge.title == badge.description ? '' : '\n' + badge.description);
-      img.src = badge.imageURL;
-      badges.append (img, ' ');
-    }
+      if (badge.setID != 'broadcaster')
+        badges.append (makeBadge (badge), ' ');
   }
 }
 

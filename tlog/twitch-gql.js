@@ -37,6 +37,14 @@ gqlConf.fragmentUser = `fragment user on User {
   profileImageURL(width: 28)
 }`;
 
+gqlConf.fragmentBadge = `fragment badge on Badge {
+  setID
+  version
+  title
+  description
+  imageURL(size: $size)
+}`;
+
 gqlConf.fragmentPred = `fragment prediction on PredictionEvent {
   status
   createdAt
@@ -79,7 +87,7 @@ gqlConf.fragmentActor = `fragment actor on PredictionEventActor {
 }`;
 
 const getUserInfo = gql`
-query TLogUser($id: ID, $login: String) {
+query TLogUser($id: ID, $login: String, $size: BadgeImageSize = NORMAL) {
   user(id: $id, login: $login, lookupType: ALL) {
     id
     login
@@ -114,7 +122,12 @@ query TLogUser($id: ID, $login: String) {
     mods(first: 100) {
       edges {
         grantedAt
-        node { ...user }
+        node {
+          ...user
+          displayBadges(channelID: $id, channelLogin: $login) {
+            ...badge
+          }
+        }
       }
       pageInfo { hasNextPage }
     }
@@ -163,20 +176,17 @@ query TLogUser($id: ID, $login: String) {
   }
 }
 ${gqlConf.fragmentUser}
+${gqlConf.fragmentBadge}
 `;
 
 const getUserBadges = gql`
-query TLogBadges($login: String!) {
+query TLogBadges($login: String!, $size: BadgeImageSize = DOUBLE) {
   channelViewer(userLogin: $login, channelLogin: $login) {
-    earnedBadges {
-      setID
-      version
-      title
-      description
-      imageURL(size: DOUBLE)
-    }
+    earnedBadges { ...badge }
   }
-}`;
+}
+${gqlConf.fragmentBadge}
+`;
 
 const getFollowInfo = gql`
 query TLogFollow($id: ID!) {
@@ -254,14 +264,6 @@ query TLogUserError($id: ID!) {
     ... on UserDoesNotExist {
       reason
     }
-  }
-}`;
-
-const getAllLogins = gql`
-query TLogUsers($ids: [ID!]) {
-  users(ids: $ids) {
-    id
-    login
   }
 }`;
 
