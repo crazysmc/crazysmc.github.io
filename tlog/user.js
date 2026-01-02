@@ -192,17 +192,31 @@ async function query (event)
            `../tchat/?join=${user.login}${options}&rm`,
            user.login ? 'tChat recent messages' : null);
 
-  const live = document.getElementById ('live');
-  if (user.stream)
-  {
-    live.textContent =
-      `live with ${number (user.stream.viewersCount)} viewers`;
-    if (user.stream.clipCount)
-      live.textContent +=
-        ` (chat created ${number (user.stream.clipCount)} clips)`;
-  }
-  else
-    live.textContent = '';
+  document.getElementById ('live')
+    .classList.toggle ('hidden', !user.stream);
+  document.getElementById ('viewersCount')
+    .textContent = number (user.stream?.viewersCount, ' viewer');
+  const duration = document.getElementById ('duration');
+  duration.dateTime = 'P0D';
+  duration.textContent = '';
+  if (user.lastBroadcast?.startedAt)
+    try
+    {
+      const live = Temporal.Now.instant ()
+        .since (user.lastBroadcast.startedAt);
+      duration.dateTime = live;
+      const balanced = live.round ({ largestUnit:  'days',
+                                     smallestUnit: 'minutes' });
+      duration.textContent = 'for ' + conf.dur.format (balanced);
+    }
+    catch (e)
+    {
+      console.warn (e);
+    }
+  document.getElementById ('clipCount')
+    .textContent = user.stream?.clipCount
+      ? '(' + number (user.stream.clipCount, ' new clip') + ')'
+      : '';
 
   queryUserBadges (user.login);
 }

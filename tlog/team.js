@@ -10,7 +10,6 @@ function init ()
   document.forms.tlog.saveTeam.addEventListener ('click', saveTeam);
   document.getElementById ('dialogs')
     .replaceChildren ();
-  document.forms.tlog.team.value = opt.get ('q') ?? '';
   checkParam ();
 }
 

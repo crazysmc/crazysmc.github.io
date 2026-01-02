@@ -3,11 +3,16 @@
 const opt = new URLSearchParams (location.search);
 const conf = {
   num: new Intl.NumberFormat ('en-US'),
+  dur: new Intl.DurationFormat ('en-US', { style: 'narrow' }),
 };
 
-function number (text)
+function number (text, suffix)
 {
-  return text == undefined ? '—' : conf.num.format (text);
+  if (text == undefined)
+    return '—';
+  if (suffix && text != 1)
+    suffix += 's';
+  return conf.num.format (text) + (suffix ?? '');
 }
 
 function setHref (a, href, text)
