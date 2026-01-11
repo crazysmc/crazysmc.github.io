@@ -30,6 +30,7 @@ const conf = {
   emotes: { global: { __proto__: null }, room: {}, user: {} },
   cheermotes: { global: { __proto__: null }, room: {} },
   cosmetics: {},
+  wantAvatar: {},
 };
 
 function login ()
@@ -142,7 +143,7 @@ function reduceChat ()
       line.classList.add ('fade-out');
   }
   const url = conf.preload.shift ();
-  if (url)
+  if (url && !opt.has ('rm'))
   {
     const img = document.createElement ('img');
     img.fetchPriority = 'low';
@@ -170,12 +171,16 @@ function deleteMessages (sel)
 async function joinedRoom (rid)
 {
   if (conf.joinedRooms.includes (rid))
+  {
+    if (!conf.badges.room[rid]?.avatar)
+      await (conf.wantAvatar[rid] ??= Promise.withResolvers ()).promise;
     return;
+  }
+  conf.joinedRooms.push (rid);
   if (!conf.badges.room[rid])
     await getChannelAssets (rid);
   await Promise.allSettled (conf.onJoinRoom
                             .map (callback => callback (rid)));
-  conf.joinedRooms.push (rid);
   document.documentElement.dataset.join = conf.joinedRooms.length;
   if (opt.has ('rm'))
   {

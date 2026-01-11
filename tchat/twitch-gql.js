@@ -133,6 +133,7 @@ function addUserAssets (rid, user)
     avatar: user.profileImageURL,
     primary: `#${user.primaryColorHex}`,
   };
+  conf.wantAvatar[rid]?.resolve?.();
   for (const badge of user.broadcastBadges ?? [])
     conf.badges.room[rid][`${badge.setID}/${badge.version}`] = badge.imageURL;
   if (user.cheer)
