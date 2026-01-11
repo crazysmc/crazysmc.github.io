@@ -1,5 +1,12 @@
 'use strict';
 
+const commandBots = {
+  '19264788': x => `https://nightbot.tv/t/${x}/commands?limit=100`,
+  '52268235': x => `https://${x}.streaming.lv/?commands`,
+  '100135110': x => `https://streamelements.com/${x}/commands`,
+  '237719657': x => `https://fossabot.com/${x}/commands`,
+};
+
 addEventListener ('load', init);
 addEventListener ('popstate', checkParam);
 
@@ -104,6 +111,8 @@ async function query (event)
     .textContent = roles || '—';
   setColor (document.getElementById ('chatColor'), user.chatColor);
 
+  const links = document.getElementById ('commandBots');
+  links.replaceChildren ();
   for (const key of [ 'mods', 'vips' ])
   {
     const list = document.getElementById (key);
@@ -122,6 +131,14 @@ async function query (event)
             card.append (small);
           }
         list.append (card);
+        const url = commandBots[edge.node?.id];
+        if (url)
+        {
+          const a = document.createElement ('a');
+          a.href = url (user.login);
+          a.textContent = edge.node.displayName + ' commands';
+          links.append (a, ' ');
+        }
       }
       if (user[key].pageInfo?.hasNextPage)
         list.append (conf.cards.content.lastElementChild.cloneNode (true));
