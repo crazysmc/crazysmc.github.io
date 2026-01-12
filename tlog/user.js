@@ -1,10 +1,14 @@
 'use strict';
 
 const commandBots = {
+  '1564983': x => `https://moo.bot/r/commands#${x}`,
   '19264788': x => `https://nightbot.tv/t/${x}/commands?limit=100`,
   '52268235': x => `https://${x}.streaming.lv/?commands`,
-  '100135110': x => `https://streamelements.com/${x}/commands`,
+  '55056264': x => `https://www.coebot.tv/c/${x}/commands`,
+  '65408403': x => `https://www.coebot.tv/c/${x}/commands`,
+  '100135110': x => `https://streamelements.com/${x}/commands/custom`,
   '237719657': x => `https://fossabot.com/${x}/commands`,
+  '270794196': x => `https://hortbot.xyz/c/${x}/commands`,
 };
 
 addEventListener ('load', init);
@@ -527,7 +531,7 @@ function openTeam (event)
 {
   event.preventDefault ();
   if (conf.user?.primaryTeam?.name)
-    open ('team.html?q=' + conf.user.primaryTeam.name, '_self');
+    open ('team.html?q=' + conf.user.primaryTeam.name, '_blank');
 }
 
 function selectUser (event)
