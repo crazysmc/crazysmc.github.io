@@ -363,29 +363,7 @@ function formatChat (msg, p)
 
   const badges = p.querySelector ('.badges');
   if (msg.tags.badges)
-  {
-    const infos = msg.tags['badge-info']?.split (',');
-    const info = infos
-      ? Object.fromEntries (infos.map (x => x.split ('/')))
-      : {};
-    for (const badge of msg.tags.badges.split (','))
-    {
-      const img = document.createElement ('img');
-      const url = (conf.badges.room[rid]?.[badge] ??
-                   conf.badges.global[badge]);
-      img.src = url ?? '';
-      if (!url)
-      {
-        (msg.lateBadges ??= []).push ({ img, rid, badge });
-        /* in case joinedRoom finished while setting lateBadges: */
-        img.src = conf.badges.room[rid]?.[badge] ?? '';
-      }
-      img.alt = `[${badge}]`;
-      img.title = info[badge.replace (/\/.*/, '')] ?? '';
-      badges.append (img);
-    }
-  }
-
+    nativeBadges (p, msg, rid, badges);
   extBadges (p, rid, uid, badges);
   if (badges.childNodes.length)
     badges.classList.remove ('hidden');
@@ -494,6 +472,45 @@ function extCosmetics (uid, nick)
     nick.classList.add (...conf.cosmetics[uid]);
 }
 
+function nativeBadges (p, msg, rid, badges)
+{
+  const infos = msg.tags['badge-info']?.split (',');
+  const info = infos
+    ? Object.fromEntries (infos.map (x => x.split ('/')))
+    : {};
+  for (const badge of msg.tags.badges.split (','))
+  {
+    if (badge == 'bot-badge/1')
+    {
+      if (conf.no.bots)
+      {
+        p.dataset.remove = true;
+        return;
+      }
+      const mod = badges.querySelector (
+          'img[alt="[moderator/1]"], img[alt="[lead_moderator/1]"]');
+      if (mod)
+      {
+        mod.classList.add ('api-bot');
+        continue;
+      }
+    }
+    const img = document.createElement ('img');
+    const url = (conf.badges.room[rid]?.[badge] ??
+                 conf.badges.global[badge]);
+    img.src = url ?? '';
+    if (!url)
+    {
+      (msg.lateBadges ??= []).push ({ img, rid, badge });
+      /* in case joinedRoom finished while setting lateBadges: */
+      img.src = conf.badges.room[rid]?.[badge] ?? '';
+    }
+    img.alt = `[${badge}]`;
+    img.title = info[badge.replace (/\/.*/, '')] ?? '';
+    badges.append (img);
+  }
+}
+
 function extBadges (p, rid, uid, badges)
 {
   const userBadges = { ...conf.badges.user[uid],
@@ -507,12 +524,15 @@ function extBadges (p, rid, uid, badges)
         p.dataset.remove = true;
         return;
       }
-      const mod = badges.querySelector ('img[alt="[moderator/1]"]');
+      const mod = badges.querySelector (
+          'img[alt="[moderator/1]"], img[alt="[lead_moderator/1]"]');
       if (mod)
       {
         mod.classList.add ('ffz-bot');
         continue;
       }
+      if (badges.querySelector ('img[alt="[bot-badge/1]"]'))
+        continue;
     }
     const img = document.createElement ('img');
     img.src = userBadges[badge];

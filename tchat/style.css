@@ -399,6 +399,20 @@ html[data-scale="3"] .badges .ffz-bot {
   content: url(https://cdn.frankerfacez.com/badge/2/4);
 }
 
+.badges .api-bot {
+  background-color: #00ad03;
+  border-radius: 0.2em;
+  content: url(https://cdn.frankerfacez.com/static/badges/twitch/2/bot-badge/1/1.png);
+}
+
+html[data-scale="2"] .badges .api-bot {
+  content: url(https://cdn.frankerfacez.com/static/badges/twitch/2/bot-badge/1/2.png);
+}
+
+html[data-scale="3"] .badges .api-bot {
+  content: url(https://cdn.frankerfacez.com/static/badges/twitch/2/bot-badge/1/3.png);
+}
+
 /*
  * 7TV name paints
  */
