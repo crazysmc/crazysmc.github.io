@@ -397,7 +397,9 @@ function formatChat (msg, p)
       span.prepend (img, ' ');
       span.normalize ();
     }
-    message.prepend (span, document.createElement ('br'));
+    message.prepend (span, opt.has ('style', 'wrap')
+                           ? '\xa0 '
+                           : document.createElement ('br'));
   }
 
   if (msg.tags['msg-param-color'] == 'PRIMARY')
@@ -461,7 +463,9 @@ function rewardRedeemed (p, msg, uid, message)
       prev.classList.add ('reward-redeemed');
       p.dataset.remove = true;
     }
-    message.prepend (document.createElement ('br'));
+    message.prepend (opt.has ('style', 'wrap')
+                     ? '\xa0 '
+                     : document.createElement ('br'));
   }
   message.prepend (...msg.reward);
 }

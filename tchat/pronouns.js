@@ -69,7 +69,7 @@ async function getPronouns (name, pro, badges)
   }
   catch (e)
   {
-    displayError ('Failed to load chatter pronouns', e);
+    console.error ('Failed to load chatter pronouns', e);
   }
 }
 
