@@ -263,7 +263,6 @@ img.suffix {
   content: attr(data-flagged);
   float: right;
   margin-left: auto;
-  text-wrap: nowrap;
 }
 
 /*
