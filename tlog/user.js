@@ -239,7 +239,27 @@ async function query (event)
       ? '(' + number (user.stream.clipCount, ' new clip') + ')'
       : '';
 
+  getBestLogs (user.id);
   queryUserBadges (user.login);
+}
+
+async function getBestLogs (id)
+{
+  const bestLogs = document.getElementById ('bestLogs');
+  bestLogs.textContent = '';
+  const namehistory = document.getElementById ('namehistory');
+  namehistory.textContent = '';
+  if (!id)
+    return;
+
+  setHref (namehistory, `https://logs.zonian.dev/namehistory/${id}`,
+           'User name history');
+  const response = await fetch ('https://logs.zonian.dev/api' +
+                                `/id:${id}?plain=true&pretty=true`);
+  if (!response.ok)
+    return;
+  const url = await response.text ();
+  setHref (bestLogs, url, url ? 'Best Logs' : null);
 }
 
 async function queryUserBadges (login)

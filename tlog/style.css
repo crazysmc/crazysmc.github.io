@@ -154,6 +154,11 @@ input[type="button"][value="—"]
   grid-row: 2;
 }
 
+#links a:not(:empty)
+{
+  padding: 0 0.5em;
+}
+
 #live
 {
   font-weight: bold;
