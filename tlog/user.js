@@ -525,7 +525,6 @@ query TLogModding($id: ID!) {
   }
   if (count)
     await req ();
-  console.log (modding);
 }
 
 async function predictions (event)
