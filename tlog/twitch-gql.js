@@ -5,7 +5,7 @@ const gqlConf = {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', // public information
+      'Client-ID': 'kd1unb4b3q4t58fwlpcbzcbnm76a8fp',
     },
   }),
 };
@@ -86,6 +86,23 @@ gqlConf.fragmentActor = `fragment actor on PredictionEventActor {
   ...user
 }`;
 
+gqlConf.fragmentFF = `fragment follower on FollowerConnection {
+  edges {
+    cursor
+    followedAt
+    node { ...user }
+  }
+  pageInfo { hasNextPage }
+}
+fragment follow on FollowConnection {
+  edges {
+    cursor
+    followedAt
+    node { ...user }
+  }
+  pageInfo { hasNextPage }
+}`;
+
 const getUserInfo = gql`
 query TLogUser($id: ID, $login: String, $size: BadgeImageSize = NORMAL) {
   user(id: $id, login: $login, lookupType: ALL) {
@@ -121,6 +138,7 @@ query TLogUser($id: ID, $login: String, $size: BadgeImageSize = NORMAL) {
     }
     mods(first: 100) {
       edges {
+        cursor
         grantedAt
         node {
           ...user
@@ -179,6 +197,28 @@ ${gqlConf.fragmentUser}
 ${gqlConf.fragmentBadge}
 `;
 
+const getMoreMods = gql`
+query TLogMods($id: ID!, $cursor: Cursor!, $size: BadgeImageSize = NORMAL) {
+  user(id: $id, lookupType: ALL) {
+    mods(first: 100, after: $cursor) {
+      edges {
+        cursor
+        grantedAt
+        node {
+          ...user
+          displayBadges(channelID: $id) {
+            ...badge
+          }
+        }
+      }
+      pageInfo { hasNextPage }
+    }
+  }
+}
+${gqlConf.fragmentUser}
+${gqlConf.fragmentBadge}
+`;
+
 const getUserBadges = gql`
 query TLogBadges($login: String!, $size: BadgeImageSize = DOUBLE) {
   channelViewer(userLogin: $login, channelLogin: $login) {
@@ -204,20 +244,28 @@ query TLogFollow($id: ID!) {
     desc_follows: follows(first: 100, order: DESC) { ...follow }
   }
 }
-fragment follower on FollowerConnection {
-  edges {
-    followedAt
-    node { ...user }
+${gqlConf.fragmentFF}
+${gqlConf.fragmentUser}
+`;
+
+const getFollowMore = gql`
+query TLogFollow(
+  $id: ID!, $cursor: Cursor!
+  $asc_followers: Boolean!, $desc_followers: Boolean!
+  $asc_follows: Boolean!, $desc_follows: Boolean!
+) {
+  user(id: $id, lookupType: ALL) {
+    asc_followers: followers(first: 100, order: ASC, after: $cursor)
+      @include(if: $asc_followers) { ...follower }
+    desc_followers: followers(first: 100, order: DESC, after: $cursor)
+      @include(if: $desc_followers) { ...follower }
+    asc_follows: follows(first: 100, order: ASC, after: $cursor)
+      @include(if: $asc_follows) { ...follow }
+    desc_follows: follows(first: 100, order: DESC, after: $cursor)
+      @include(if: $desc_follows) { ...follow }
   }
-  pageInfo { hasNextPage }
 }
-fragment follow on FollowConnection {
-  edges {
-    followedAt
-    node { ...user }
-  }
-  pageInfo { hasNextPage }
-}
+${gqlConf.fragmentFF}
 ${gqlConf.fragmentUser}
 `;
 

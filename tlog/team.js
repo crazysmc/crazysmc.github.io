@@ -102,6 +102,7 @@ function moreMembers (event)
 async function moreMembersLoad (more, repeat)
 {
   more.disabled = true;
+  conf.esc = false;
   do
   {
     const variables = {
@@ -133,7 +134,7 @@ async function moreMembersLoad (more, repeat)
     }
     await new Promise (resolve => { setTimeout (resolve, 200); });
   }
-  while (repeat);
+  while (repeat && !conf.esc);
   more.disabled = false;
 }
 

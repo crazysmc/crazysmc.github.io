@@ -118,3 +118,10 @@ function save (obj, name)
   a.click ();
   a.remove ();
 }
+
+function recordEscape (event)
+{
+  if (event.key == 'Escape' || event.key == 'Esc')
+    conf.esc = true;
+}
+addEventListener ('keydown', recordEscape);

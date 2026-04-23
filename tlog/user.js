@@ -115,8 +115,8 @@ async function query (event)
     .textContent = roles || '—';
   setColor (document.getElementById ('chatColor'), user.chatColor);
 
-  const links = document.getElementById ('commandBots');
-  links.replaceChildren ();
+  document.getElementById ('commandBots')
+    .replaceChildren ();
   for (const key of [ 'mods', 'vips' ])
   {
     const list = document.getElementById (key);
@@ -124,28 +124,22 @@ async function query (event)
     if (user[key]?.edges?.length)
     {
       list.replaceChildren ();
+      let cursor;
       for (const edge of user[key].edges)
       {
-        const card = makeCard (edge);
-        for (const badge of edge.node?.displayBadges ?? [])
-          if (badge.setID == 'lead_moderator')
-          {
-            const small = document.createElement ('small');
-            small.append (makeBadge (badge));
-            card.append (small);
-          }
-        list.append (card);
-        const url = commandBots[edge.node?.id];
-        if (url)
-        {
-          const a = document.createElement ('a');
-          a.href = url (user.login);
-          a.textContent = edge.node.displayName + ' commands';
-          links.append (a, ' ');
-        }
+        cursor = edge.cursor;
+        list.append (makeModVip (edge));
       }
       if (user[key].pageInfo?.hasNextPage)
-        list.append (conf.cards.content.lastElementChild.cloneNode (true));
+      {
+        const more = conf.cards.content.lastElementChild.cloneNode (true);
+        more.dataset.cursor = cursor;
+        if (cursor)
+          more.addEventListener ('click', moreMods);
+        else
+          more.disabled = true;
+        list.append (more);
+      }
     }
   }
 
@@ -241,6 +235,72 @@ async function query (event)
 
   getBestLogs (user.id);
   queryUserBadges (user.login);
+}
+
+function makeModVip (edge)
+{
+  const card = makeCard (edge);
+  for (const badge of edge.node?.displayBadges ?? [])
+    if (badge.setID == 'lead_moderator')
+    {
+      const small = document.createElement ('small');
+      small.append (makeBadge (badge));
+      card.append (small);
+    }
+  const url = commandBots[edge.node?.id];
+  if (url)
+  {
+    const links = document.getElementById ('commandBots');
+    const a = document.createElement ('a');
+    a.href = url (conf.user.login);
+    a.textContent = edge.node.displayName + ' commands';
+    links.append (a, ' ');
+  }
+  return card;
+}
+
+function moreMods (event)
+{
+  event.preventDefault ();
+  if (!conf.user?.id)
+    return;
+  moreModsLoad (event.currentTarget, event.shiftKey);
+}
+
+async function moreModsLoad (more, repeat)
+{
+  more.disabled = true;
+  conf.esc = false;
+  do
+  {
+    const variables = {
+      id: conf.user.id,
+      cursor: more.dataset.cursor,
+    };
+    const info = await getMoreMods (variables) ?? {};
+    displayError (info);
+    const user = info.data?.user ?? {};
+    conf.user.mods.pageInfo = user.mods?.pageInfo;
+    const edges = user.mods?.edges ?? [];
+    conf.user.mods.edges.push (...edges);
+
+    let cursor;
+    for (const edge of edges)
+    {
+      cursor = edge.cursor;
+      more.before (makeModVip (edge));
+    }
+    if (user.mods?.pageInfo?.hasNextPage)
+      more.dataset.cursor = cursor;
+    else
+    {
+      more.remove ();
+      return;
+    }
+    await new Promise (resolve => { setTimeout (resolve, 200); });
+  }
+  while (repeat && !conf.esc);
+  more.disabled = false;
 }
 
 async function getBestLogs (id)
@@ -354,12 +414,106 @@ async function followers (event)
     if (user[key]?.edges?.length)
     {
       list.replaceChildren ();
+      let cursor;
       for (const edge of user[key].edges)
+      {
+        cursor = edge.cursor;
         list.append (makeCard (edge));
+      }
       if (user[key].pageInfo?.hasNextPage)
-        list.append (conf.cards.content.lastElementChild.cloneNode (true));
+      {
+        const more = conf.cards.content.lastElementChild.cloneNode (true);
+        more.dataset.cursor = cursor;
+        more.dataset.key = key;
+        more.addEventListener ('click', moreFollow);
+        list.append (more);
+      }
     }
   }
+}
+
+function moreFollow (event)
+{
+  event.preventDefault ();
+  if (!conf.user?.id)
+    return;
+  moreFollowLoad (event.currentTarget, event.shiftKey);
+}
+
+async function moreFollowLoad (more, repeat)
+{
+  more.disabled = true;
+  conf.esc = false;
+  do
+  {
+    const variables = {
+      id: conf.user.id,
+      cursor: more.dataset.cursor,
+    };
+    for (const key of [ 'asc_followers', 'desc_followers',
+                        'asc_follows', 'desc_follows' ])
+      variables[key] = key == more.dataset.key;
+    const info = await getFollowMore (variables) ?? {};
+    displayError (info);
+    const user = info.data?.user ?? {};
+    conf.follow[more.dataset.key].pageInfo = user[more.dataset.key]?.pageInfo;
+    const edges = user[more.dataset.key]?.edges ?? [];
+    conf.follow[more.dataset.key].edges.push (...edges);
+
+    let cursor;
+    for (const edge of edges)
+    {
+      cursor = edge.cursor;
+      more.before (makeCard (edge));
+    }
+    if (user[more.dataset.key].pageInfo?.hasNextPage)
+      more.dataset.cursor = cursor;
+    else
+    {
+      more.remove ();
+      return;
+    }
+  }
+  while (repeat && !conf.esc);
+  more.disabled = false;
+}
+
+// TODO
+async function reverseMods ()
+{
+  const key = document.forms.tlog.followOrder.value;
+  if (!conf.follow?.[key]?.edges?.length)
+    return;
+  const variables = { id: conf.user.id };
+  const modding = [];
+  let check = '', count = 0;
+  const req = async () => {
+    const getModding = gql`
+query TLogModding($id: ID!) {
+  user(id: $id, lookupType: ALL) {${check}
+  }
+}
+  `;
+    const info = await getModding (variables) ?? {};
+    displayError (info);
+    const user = info.data?.user ?? {};
+    for (const mod in user)
+      if (user[mod])
+        modding.push (mod.slice (1));
+  };
+  for (const edge of conf.follow[key].edges)
+  {
+    check += `
+    _${edge.node.login}: isModerator(channelID: "${edge.node.id}")`;
+    if (++count == 100)
+    {
+      await req ();
+      check = '';
+      count = 0;
+    }
+  }
+  await req ();
+  console.log (modding);
 }
 
 async function predictions (event)
@@ -486,6 +640,7 @@ function morePredictions (event)
 async function morePredLoad (more, repeat)
 {
   more.disabled = true;
+  conf.esc = false;
   do
   {
     const variables = {
@@ -515,7 +670,7 @@ async function morePredLoad (more, repeat)
     }
     await new Promise (resolve => { setTimeout (resolve, 200); });
   }
-  while (repeat);
+  while (repeat && !conf.esc);
   more.disabled = false;
 }
 

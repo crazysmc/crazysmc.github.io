@@ -84,7 +84,7 @@ input[type="button"][value="—"]
   vertical-align: middle;
 }
 
-.card img
+.card > img
 {
   grid-row: span 2;
   padding-right: 0.2em;
@@ -95,7 +95,6 @@ input[type="button"][value="—"]
   grid-column: 2;
   max-width: 7em;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -104,12 +103,6 @@ input[type="button"][value="—"]
   font-size: 0.8em;
   grid-column: 2;
   text-align: right;
-}
-
-.more
-{
-  padding: 1em;
-  vertical-align: bottom;
 }
 
 .default
