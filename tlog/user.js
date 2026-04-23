@@ -21,6 +21,7 @@ function init ()
   document.forms.tlog.reset ();
   document.forms.tlog.addEventListener ('submit', query);
   document.forms.tlog.saveUser.addEventListener ('click', saveUser);
+  document.forms.tlog.reverseMod.addEventListener ('click', reverseMod);
   document.forms.tlog.saveFollow.addEventListener ('click', saveFollow);
   document.forms.tlog.savePred.addEventListener ('click', savePred);
   document.forms.tlog.follow.addEventListener ('click', followers);
@@ -478,14 +479,10 @@ async function moreFollowLoad (more, repeat)
   more.disabled = false;
 }
 
-// TODO
-async function reverseMods ()
+async function reverseMod ()
 {
   const key = document.forms.tlog.followOrder.value;
-  if (!conf.follow?.[key]?.edges?.length)
-    return;
-  const variables = { id: conf.user.id };
-  const modding = [];
+  const variables = { id: conf.user?.id };
   let check = '', count = 0;
   const req = async () => {
     const getModding = gql`
@@ -499,12 +496,26 @@ query TLogModding($id: ID!) {
     const user = info.data?.user ?? {};
     for (const mod in user)
       if (user[mod])
-        modding.push (mod.slice (1));
+        for (const card of document.querySelectorAll
+             (`button[data-id="${mod.slice (1)}"]:not([data-modding])`))
+        {
+          card.dataset.modding = 1;
+          const modding = document.createElement ('small');
+          const img = document.createElement ('img');
+          img.alt = '⚔';
+          img.src = 'https://static-cdn.jtvnw.net/badges' +
+            '/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1';
+          img.classList.add ('reverse');
+          modding.append (img);
+          card.append (modding);
+          card.title = card.title
+            .replace (/\n/, ` (${conf.user.displayName} modding)\n`);
+        }
   };
-  for (const edge of conf.follow[key].edges)
+  for (const edge of conf.follow?.[key]?.edges ?? [])
   {
     check += `
-    _${edge.node.login}: isModerator(channelID: "${edge.node.id}")`;
+    _${edge.node.id}: isModerator(channelID: "${edge.node.id}")`;
     if (++count == 100)
     {
       await req ();
@@ -512,7 +523,8 @@ query TLogModding($id: ID!) {
       count = 0;
     }
   }
-  await req ();
+  if (count)
+    await req ();
   console.log (modding);
 }
 

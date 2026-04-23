@@ -147,6 +147,11 @@ input[type="button"][value="—"]
   grid-row: 2;
 }
 
+.reverse
+{
+  transform: rotate(180deg);
+}
+
 #links a:not(:empty)
 {
   padding: 0 0.5em;
