@@ -6,7 +6,7 @@ const commandBots = {
   '52268235': x => `https://${x}.streaming.lv/?commands`,
   '55056264': x => `https://www.coebot.tv/c/${x}/commands`,
   '65408403': x => `https://www.coebot.tv/c/${x}/commands`,
-  '100135110': x => `https://streamelements.com/${x}/commands/custom`,
+  '100135110': x => `https://streamelements.com/${x}/commands`,
   '237719657': x => `https://fossabot.com/${x}/commands`,
   '270794196': x => `https://hortbot.xyz/c/${x}/commands`,
 };
