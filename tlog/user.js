@@ -21,7 +21,7 @@ function init ()
   document.forms.tlog.reset ();
   document.forms.tlog.addEventListener ('submit', query);
   document.forms.tlog.saveUser.addEventListener ('click', saveUser);
-  document.forms.tlog.reverseMod.addEventListener ('click', reverseMod);
+  document.forms.tlog.reverseBadge.addEventListener ('click', reverseBadge);
   document.forms.tlog.saveFollow.addEventListener ('click', saveFollow);
   document.forms.tlog.savePred.addEventListener ('click', savePred);
   document.forms.tlog.follow.addEventListener ('click', followers);
@@ -479,43 +479,52 @@ async function moreFollowLoad (more, repeat)
   more.disabled = false;
 }
 
-async function reverseMod ()
+async function reverseBadge ()
 {
   const key = document.forms.tlog.followOrder.value;
   const variables = { id: conf.user?.id };
   let check = '', count = 0;
   const req = async () => {
-    const getModding = gql`
-query TLogModding($id: ID!) {
+    const getRev = gql`
+query TLogRev($id: ID!, $size: BadgeImageSize = NORMAL) {
   user(id: $id, lookupType: ALL) {${check}
   }
 }
+${gqlConf.fragmentBadge}
   `;
-    const info = await getModding (variables) ?? {};
+    const info = await getRev (variables) ?? {};
     displayError (info);
     const user = info.data?.user ?? {};
-    for (const mod in user)
-      if (user[mod])
-        for (const card of document.querySelectorAll
-             (`button[data-id="${mod.slice (1)}"]:not([data-modding])`))
-        {
-          card.dataset.modding = 1;
-          const modding = document.createElement ('small');
-          const img = document.createElement ('img');
-          img.alt = '⚔';
-          img.src = 'https://static-cdn.jtvnw.net/badges' +
-            '/v1/3267646d-33f0-4b17-b3df-f923a41db1d0/1';
-          img.classList.add ('reverse');
-          modding.append (img);
-          card.append (modding);
-          card.title = card.title
-            .replace (/\n/, ` (${conf.user.displayName} modding)\n`);
-        }
+    for (const _id in user)
+      for (const badge of user[_id] ?? [])
+        if ([ 'lead_moderator', 'moderator', 'vip',
+              'artist-badge',
+              'founder', 'subscriber' ].includes (badge.setID))
+          for (const card of document.querySelectorAll
+               (`button[data-id="${_id.slice (1)}"]`))
+          {
+            let small = card.querySelector ('small.reverse');
+            if (!small)
+            {
+              small = document.createElement ('small');
+              small.classList.add ('reverse');
+              card.append (small);
+            }
+            const img = makeBadge (badge);
+            if (small.querySelector (`img[alt="${img.alt}"]`))
+              continue;
+            small.append (img);
+            card.title = card.title
+              .replace (/\n/,
+                        ` (${conf.user.displayName} is ${badge.setID})\n`);
+          }
   };
   for (const edge of conf.follow?.[key]?.edges ?? [])
   {
     check += `
-    _${edge.node.id}: isModerator(channelID: "${edge.node.id}")`;
+    _${edge.node.id}: displayBadges(channelID: "${edge.node.id}") {
+      ...badge
+    }`;
     if (++count == 100)
     {
       await req ();

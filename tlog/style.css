@@ -142,14 +142,10 @@ input[type="button"][value="—"]
   text-align: right;
 }
 
-.card small + small
+.card small + small,
+.card .reverse
 {
   grid-row: 2;
-}
-
-.reverse
-{
-  transform: rotate(180deg);
 }
 
 #links a:not(:empty)
