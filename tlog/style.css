@@ -148,6 +148,12 @@ input[type="button"][value="—"]
   grid-row: 2;
 }
 
+pre
+{
+  background-color: #eef;
+  padding: 0 1em;
+}
+
 #links a:not(:empty)
 {
   padding: 0 0.5em;

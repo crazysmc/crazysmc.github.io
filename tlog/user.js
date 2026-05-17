@@ -431,6 +431,9 @@ async function followers (event)
       }
     }
   }
+
+  document.getElementById ('reverseBadge')
+    .textContent = '';
 }
 
 function moreFollow (event)
@@ -483,6 +486,14 @@ async function reverseBadge ()
 {
   const key = document.forms.tlog.followOrder.value;
   const variables = { id: conf.user?.id };
+  const set = {
+    lead_moderator: [],
+    moderator: [],
+    vip: [],
+    'artist-badge': [],
+    founder: [],
+    subscriber: [],
+  };
   let check = '', count = 0;
   const req = async () => {
     const getRev = gql`
@@ -497,11 +508,12 @@ ${gqlConf.fragmentBadge}
     const user = info.data?.user ?? {};
     for (const _id in user)
       for (const badge of user[_id] ?? [])
-        if ([ 'lead_moderator', 'moderator', 'vip',
-              'artist-badge',
-              'founder', 'subscriber' ].includes (badge.setID))
+        if (badge.setID in set)
+        {
+          const id = _id.slice (1);
+          set[badge.setID].push (localStorage[id]);
           for (const card of document.querySelectorAll
-               (`button[data-id="${_id.slice (1)}"]`))
+               (`button[data-id="${id}"]`))
           {
             let small = card.querySelector ('small.reverse');
             if (!small)
@@ -518,6 +530,7 @@ ${gqlConf.fragmentBadge}
               .replace (/\n/,
                         ` (${conf.user.displayName} is ${badge.setID})\n`);
           }
+        }
   };
   for (const edge of conf.follow?.[key]?.edges ?? [])
   {
@@ -534,6 +547,12 @@ ${gqlConf.fragmentBadge}
   }
   if (count)
     await req ();
+  console.log (set);
+  const pre = document.getElementById ('reverseBadge');
+  pre.textContent = '';
+  for (const role in set)
+    pre.textContent += `${role.padEnd (14)} in: ${set[role].toSorted ()
+        .join (', ')}\n`;
 }
 
 async function predictions (event)
