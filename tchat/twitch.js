@@ -455,8 +455,9 @@ function rewardRedeemed (p, msg, uid, message)
   if (message.textContent)
   {
     const rewardId = msg.tags['reward-id'];
-    const sel = `.PRIVMSG[data-custom-reward-id="${rewardId}"]`;
-    const prev = conf.chat.querySelector (sel);
+    const prev = conf.chat.querySelector (
+        `.PRIVMSG[data-custom-reward-id="${rewardId}"]:not(.reward-redeemed)`
+    );
     if (prev)
     {
       message = prev.querySelector ('.message');
