@@ -182,7 +182,7 @@ function parse (msg)
     for (const tag of tags.split (';'))
     {
       const [ key, val ] = tag.split (/=(.*)/, 2);
-      obj.tags[key] = val.replaceAll (/\\(.?)/g, tagValue);
+      obj.tags[key] = val?.replaceAll (/\\(.?)/g, tagValue) ?? '';
     }
   }
   if (msg[0] == ':')
