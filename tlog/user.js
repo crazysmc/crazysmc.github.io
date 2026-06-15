@@ -125,20 +125,17 @@ async function query (event)
     if (user[key]?.edges?.length)
     {
       list.replaceChildren ();
-      let cursor;
-      for (const edge of user[key].edges)
-      {
-        cursor = edge.cursor;
+      for (const edge of user[key].edges.toSorted (tsCompare))
         list.append (makeModVip (edge));
-      }
       if (user[key].pageInfo?.hasNextPage)
       {
         const more = conf.cards.content.lastElementChild.cloneNode (true);
-        more.dataset.cursor = cursor;
-        if (cursor)
-          more.addEventListener ('click', moreMods);
-        else
+        const last = user[key].edges.at (-1);
+        more.dataset.cursor = last.cursor;
+        if (last.cursor == 'zuma:') // obscure twitch error
           more.disabled = true;
+        else
+          more.addEventListener ('click', moreMods);
         list.append (more);
       }
     }
@@ -238,6 +235,11 @@ async function query (event)
   queryUserBadges (user.login);
 }
 
+function tsCompare (a, b)
+{
+  return (a.grantedAt > b.grantedAt) - (a.grantedAt < b.grantedAt);
+}
+
 function makeModVip (edge)
 {
   const card = makeCard (edge);
@@ -285,14 +287,13 @@ async function moreModsLoad (more, repeat)
     const edges = user.mods?.edges ?? [];
     conf.user.mods.edges.push (...edges);
 
-    let cursor;
-    for (const edge of edges)
-    {
-      cursor = edge.cursor;
+    for (const edge of edges.toSorted (tsCompare))
       more.before (makeModVip (edge));
-    }
     if (user.mods?.pageInfo?.hasNextPage)
-      more.dataset.cursor = cursor;
+    {
+      const last = edges.at (-1);
+      more.dataset.cursor = last.cursor;
+    }
     else
     {
       more.remove ();
@@ -511,7 +512,7 @@ ${gqlConf.fragmentBadge}
         if (badge.setID in set)
         {
           const id = _id.slice (1);
-          set[badge.setID].push (localStorage[id]);
+          set[badge.setID].push ([ id, localStorage[id] ]);
           for (const card of document.querySelectorAll
                (`button[data-id="${id}"]`))
           {
@@ -547,12 +548,17 @@ ${gqlConf.fragmentBadge}
   }
   if (count)
     await req ();
-  console.log (set);
   const pre = document.getElementById ('reverseBadge');
   pre.textContent = '';
   for (const role in set)
-    pre.textContent += `${role.padEnd (14)} in: ${set[role].toSorted ()
-        .join (', ')}\n`;
+  {
+    console.log (role, set[role]
+                 .toSorted ((a, b) => a[1].localeCompare (b[1]))
+                 .map (x => x[0]));
+    const logins = set[role].map (x => x[1])
+      .toSorted ();
+    pre.textContent += `${role.padEnd (14)} in: ${logins.join (', ')}\n`;
+  }
 }
 
 async function predictions (event)
