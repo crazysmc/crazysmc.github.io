@@ -21,14 +21,10 @@ function init ()
   document.forms.tlog.reset ();
   document.forms.tlog.addEventListener ('submit', query);
   document.forms.tlog.saveUser.addEventListener ('click', saveUser);
-  document.forms.tlog.reverseBadge.addEventListener ('click', reverseBadge);
-  document.forms.tlog.saveFollow.addEventListener ('click', saveFollow);
   document.forms.tlog.savePred.addEventListener ('click', savePred);
-  document.forms.tlog.follow.addEventListener ('click', followers);
+  document.forms.tlog.namehistory.addEventListener ('click', queryNames);
   document.forms.tlog.team.addEventListener ('click', openTeam);
   document.forms.tlog.pred.addEventListener ('click', predictions);
-  document.forms.tlog.followerOrder.addEventListener ('change', selectOrder);
-  document.forms.tlog.followOrder.addEventListener ('change', selectOrder);
   document.getElementById ('dialogs')
     .replaceChildren ();
   checkParam ();
@@ -44,8 +40,6 @@ async function checkParam (event)
   }
   document.forms.tlog.channel.value = opt.get ('q') ?? '';
   await query ();
-  if (opt.has ('extra', 'follow'))
-    followers ();
   if (opt.has ('extra', 'pred'))
     predictions ();
 }
@@ -53,7 +47,7 @@ async function checkParam (event)
 async function query (event)
 {
   event?.preventDefault?.();
-  for (const key of [ 'follow-extra', 'pred-extra' ])
+  for (const key of [ 'pred-extra' ])
     document.getElementById (key)
       .classList.add ('hidden');
   const text = document.forms.tlog.channel.value.trim ();
@@ -62,7 +56,6 @@ async function query (event)
   displayError (info);
   const user = info.data?.user ?? {};
   conf.user = user;
-  delete conf.follow;
   delete conf.channel;
 
   if (user.id && !opt.has ('q', user.id))
@@ -94,7 +87,24 @@ async function query (event)
     time.textContent = value?.replace (/T.*/, '') ?? '—';
     time.dateTime = value ?? 'P0D';
   }
-  document.forms.tlog.follow.value = number (user.followers?.totalCount);
+
+  for (const key of [ 'followers', 'follows' ])
+    document.getElementById (key)
+      .textContent = number (user[key]?.totalCount);
+  const followedGames = document.getElementById ('followedGames');
+  followedGames.textContent = '—';
+  if (user.followedGames?.nodes?.length)
+  {
+    followedGames.replaceChildren ();
+    for (const game of user.followedGames.nodes)
+    {
+      const a = document.createElement ('a');
+      a.href = `https://www.twitch.tv/directory/category/${game.slug}`;
+      a.textContent = game.displayName;
+      followedGames.append (a, ' | ');
+    }
+    followedGames.lastChild.remove ();
+  }
 
   setColor (document.getElementById ('primaryColor'), user.primaryColorHex);
   for (const key of [ 'bannerImage', 'offlineImage' ])
@@ -309,13 +319,11 @@ async function getBestLogs (id)
 {
   const bestLogs = document.getElementById ('bestLogs');
   bestLogs.textContent = '';
-  const namehistory = document.getElementById ('namehistory');
-  namehistory.textContent = '';
+  document.getElementById ('namehistory')
+    .replaceChildren ();
   if (!id)
     return;
 
-  setHref (namehistory, `https://logs.zonian.dev/namehistory/${id}`,
-           'User name history');
   const response = await fetch ('https://logs.zonian.dev/api' +
                                 `/id:${id}?plain=true&pretty=true`);
   if (!response.ok)
@@ -324,15 +332,16 @@ async function getBestLogs (id)
   setHref (bestLogs, url, url ? 'Best Logs' : null);
 }
 
-async function queryUserBadges (login)
+async function queryUserBadges (user, channel)
 {
   const badges = document.getElementById ('badges');
   badges.textContent = '—';
-  if (!login)
+  if (!user)
     return;
 
   badges.textContent = '…';
-  const info = await getUserBadges ({ login }) ?? {};
+  channel ??= user;
+  const info = await getUserBadges ({ user, channel }) ?? {};
   displayError (info);
   const channelViewer = info.data?.channelViewer ?? {};
   conf.user.channelViewer = channelViewer;
@@ -369,195 +378,6 @@ function setColor (span, color)
   {
     span.style.removeProperty ('background-color');
     span.style.removeProperty ('color');
-  }
-}
-
-async function followers (event)
-{
-  event?.preventDefault?.();
-  if (!conf.user?.id)
-    return;
-  const section = document.getElementById ('follow-extra');
-  section.classList.remove ('hidden');
-  section.scrollIntoView (true);
-
-  const variables = { id: conf.user.id };
-  const info = await getFollowInfo (variables) ?? {};
-  displayError (info);
-  const user = info.data?.user ?? {};
-  conf.follow = user;
-
-  document.getElementById ('follow')
-    .textContent = document.forms.tlog.follow.value;
-
-  const followedGames = document.getElementById ('followedGames');
-  followedGames.textContent = '—';
-  if (user.followedGames?.nodes?.length)
-  {
-    followedGames.replaceChildren ();
-    for (const game of user.followedGames.nodes)
-    {
-      const a = document.createElement ('a');
-      a.href = `https://www.twitch.tv/directory/category/${game.slug}`;
-      a.textContent = game.displayName;
-      followedGames.append (a, ' | ');
-    }
-    followedGames.lastChild.remove ();
-  }
-
-  document.getElementById ('following')
-    .textContent = number (user.follows?.totalCount);
-
-  for (const key of [ 'asc_followers', 'desc_followers',
-                      'asc_follows', 'desc_follows' ])
-  {
-    const list = document.getElementById (key);
-    list.textContent = '—';
-    if (user[key]?.edges?.length)
-    {
-      list.replaceChildren ();
-      let cursor;
-      for (const edge of user[key].edges)
-      {
-        cursor = edge.cursor;
-        list.append (makeCard (edge));
-      }
-      if (user[key].pageInfo?.hasNextPage)
-      {
-        const more = conf.cards.content.lastElementChild.cloneNode (true);
-        more.dataset.cursor = cursor;
-        more.dataset.key = key;
-        more.addEventListener ('click', moreFollow);
-        list.append (more);
-      }
-    }
-  }
-
-  document.getElementById ('reverseBadge')
-    .textContent = '';
-}
-
-function moreFollow (event)
-{
-  event.preventDefault ();
-  if (!conf.user?.id)
-    return;
-  moreFollowLoad (event.currentTarget, event.shiftKey);
-}
-
-async function moreFollowLoad (more, repeat)
-{
-  more.disabled = true;
-  conf.esc = false;
-  do
-  {
-    const variables = {
-      id: conf.user.id,
-      cursor: more.dataset.cursor,
-    };
-    for (const key of [ 'asc_followers', 'desc_followers',
-                        'asc_follows', 'desc_follows' ])
-      variables[key] = key == more.dataset.key;
-    const info = await getFollowMore (variables) ?? {};
-    displayError (info);
-    const user = info.data?.user ?? {};
-    conf.follow[more.dataset.key].pageInfo = user[more.dataset.key]?.pageInfo;
-    const edges = user[more.dataset.key]?.edges ?? [];
-    conf.follow[more.dataset.key].edges.push (...edges);
-
-    let cursor;
-    for (const edge of edges)
-    {
-      cursor = edge.cursor;
-      more.before (makeCard (edge));
-    }
-    if (user[more.dataset.key].pageInfo?.hasNextPage)
-      more.dataset.cursor = cursor;
-    else
-    {
-      more.remove ();
-      return;
-    }
-  }
-  while (repeat && !conf.esc);
-  more.disabled = false;
-}
-
-async function reverseBadge ()
-{
-  const key = document.forms.tlog.followOrder.value;
-  const variables = { id: conf.user?.id };
-  const set = {
-    lead_moderator: [],
-    moderator: [],
-    vip: [],
-    'artist-badge': [],
-    founder: [],
-    subscriber: [],
-  };
-  let check = '', count = 0;
-  const req = async () => {
-    const getRev = gql`
-query TLogRev($id: ID!, $size: BadgeImageSize = NORMAL) {
-  user(id: $id, lookupType: ALL) {${check}
-  }
-}
-${gqlConf.fragmentBadge}
-  `;
-    const info = await getRev (variables) ?? {};
-    displayError (info);
-    const user = info.data?.user ?? {};
-    for (const _id in user)
-      for (const badge of user[_id] ?? [])
-        if (badge.setID in set)
-        {
-          const id = _id.slice (1);
-          set[badge.setID].push ([ id, localStorage[id] ]);
-          for (const card of document.querySelectorAll
-               (`button[data-id="${id}"]`))
-          {
-            let small = card.querySelector ('small.reverse');
-            if (!small)
-            {
-              small = document.createElement ('small');
-              small.classList.add ('reverse');
-              card.append (small);
-            }
-            const img = makeBadge (badge);
-            if (small.querySelector (`img[alt="${img.alt}"]`))
-              continue;
-            small.append (img);
-            card.title = card.title
-              .replace (/\n/,
-                        ` (${conf.user.displayName} is ${badge.setID})\n`);
-          }
-        }
-  };
-  for (const edge of conf.follow?.[key]?.edges ?? [])
-  {
-    check += `
-    _${edge.node.id}: displayBadges(channelID: "${edge.node.id}") {
-      ...badge
-    }`;
-    if (++count == 100)
-    {
-      await req ();
-      check = '';
-      count = 0;
-    }
-  }
-  if (count)
-    await req ();
-  const pre = document.getElementById ('reverseBadge');
-  pre.textContent = '';
-  for (const role in set)
-  {
-    console.log (role, set[role]
-                 .toSorted ((a, b) => a[1].localeCompare (b[1]))
-                 .map (x => x[0]));
-    const logins = set[role].map (x => x[1])
-      .toSorted ();
-    pre.textContent += `${role.padEnd (14)} in: ${logins.join (', ')}\n`;
   }
 }
 
@@ -738,12 +558,31 @@ async function checkUserError ()
   showDialog (error);
 }
 
-function selectOrder (event)
+async function queryNames (event)
 {
-  for (const option of event.target.options)
+  if (!conf.user?.id)
+    return;
+  const list = document.getElementById ('namehistory');
+  const loading = document.createElement ('li');
+  loading.textContent = '…';
+  list.replaceChildren (loading);
+  const url = `https://logs.zonian.dev/namehistory/${conf.user.id}`;
+  const response = await fetch (url);
+  const json = await response.json ();
+  list.replaceChildren ();
+  for (const entry of json)
   {
-    const element = document.getElementById (option.value);
-    element.classList.toggle ('hidden', !option.selected);
+    const li    = document.createElement ('li');
+    const first = document.createElement ('time');
+    const last  = document.createElement ('time');
+    const code  = document.createElement ('code');
+    li.replaceChildren (first, ' – ', last, ': ', code);
+    first.dateTime    = entry.first_timestamp;
+    first.textContent = entry.first_timestamp.replace (/T.*/, '');
+    last.dateTime     = entry.last_timestamp;
+    last.textContent  = entry.last_timestamp.replace (/T.*/, '');
+    code.textContent  = entry.user_login;
+    list.append (li);
   }
 }
 
@@ -786,14 +625,6 @@ function saveUser (event)
   if (!conf.user?.id)
     return;
   save (conf.user, `tlog-${conf.user.login}.json`);
-}
-
-function saveFollow (event)
-{
-  event.preventDefault ();
-  if (!conf.follow?.follows)
-    return;
-  save (conf.follow, `tlog-${conf.user.login}-follow.json`);
 }
 
 function savePred (event)

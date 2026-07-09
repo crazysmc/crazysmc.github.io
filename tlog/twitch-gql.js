@@ -86,23 +86,6 @@ gqlConf.fragmentActor = `fragment actor on PredictionEventActor {
   ...user
 }`;
 
-gqlConf.fragmentFF = `fragment follower on FollowerConnection {
-  edges {
-    cursor
-    followedAt
-    node { ...user }
-  }
-  pageInfo { hasNextPage }
-}
-fragment follow on FollowConnection {
-  edges {
-    cursor
-    followedAt
-    node { ...user }
-  }
-  pageInfo { hasNextPage }
-}`;
-
 const getUserInfo = gql`
 query TLogUser($id: ID, $login: String, $size: BadgeImageSize = NORMAL) {
   user(id: $id, login: $login, lookupType: ALL) {
@@ -114,6 +97,13 @@ query TLogUser($id: ID, $login: String, $size: BadgeImageSize = NORMAL) {
     updatedAt
     deletedAt
     followers(first: 1) { totalCount }
+    follows(first: 1) { totalCount }
+    followedGames {
+      nodes {
+        slug
+        displayName
+      }
+    }
     primaryColorHex
     small_profileImageURL: profileImageURL(width: 70)
     large_profileImageURL: profileImageURL(width: 600)
@@ -220,53 +210,13 @@ ${gqlConf.fragmentBadge}
 `;
 
 const getUserBadges = gql`
-query TLogBadges($login: String!, $size: BadgeImageSize = DOUBLE) {
-  channelViewer(userLogin: $login, channelLogin: $login) {
+query TLogBadges($user: String!, $channel: String!,
+                 $size: BadgeImageSize = DOUBLE) {
+  channelViewer(userLogin: $user, channelLogin: $channel) {
     earnedBadges { ...badge }
   }
 }
 ${gqlConf.fragmentBadge}
-`;
-
-const getFollowInfo = gql`
-query TLogFollow($id: ID!) {
-  user(id: $id, lookupType: ALL) {
-    followedGames {
-      nodes {
-        slug
-        displayName
-      }
-    }
-    asc_followers: followers(first: 100, order: ASC) { ...follower }
-    desc_followers: followers(first: 100, order: DESC) { ...follower }
-    follows(first: 1) { totalCount }
-    asc_follows: follows(first: 100, order: ASC) { ...follow }
-    desc_follows: follows(first: 100, order: DESC) { ...follow }
-  }
-}
-${gqlConf.fragmentFF}
-${gqlConf.fragmentUser}
-`;
-
-const getFollowMore = gql`
-query TLogFollow(
-  $id: ID!, $cursor: Cursor!
-  $asc_followers: Boolean!, $desc_followers: Boolean!
-  $asc_follows: Boolean!, $desc_follows: Boolean!
-) {
-  user(id: $id, lookupType: ALL) {
-    asc_followers: followers(first: 100, order: ASC, after: $cursor)
-      @include(if: $asc_followers) { ...follower }
-    desc_followers: followers(first: 100, order: DESC, after: $cursor)
-      @include(if: $desc_followers) { ...follower }
-    asc_follows: follows(first: 100, order: ASC, after: $cursor)
-      @include(if: $asc_follows) { ...follow }
-    desc_follows: follows(first: 100, order: DESC, after: $cursor)
-      @include(if: $desc_follows) { ...follow }
-  }
-}
-${gqlConf.fragmentFF}
-${gqlConf.fragmentUser}
 `;
 
 const getPredInfo = gql`

@@ -63,8 +63,11 @@ right click to open in new tab">
 <span class=lbl>created:</span> <time datetime=P0D id=created>—</time>
 <span class=lbl>updated:</span> <time datetime=P0D id=updated>—</time>
 <span class=lbl>deleted:</span> <time datetime=P0D id=deleted>—</time>
-<span class=lbl>followers:</span>
-  <input name=follow type=button class=small accesskey=f value=—>
+
+<p>
+<span class=lbl>followers:</span> <span id=followers>—</span>
+<span class=lbl>follows:</span> <span id=follows>—</span>
+<span class=lbl>followed games:</span> <span id=followedGames>—</span>
 
 <p>
 <span class=lbl>primary:</span> <span id=primaryColor>—</span>
@@ -113,52 +116,6 @@ right click to open in new tab">
 
 </fieldset>
 
-<fieldset id=follow-extra class=hidden>
-<legend>Following status</legend>
-
-<p>
-<span class=lbl>followed games:</span> <span id=followedGames>—</span>
-
-<hr>
-
-<p>
-<span class=lbl>followers:</span> <span id=follow>—</span>
-
-<p>
-<select name=followerOrder>
-  <option value=asc_followers>oldest</option>
-  <option value=desc_followers selected>newest</option>
-</select>
-<span class=lbl>followers:</span>
-<span id=asc_followers class=hidden>—</span>
-<span id=desc_followers>—</span>
-
-<hr>
-
-<p>
-<span class=lbl>following others:</span> <span id=following>—</span>
-
-<p>
-<select name=followOrder>
-  <option value=asc_follows>oldest</option>
-  <option value=desc_follows selected>newest</option>
-</select>
-<span class=lbl>follows:</span>
-<span id=asc_follows class=hidden>—</span>
-<span id=desc_follows>—</span>
-
-<p>
-<input name=reverseBadge type=button value="Search reverse roles">
-(badges for roles of this user in other chats will be added)
-<pre id=reverseBadge></pre>
-
-<hr>
-
-<p>
-<input name=saveFollow type=button value="Save as JSON">
-
-</fieldset>
-
 <fieldset id=pred-extra class=hidden>
 <legend>Predictions</legend>
 
@@ -186,6 +143,17 @@ right click to open in new tab">
 
 </fieldset>
 
+<fieldset>
+<legend>User name history</legend>
+
+<p>
+<input name=namehistory type=button accesskey=n value="Load from zonian.dev">
+
+<ol id=namehistory>
+</ol>
+
+</fieldset>
+
 <fieldset id=links>
 <legend>Current chat and further links</legend>
 
@@ -201,7 +169,6 @@ right click to open in new tab">
 
 <p>
 <a id=bestLogs accesskey=b></a>
-<a id=namehistory accesskey=h></a>
 
 </fieldset>
 
