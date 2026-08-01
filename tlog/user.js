@@ -572,6 +572,8 @@ async function queryNames (event)
   list.replaceChildren ();
   for (const entry of json)
   {
+    if (!entry.user_login)
+      continue;
     const li    = document.createElement ('li');
     const first = document.createElement ('time');
     const last  = document.createElement ('time');
