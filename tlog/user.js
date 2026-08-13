@@ -437,7 +437,7 @@ function makePred (pred)
     const actor = pred[key + 'By'];
     const when = pred[key + 'At'];
     let card;
-    switch (actor.__typename)
+    switch (actor?.__typename)
     {
       case 'ExtensionClient': // TODO find a channel where this exists
         console.log (actor);
