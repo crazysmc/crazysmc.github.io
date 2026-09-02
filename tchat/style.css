@@ -112,6 +112,10 @@ img {
   margin-left: 0.2rem;
 }
 
+img.gif {
+  max-height: 5em;
+}
+
 .pronouns {
   border: 0.07em solid;
   border-radius: 0.4em;

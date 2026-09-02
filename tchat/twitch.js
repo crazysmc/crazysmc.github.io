@@ -339,7 +339,7 @@ function formatChat (msg, p)
     p.dataset.flagged = list.join ('; ');
   }
 
-  if (msg.tags.emotes)
+  if (msg.tags.emotes || msg.tags.gifs)
     nativeEmotes (text, msg, message);
   else
     message.textContent = text;
@@ -423,22 +423,36 @@ function formatChat (msg, p)
 function nativeEmotes (text, msg, message)
 {
   const list = text.split (/(?:)/u);
-  for (const emote of msg.tags.emotes.split ('/'))
-  {
-    const [ id, ranges ] = emote.split (':');
-    for (const range of ranges.split (','))
+  if (msg.tags.emotes)
+    for (const emote of msg.tags.emotes.split ('/'))
     {
+      const [ id, ranges ] = emote.split (':');
+      for (const range of ranges.split (','))
+      {
+        const [ start, end ] = range.split ('-')
+          .map (x => parseInt (x, 10));
+        const img = newEmote ();
+        img.classList.add ('native');
+        img.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' +
+          `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}.0`;
+        const name = list.splice (start, 1 + end - start, img,
+                                  ...new Array (end - start));
+        img.title = img.alt = name.join ('');
+      }
+    }
+  if (opt.has ('gifs') && msg.tags.gifs)
+    for (const gif of msg.tags.gifs.split (','))
+    {
+      const [ range, id, url ] = gif.split ('|');
       const [ start, end ] = range.split ('-')
         .map (x => parseInt (x, 10));
       const img = newEmote ();
-      img.classList.add ('native');
-      img.src = 'https://static-cdn.jtvnw.net/emoticons/v2/' +
-        `${id}/${conf.emoteStyle}/dark/${conf.emoteScale}.0`;
+      img.classList.add ('native', 'gif');
+      img.src = url;
       const name = list.splice (start, 1 + end - start, img,
                                 ...new Array (end - start));
       img.title = img.alt = name.join ('');
     }
-  }
   for (const c of list)
   {
     if (c == undefined)

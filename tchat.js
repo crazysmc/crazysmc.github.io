@@ -41,6 +41,8 @@ function input ()
     p += '&scale=' + form.elements.scale.value;
   if (form.elements.static.checked)
     p += '&static';
+  if (form.elements.gifs.checked)
+    p += '&gifs';
 
   const test = document.getElementById ('test');
   for (const opt of [

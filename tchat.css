@@ -118,7 +118,7 @@ aside.bold
   font-weight: bold;
 }
 
-.bots .chat-line:has(img.ffz-bot)
+.bots .chat-line:has(img.api-bot)
 {
   display: none !important;
 }

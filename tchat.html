@@ -179,8 +179,8 @@ You can also join several channels simultaneously and get a combined view.
 just in case the live updates failed.
 
 <p>Thanks to <a href=https://github.com/jdecked/twemoji>Twemoji</a> for the
-text emoji to image conversion (emoji are treated like emotes now with regards
-to effects).
+text emoji to image conversion (emoji are treated like emotes with regards to
+effects).
 
 <p>tChat runs without a backend, fully in Javascript.
 <a href=https://github.com/crazysmc/crazysmc.github.io/tree/master/tchat
@@ -224,6 +224,12 @@ to effects).
 <input id=static name=static type=checkbox>
 <label for=static>
   Replace animated emotes, badges and paints with static ones
+</label>
+
+<p>
+<input id=gifs name=gifs type=checkbox>
+<label for=gifs>
+  Show Twitch GIFs <strong>(New!)</strong>
 </label>
 
 </fieldset>
@@ -454,6 +460,16 @@ top upwards.)
   <blockquote><code>
     img[alt="[purple-pixel-heart---together-for-good-24/1]"]
     { filter: grayscale(.3); }
+  </code></blockquote>
+
+<li>If GIFs are enabled, the default height is 5em but you can adjust this to
+  fit inside the line
+  <blockquote><code>
+    img.gif { max-height: 1em; }
+  </code></blockquote>
+  or make it comically large
+  <blockquote><code>
+    img.gif { max-height: initial; }
   </code></blockquote>
 <hr>
 
