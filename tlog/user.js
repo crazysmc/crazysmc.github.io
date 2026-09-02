@@ -210,7 +210,7 @@ async function query (event)
   document.getElementById ('available')
     .textContent = user.channel?.founderBadgeAvailability ?? '—';
 
-  const options = '&style=colon&bans&chatters';
+  const options = '&gifs&style=colon&bans&chatters';
   setHref (document.getElementById ('tchat'),
            `../tchat/?join=${user.login}${options}&rm`,
            user.login ? 'tChat recent messages' : null);
